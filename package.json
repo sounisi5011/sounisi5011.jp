@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "author": "sounisi5011",
   "scripts": {
-    "build": "run-p build:*",
+    "build": "npm-run-all clean --parallel build:*",
     "build:fontawesome": "run-s build:fontawesome:download",
     "build:fontawesome:download": "download --extract --strip 1 --out ./public/fontawesome/ https://use.fontawesome.com/releases/v5.8.2/fontawesome-free-5.8.2-web.zip",
     "build:images": "run-p build:images:*",
@@ -16,7 +16,12 @@
     "build:images:pixiv-logo:download": "download --extract --strip 1 --out ./cache/pixiv/ https://s.pximg.net/www/images/terms/logo_pixiv_20181115.zip",
     "build:images:qiita-logo": "run-s build:images:qiita-logo:download build:images:qiita-logo:copy",
     "build:images:qiita-logo:copy": "cpy ./cache/qiita/png/qiita-favicon.png ./public/images/ --rename=icon-qiita.png",
-    "build:images:qiita-logo:download": "download --extract --strip 1 --out ./cache/qiita/ https://help.qiita.com/images/qiita.zip"
+    "build:images:qiita-logo:download": "download --extract --strip 1 --out ./cache/qiita/ https://help.qiita.com/images/qiita.zip",
+    "clean": "run-p clean:*",
+    "clean:cache": "del ./cache/",
+    "clean:public": "run-p clean:public:*",
+    "clean:public:fontawesome": "del ./public/fontawesome/",
+    "clean:public:images": "del ./public/images/"
   },
   "husky": {
     "hooks": {
