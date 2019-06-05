@@ -40,3 +40,70 @@ h1,
 .social-links > li > a:focus {
   background-color: #555;
 }
+
+/* see https://about.twitter.com/ja/company/brand-resources.html */
+.social-links > li.twitter > a {
+  background-color: #1da1f2;
+  color: #ffffff;
+}
+
+.social-links > li.twitter > a:hover,
+.social-links > li.twitter > a:focus {
+  background-color: #4db4f5;
+}
+
+/* see https://www.pixiv.net/terms/?page=brand */
+.social-links > li.pixiv > a {
+  background-color: #ffffff;
+  color: #009cff;
+}
+
+.social-links > li.pixiv > a:hover,
+.social-links > li.pixiv > a:focus {
+  background-color: #eee;
+}
+
+.social-links > li.pixiv > a:before {
+  /* see https://saruwakakun.com/html-css/reference/change-before-after */
+  content: "";
+  display: inline-block;
+  width: 1em;
+  min-width: 24px;
+  height: 1em;
+  min-height: 24px;
+  background-image: url("/images/icon-pixiv.png");
+  background-size: contain;
+  vertical-align: top;
+}
+
+.social-links > li.pixiv > a .service-name {
+  font-size: 0;
+  line-height: 0;
+}
+
+/* see https://help.qiita.com/ja/articles/others-brand-guideline */
+.social-links > li.qiita > a {
+  background-color: #fff;
+  color: #4aac00;
+}
+
+.social-links > li.qiita > a:hover,
+.social-links > li.qiita > a:focus {
+  background-color: #eee;
+}
+
+.social-links > li.qiita > a:before {
+  /* see https://saruwakakun.com/html-css/reference/change-before-after */
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  background-image: url("/images/icon-qiita.png");
+  background-size: contain;
+  vertical-align: middle;
+}
+
+.social-links > li.qiita > a .service-name {
+  font-size: 0;
+  line-height: 0;
+}
