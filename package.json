@@ -23,6 +23,7 @@
     ]
   },
   "dependencies": {
+    "download-cli": "^1.1.1",
     "extract-zip": "^1.6.7",
     "make-dir-cli": "^2.0.0",
     "node-wget": "^0.4.3",
