@@ -65,3 +65,4 @@ typings/
 # Project directories
 /cache/
 /public/images/
+/public/fontawesome/
