@@ -1,3 +1,4 @@
+@import "_mixins";
 @import "_fontawesome";
 
 html {
@@ -58,8 +59,7 @@ h1,
       }
 
       & .service-name {
-        font-size: 0;
-        line-height: 0;
+        .invisible-text;
       }
     }
 
@@ -81,8 +81,7 @@ h1,
       }
 
       & .service-name {
-        font-size: 0;
-        line-height: 0;
+        .invisible-text;
       }
     }
 
@@ -97,21 +96,14 @@ h1,
       }
 
       &:before {
-        /* see https://saruwakakun.com/html-css/reference/change-before-after */
-        content: "";
-        display: inline-block;
-        width: 1em;
+        .pseudo-image-resize(url("/images/icon-pixiv.png"));
         min-width: 24px;
-        height: 1em;
         min-height: 24px;
-        background-image: url("/images/icon-pixiv.png");
-        background-size: contain;
         vertical-align: top;
       }
 
       & .service-name {
-        font-size: 0;
-        line-height: 0;
+        .invisible-text;
       }
     }
 
@@ -126,19 +118,11 @@ h1,
       }
 
       &:before {
-        /* see https://saruwakakun.com/html-css/reference/change-before-after */
-        content: "";
-        display: inline-block;
-        width: 1em;
-        height: 1em;
-        background-image: url("/images/icon-qiita.png");
-        background-size: contain;
-        vertical-align: middle;
+        .pseudo-image-resize(url("/images/icon-qiita.png"));
       }
 
       & .service-name {
-        font-size: 0;
-        line-height: 0;
+        .invisible-text;
       }
     }
 
