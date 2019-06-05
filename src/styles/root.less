@@ -1,3 +1,6 @@
+@import "@fortawesome/fontawesome-free/less/fontawesome";
+@import "@fortawesome/fontawesome-free/less/brands";
+
 html {
   background-color: #dde;
   word-break: normal;
@@ -53,13 +56,9 @@ h1,
 }
 
 .social-links > li.twitter > a:before {
-  display: inline-block;
-  font-family: "Font Awesome 5 Brands";
-  font-style: normal;
-  font-variant: normal;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  content: "\f099";
+  .fa-icon;
+  .fab;
+  content: @fa-var-twitter;
 }
 
 .social-links > li.twitter > a .service-name {
@@ -80,13 +79,9 @@ h1,
 }
 
 .social-links > li.github > a:before {
-  display: inline-block;
-  font-family: "Font Awesome 5 Brands";
-  font-style: normal;
-  font-variant: normal;
-  text-rendering: auto;
-  -webkit-font-smoothing: antialiased;
-  content: "\f09b";
+  .fa-icon;
+  .fab;
+  content: @fa-var-github;
 }
 
 .social-links > li.github > a .service-name {
