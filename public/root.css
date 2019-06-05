@@ -52,6 +52,48 @@ h1,
   background-color: #4db4f5;
 }
 
+.social-links > li.twitter > a:before {
+  display: inline-block;
+  font-family: "Font Awesome 5 Brands";
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  content: "\f099";
+}
+
+.social-links > li.twitter > a .service-name {
+  font-size: 0;
+  line-height: 0;
+}
+
+/* https://github.com/logos */
+.social-links > li.github > a {
+  background-color: #171516;
+  color: #ffffff;
+}
+
+.social-links > li.github > a:hover,
+.social-links > li.github > a:focus {
+  background-color: #ffffff;
+  color: #171516;
+}
+
+.social-links > li.github > a:before {
+  display: inline-block;
+  font-family: "Font Awesome 5 Brands";
+  font-style: normal;
+  font-variant: normal;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  content: "\f09b";
+}
+
+.social-links > li.github > a .service-name {
+  font-size: 0;
+  line-height: 0;
+}
+
 /* see https://www.pixiv.net/terms/?page=brand */
 .social-links > li.pixiv > a {
   background-color: #ffffff;
