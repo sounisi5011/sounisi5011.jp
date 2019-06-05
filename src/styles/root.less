@@ -27,6 +27,8 @@ h1,
   padding: 0;
 
   & > li {
+    @icon-right-space: 0.25em;
+
     margin: 0.1em;
 
     & > a {
@@ -60,6 +62,7 @@ h1,
         .fa-icon;
         .fab;
         content: @fa-var-twitter;
+        margin-right: @icon-right-space;
       }
 
       & .service-name {
@@ -85,6 +88,7 @@ h1,
         .fa-icon;
         .fab;
         content: @fa-var-github;
+        margin-right: @icon-right-space;
       }
 
       & .service-name {
@@ -109,6 +113,7 @@ h1,
         min-width: 24px;
         min-height: 24px;
         vertical-align: top;
+        margin-right: @icon-right-space;
       }
 
       & .service-name {
@@ -130,6 +135,7 @@ h1,
 
       &:before {
         .pseudo-image-resize(url("/images/icon-qiita.png"));
+        margin-right: @icon-right-space;
       }
 
       & .service-name {
