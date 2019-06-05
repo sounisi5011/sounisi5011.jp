@@ -1,11 +1,27 @@
 {
   "name": "sounisi5011.jp",
   "version": "0.0.0",
+  "private": true,
   "description": "sounisi5011.jp's root page",
   "repository": "git@github.com:sounisi5011/sounisi5011.jp.git",
-  "author": "sounisi5011",
   "license": "UNLICENSED",
-  "private": true,
+  "author": "sounisi5011",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "!(package).json|*.html": [
+      "prettier --write",
+      "git add"
+    ],
+    "package.json": [
+      "prettier-package-json --write",
+      "sort-package-json",
+      "git add"
+    ]
+  },
   "devDependencies": {
     "husky": "^2.3.0",
     "lint-staged": "^8.1.7",
