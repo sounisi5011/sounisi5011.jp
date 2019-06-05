@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "author": "sounisi5011",
   "scripts": {
-    "build": "npm-run-all clean --parallel build:*",
+    "build": "npm-run-all show-envs clean --parallel build:*",
     "build:fontawesome": "run-s build:fontawesome:copy",
     "build:fontawesome:copy": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
     "build:images": "run-p build:images:*",
@@ -21,7 +21,8 @@
     "build:styles": "lessc --source-map ./src/styles/root.less ./public/root.css",
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",
-    "clean:public": "del ./public/"
+    "clean:public": "del ./public/",
+    "show-envs": "./scripts/show-envs.js"
   },
   "husky": {
     "hooks": {
