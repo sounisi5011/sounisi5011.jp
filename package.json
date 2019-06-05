@@ -8,6 +8,8 @@
   "author": "sounisi5011",
   "scripts": {
     "build": "run-p build:*",
+    "build:fontawesome": "run-s build:fontawesome:download",
+    "build:fontawesome:download": "download --extract --strip 1 --out ./public/fontawesome/ https://use.fontawesome.com/releases/v5.8.2/fontawesome-free-5.8.2-web.zip",
     "build:images": "run-p build:images:*",
     "build:images:pixiv-logo": "run-s build:images:pixiv-logo:download build:images:pixiv-logo:copy",
     "build:images:pixiv-logo:copy": "cpy ./cache/pixiv/icon/logo_icon_r.png ./public/images/ --rename=icon-pixiv.png",
