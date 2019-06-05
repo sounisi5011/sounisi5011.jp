@@ -149,3 +149,17 @@ h1,
   font-size: 0;
   line-height: 0;
 }
+
+.social-links > li.e621 > a {
+  background-color: #152f56;
+  color: #b4c7d9;
+}
+
+.social-links > li.e621 > a:hover,
+.social-links > li.e621 > a:focus {
+  color: #2e76b4;
+}
+
+.social-links > li.e621 > a .service-name {
+  color: #fff;
+}
