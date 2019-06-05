@@ -22,7 +22,8 @@
     "clean:cache": "del ./cache/",
     "clean:public": "run-p clean:public:*",
     "clean:public:fontawesome": "del ./public/fontawesome/",
-    "clean:public:images": "del ./public/images/"
+    "clean:public:images": "del ./public/images/",
+    "clean:public:styles": "yarn del './public/*.css{,.map}'"
   },
   "husky": {
     "hooks": {
