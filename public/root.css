@@ -1,0 +1,42 @@
+html {
+  background-color: #dde;
+  word-break: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+body {
+  max-width: 40em;
+  margin: 0 auto;
+}
+
+h1,
+.about-text {
+  text-align: center;
+}
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+}
+
+.social-links > li {
+  margin: 0.1em;
+}
+
+.social-links > li > a {
+  display: block;
+  padding: 0.3em 0.5em;
+  background-color: #333;
+  color: #fff;
+  text-decoration: unset;
+}
+
+.social-links > li > a:hover,
+.social-links > li > a:focus {
+  background-color: #555;
+}
