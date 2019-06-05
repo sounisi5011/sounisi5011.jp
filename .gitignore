@@ -64,7 +64,4 @@ typings/
 
 # Project directories
 /cache/
-/public/*.css
-/public/*.css.map
-/public/images/
-/public/fontawesome/
+/public/
