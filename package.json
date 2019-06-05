@@ -1,0 +1,59 @@
+{
+  "name": "sounisi5011.jp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "sounisi5011.jp's root page",
+  "repository": "git@github.com:sounisi5011/sounisi5011.jp.git",
+  "license": "UNLICENSED",
+  "author": "sounisi5011",
+  "scripts": {
+    "build": "npm-run-all clean --parallel build:*",
+    "build:fontawesome": "run-s build:fontawesome:copy",
+    "build:fontawesome:copy": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
+    "build:images": "run-p build:images:*",
+    "build:images:pixiv-logo": "run-s build:images:pixiv-logo:download build:images:pixiv-logo:copy",
+    "build:images:pixiv-logo:copy": "cpy ./cache/pixiv/icon/logo_icon_r.png ./public/images/ --rename=icon-pixiv.png",
+    "build:images:pixiv-logo:download": "download --extract --strip 1 --out ./cache/pixiv/ https://s.pximg.net/www/images/terms/logo_pixiv_20181115.zip",
+    "build:images:qiita-logo": "run-s build:images:qiita-logo:download build:images:qiita-logo:copy",
+    "build:images:qiita-logo:copy": "cpy ./cache/qiita/png/qiita-favicon.png ./public/images/ --rename=icon-qiita.png",
+    "build:images:qiita-logo:download": "download --extract --strip 1 --out ./cache/qiita/ https://help.qiita.com/images/qiita.zip",
+    "build:pages": "./scripts/pug.js ./src/pages/index.pug ./public/",
+    "build:styles": "lessc --source-map ./src/styles/root.less ./public/root.css",
+    "clean": "run-p clean:*",
+    "clean:cache": "del ./cache/",
+    "clean:public": "del ./public/"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "!(package).json|*.{html,css,less}": [
+      "prettier --write",
+      "git add"
+    ],
+    "package.json": [
+      "prettier-package-json --write",
+      "sort-package-json",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.9.0",
+    "cpy-cli": "^2.0.0",
+    "del-cli": "^2.0.0",
+    "download-cli": "^1.1.1",
+    "less": "^3.9.0",
+    "make-dir-cli": "^2.0.0",
+    "npm-run-all": "^4.1.5",
+    "pug": "^2.0.3"
+  },
+  "devDependencies": {
+    "husky": "^2.3.0",
+    "lint-staged": "^8.1.7",
+    "prettier": "^1.17.1",
+    "prettier-package-json": "^2.1.0",
+    "sort-package-json": "^1.22.1"
+  }
+}

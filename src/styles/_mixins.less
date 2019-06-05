@@ -1,0 +1,15 @@
+.invisible-text() {
+  font-size: 0;
+  line-height: 0;
+}
+
+.pseudo-image-resize(@image; @width: 1em; @height:1em) {
+  /* see https://saruwakakun.com/html-css/reference/change-before-after */
+  content: "";
+  display: inline-block;
+  width: @width;
+  height: @height;
+  background-image: @image;
+  background-size: contain;
+  vertical-align: middle;
+}
