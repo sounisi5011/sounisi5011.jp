@@ -19,8 +19,8 @@ if ogpSiteName && ogpSiteName !== (ogpTitle ? ogpTitle : titleText)
   meta(property="og:site_name" content=ogpSiteName)
 if twitterCardType && twitterCardType !== 'summary'
   meta(name="twitter:card" content=twitterCardType)
-if twitterSiteList
-  each twitterScreenName in twitterSiteList
+if twitterServiceProviderList
+  each twitterScreenName in twitterServiceProviderList
     meta(name="twitter:site" content=`@${twitterScreenName}`)
 if twitterContentsCreatorList
   each twitterScreenName in twitterContentsCreatorList
