@@ -6,12 +6,17 @@ const Mustache = require('mustache');
 const path = require('path');
 const util = require('util');
 
-const [fsReadFile, fsWriteFile] = [fs.readFile, fs.writeFile].map(util.promisify);
+const [fsReadFile, fsWriteFile] = [fs.readFile, fs.writeFile].map(
+  util.promisify,
+);
 
 async function main() {
   const sourceFileFullpath = path.resolve(process.argv[2]);
   const destDirFullpath = path.resolve(process.argv[3]);
-  const destFileFullpath = path.join(destDirFullpath, path.basename(sourceFileFullpath, '.mustache'));
+  const destFileFullpath = path.join(
+    destDirFullpath,
+    path.basename(sourceFileFullpath, '.mustache'),
+  );
   const env = process.env;
 
   await makeDir(destDirFullpath);
@@ -19,7 +24,9 @@ async function main() {
   const view = { env };
 
   {
-    const match = /^https?:\/\/[0-9a-fA-F]+--([0-9a-zA-Z-]+\.netlify\.com)/.exec(env.DEPLOY_URL);
+    const match = /^https?:\/\/[0-9a-fA-F]+--([0-9a-zA-Z-]+\.netlify\.com)/.exec(
+      env.DEPLOY_URL,
+    );
     if (match) {
       view.netlifyDefaultSubdomain = match[1];
     }
