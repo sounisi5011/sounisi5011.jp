@@ -1,6 +1,18 @@
-link(rel="preload" href="/root.css" as="style")
-link(rel="preload" href="/images/my-symbol.svg" as="image")
-link(rel="preload" href="/images/icon-pixiv.png" as="image")
-link(rel="preload" href="/images/icon-qiita.png" as="image")
-//- Note: preloadに対応しているブラウザはWOFF2フォントにも対応しているため、他のフォントを指定する必要は無い
-link(rel="preload" href="/fontawesome/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous")
+if preloadList
+  each resourceURL in preloadList
+    -
+      const resourceType = (
+        /\.css$/.test(resourceURL) ? 'style' :
+        /\.(?:png|svg)$/.test(resourceURL) ? 'image' :
+        /\.(?:woff2?)$/.test(resourceURL) ? 'font' :
+        'unknown'
+      );
+      const resourceMIME = (
+        /\.woff2$/.test(resourceURL) ? 'font/woff2' :
+        /\.woff$/.test(resourceURL) ? 'font/woff' :
+        null
+      );
+    if resourceType === 'font'
+      link(rel="preload" href=resourceURL as=resourceType type=resourceMIME crossorigin="anonymous")
+    else
+      link(rel="preload" href=resourceURL as=resourceType type=resourceMIME)

@@ -9,6 +9,14 @@
       height: 400,
     },
   ];
+  const preloadList = [
+    '/root.css',
+    '/images/my-symbol.svg',
+    '/images/icon-pixiv.png',
+    '/images/icon-qiita.png',
+    // Note: preloadに対応しているブラウザはWOFF2フォントにも対応しているため、他のフォントを指定する必要は無い
+    '/fontawesome/fa-brands-400.woff2',
+  ];
 doctype html
 html(lang="ja")
   head(prefix="og: http://ogp.me/ns#")
