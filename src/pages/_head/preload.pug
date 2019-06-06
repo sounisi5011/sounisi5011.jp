@@ -7,11 +7,7 @@ if preloadList
         /\.(?:woff2?)$/.test(resourceURL) ? 'font' :
         'unknown'
       );
-      const resourceMIME = (
-        /\.woff2$/.test(resourceURL) ? 'font/woff2' :
-        /\.woff$/.test(resourceURL) ? 'font/woff' :
-        null
-      );
+      const resourceMIME = mime.getType(resourceURL);
     if resourceType === 'font'
       link(rel="preload" href=resourceURL as=resourceType type=resourceMIME crossorigin="anonymous")
     else
