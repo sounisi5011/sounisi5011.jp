@@ -9,8 +9,7 @@
   "scripts": {
     "build": "npm-run-all show-envs clean --parallel build:*",
     "build:favicon": "./scripts/svg2ico.js ./src/images/favicon.svg ./public/favicon.ico",
-    "build:fontawesome": "run-s build:fontawesome:copy",
-    "build:fontawesome:copy": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
+    "build:fontawesome": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
     "build:images": "run-p build:images:*",
     "build:images:ogp": "./scripts/svg2png.js ./src/images/ogp.square.svg ./public/images/ogp.png",
     "build:images:pixiv-logo": "run-s build:images:pixiv-logo:download build:images:pixiv-logo:copy",
