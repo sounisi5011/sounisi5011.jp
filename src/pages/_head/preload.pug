@@ -1,13 +1,13 @@
 if preloadList
   each resourceURL in preloadList
     -
+      const resourceMIME = mime.getType(resourceURL);
       const resourceType = (
         /\.css$/.test(resourceURL) ? 'style' :
-        /\.(?:png|svg)$/.test(resourceURL) ? 'image' :
-        /\.(?:woff2?)$/.test(resourceURL) ? 'font' :
+        /^image\//.test(resourceMIME) ? 'image' :
+        /^font\//.test(resourceMIME) ? 'font' :
         'unknown'
       );
-      const resourceMIME = mime.getType(resourceURL);
     if resourceType === 'font'
       link(rel="preload" href=resourceURL as=resourceType type=resourceMIME crossorigin="anonymous")
     else
