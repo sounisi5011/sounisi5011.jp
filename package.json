@@ -11,7 +11,7 @@
     "build:fontawesome": "run-s build:fontawesome:copy",
     "build:fontawesome:copy": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
     "build:images": "run-p build:images:*",
-    "build:images:ogp": "./scripts/svg2png.js ./src/images/ogp.square.svg ./public/images/ogp.square.png",
+    "build:images:ogp": "./scripts/svg2png.js ./src/images/ogp.square.svg ./public/images/ogp.png",
     "build:images:pixiv-logo": "run-s build:images:pixiv-logo:download build:images:pixiv-logo:copy",
     "build:images:pixiv-logo:copy": "cpy ./cache/pixiv/icon/logo_icon_r.png ./public/images/ --rename=icon-pixiv.png",
     "build:images:pixiv-logo:download": "download --extract --strip 1 --out ./cache/pixiv/ https://s.pximg.net/www/images/terms/logo_pixiv_20181115.zip",
