@@ -4,6 +4,7 @@ if preloadList
       const resourceMIME = mime.getType(resourceURL);
       const resourceType = (
         /\.css$/.test(resourceURL) ? 'style' :
+        resourceMIME === 'application/javascript' ? 'script' :
         /^image\//.test(resourceMIME) ? 'image' :
         /^font\//.test(resourceMIME) ? 'font' :
         'unknown'
