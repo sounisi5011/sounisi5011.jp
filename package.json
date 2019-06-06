@@ -8,9 +8,7 @@
   "author": "sounisi5011",
   "scripts": {
     "build": "npm-run-all show-envs clean --parallel build:*",
-    "build:favicon": "run-s build:favicon:makedir build:favicon:generate",
-    "build:favicon:generate": "icon-gen -i ./src/images/favicon.svg -o ./public/ --favicon",
-    "build:favicon:makedir": "make-dir ./public/",
+    "build:favicon": "./scripts/svg2ico.js ./src/images/favicon.svg ./public/favicon.ico",
     "build:fontawesome": "run-s build:fontawesome:copy",
     "build:fontawesome:copy": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
     "build:images": "run-p build:images:*",
