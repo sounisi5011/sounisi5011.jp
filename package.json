@@ -24,6 +24,7 @@
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",
     "clean:public": "del ./public/",
+    "lint": "eslint ./",
     "show-envs": "./scripts/show-envs.js"
   },
   "husky": {
