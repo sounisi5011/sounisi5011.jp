@@ -1,10 +1,15 @@
 doctype html
 html(lang="ja")
-  head
+  head(prefix="og: http://ogp.me/ns#")
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width,initial-scale=1")
     meta(name="format-detection" content="telephone=no,email=no,address=no")
     title sounisi5011.jp
+    link(rel="canonical" content=`${canonicalURL}`)
+    meta(property="og:title" content="sounisi5011.jp")
+    meta(property="og:type" content="website")
+    meta(property="og:url" content=`${canonicalURL}`)
+    meta(property="og:image" content=`${rootURL}/images/ogp.png`)
     link(rel="stylesheet" href="/root.css")
   body
     div.main-icon
