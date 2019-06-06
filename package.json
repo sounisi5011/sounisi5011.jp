@@ -8,6 +8,9 @@
   "author": "sounisi5011",
   "scripts": {
     "build": "npm-run-all show-envs clean --parallel build:*",
+    "build:favicon": "run-s build:favicon:makedir build:favicon:generate",
+    "build:favicon:generate": "icon-gen -i ./src/images/my-symbol.svg -o ./public/ --favicon",
+    "build:favicon:makedir": "make-dir ./public/",
     "build:fontawesome": "run-s build:fontawesome:copy",
     "build:fontawesome:copy": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
     "build:images": "run-p build:images:*",
