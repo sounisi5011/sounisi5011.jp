@@ -1,0 +1,12 @@
+env:
+  es6: true
+  node: true
+extends:
+  - eslint:recommended
+  - standard
+  - plugin:prettier/recommended
+parserOptions:
+  ecmaVersion: 2018
+rules:
+  prettier/prettier: error
+  no-console: off

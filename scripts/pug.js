@@ -11,11 +11,15 @@ const [fsWriteFile] = [fs.writeFile].map(util.promisify);
 async function main() {
   const sourceFileFullpath = path.resolve(process.argv[2]);
   const destDirFullpath = path.resolve(process.argv[3]);
-  const destFileFullpath = path.join(destDirFullpath, path.basename(sourceFileFullpath, '.pug') + '.html');
+  const destFileFullpath = path.join(
+    destDirFullpath,
+    path.basename(sourceFileFullpath, '.pug') + '.html',
+  );
   const env = process.env;
-  const options = { env, cache: true }
+  const options = { env, cache: true };
 
-  options.rootURL = (((env.CONTEXT === 'production') ? env.URL : env.DEPLOY_URL) || '');
+  options.rootURL =
+    (env.CONTEXT === 'production' ? env.URL : env.DEPLOY_URL) || '';
   options.canonicalURL = options.rootURL.replace(/\/*$/, '/');
 
   await makeDir(destDirFullpath);
