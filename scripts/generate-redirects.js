@@ -35,8 +35,8 @@ async function main() {
   const templateText = await fsReadFile(sourceFileFullpath, 'utf8');
   const compiledText = Mustache.render(templateText, view);
 
-  console.log(`generated: ${path.relative('', destFileFullpath)}`);
-  console.log(compiledText.replace(/^/gm, '>'));
+  console.log(`  generated: ${path.relative('', destFileFullpath)}`);
+  console.log(compiledText.replace(/^/gm, '  >'));
 
   await fsWriteFile(destFileFullpath, compiledText);
 }

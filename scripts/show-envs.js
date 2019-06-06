@@ -19,6 +19,6 @@ const ciEnvKeys = [
 
 ciEnvKeys.forEach(key => {
   if (key in process.env) {
-    console.log(`${key}=${process.env[key]}\n;;;`);
+    console.log(`  ${key}=${process.env[key]}\n;;;`);
   }
 });
