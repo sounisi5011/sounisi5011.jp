@@ -1,27 +1,45 @@
+-
+  const titleText = 'sounisi5011.jp';
+  const descriptionText = 'sounisi5011の創作とソーシャルサービスの集約サイト';
+  const ogpType = 'website';
+  const ogpImageList = [
+    {
+      url: `${rootURL}/images/ogp.png`,
+      width: 400,
+      height: 400,
+    },
+  ];
+  const twitterSiteList = [
+    'sounisi5011',
+    'sounisi5011Prog',
+    'sounisi5011Vore',
+  ];
 doctype html
 html(lang="ja")
   head(prefix="og: http://ogp.me/ns#")
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width,initial-scale=1")
     meta(name="format-detection" content="telephone=no,email=no,address=no")
-    title sounisi5011.jp
-    meta(name="description" content="sounisi5011の創作とソーシャルサービスの集約サイト")
+    title= titleText
+    meta(name="description" content=descriptionText)
     link(rel="canonical" content=`${canonicalURL}`)
-    meta(property="og:title" content="sounisi5011.jp")
-    meta(property="og:description" content="sounisi5011の創作とソーシャルサービスの集約サイト")
-    meta(property="og:type" content="website")
+    meta(property="og:title" content=titleText)
+    meta(property="og:description" content=descriptionText)
+    meta(property="og:type" content=ogpType)
     meta(property="og:url" content=`${canonicalURL}`)
-    meta(property="og:image" content=`${rootURL}/images/ogp.png`)
-    meta(property="og:image:width" content="400")
-    meta(property="og:image:height" content="400")
-    meta(name="twitter:site" content="@sounisi5011")
-    meta(name="twitter:site" content="@sounisi5011Prog")
-    meta(name="twitter:site" content="@sounisi5011Vore")
+    each imageData in ogpImageList
+      meta(property="og:image" content=imageData.url)
+      if imageData.width
+        meta(property="og:image:width" content=imageData.width)
+      if imageData.height
+        meta(property="og:image:height" content=imageData.height)
+    each twitterScreenName in twitterSiteList
+      meta(name="twitter:site" content=`@${twitterScreenName}`)
     link(rel="stylesheet" href="/root.css")
   body
     div.main-icon
       img(src="/images/my-symbol.svg" alt="")
-    h1 sounisi5011.jp
+    h1= titleText
     p.about-text
       | いろいろやってます。最近はフェチ関係のことばっかり。ここには創作を投稿していくつもり。
     hr
