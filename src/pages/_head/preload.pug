@@ -1,15 +1,19 @@
 if preloadList
-  each resourceURL in preloadList
-    -
-      const resourceMIME = mime.getType(resourceURL);
-      const resourceType = (
-        /\.css$/.test(resourceURL) ? 'style' :
-        resourceMIME === 'application/javascript' ? 'script' :
-        /^image\//.test(resourceMIME) ? 'image' :
-        /^font\//.test(resourceMIME) ? 'font' :
-        'unknown'
-      );
-    if resourceType === 'font'
-      link(rel="preload" href=resourceURL as=resourceType type=resourceMIME crossorigin="anonymous")
-    else
-      link(rel="preload" href=resourceURL as=resourceType type=resourceMIME)
+  each resourceData in preloadList
+    if resourceData
+      -
+        const resourceURL = typeof resourceData === 'object'
+          ? resourceData.url
+          : String(resourceData);
+        const resourceMIME = resourceData.type || mime.getType(resourceURL);
+        const resourceType = resourceData.as || (
+          /\.css$/.test(resourceURL) ? 'style' :
+          resourceMIME === 'application/javascript' ? 'script' :
+          /^image\//.test(resourceMIME) ? 'image' :
+          /^font\//.test(resourceMIME) ? 'font' :
+          'unknown'
+        );
+      if resourceType === 'font'
+        link(rel="preload" href=resourceURL as=resourceType type=resourceMIME crossorigin="anonymous")
+      else
+        link(rel="preload" href=resourceURL as=resourceType type=resourceMIME)
