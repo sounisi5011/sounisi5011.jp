@@ -16,6 +16,7 @@ async function main() {
   const options = { env, cache: true }
 
   options.rootURL = (env.CONTEXT === 'production') ? env.URL : env.DEPLOY_URL;
+  options.canonicalURL = options.rootURL.replace(/\/*$/, '/');
 
   await makeDir(destDirFullpath);
 
