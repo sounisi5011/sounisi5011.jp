@@ -17,5 +17,21 @@ if ogpLocale
   meta(property="og:locale" content=ogpLocale)
 if ogpSiteName && ogpSiteName !== (ogpTitle ? ogpTitle : titleText)
   meta(property="og:site_name" content=ogpSiteName)
-each twitterScreenName in twitterSiteList
-  meta(name="twitter:site" content=`@${twitterScreenName}`)
+if twitterCardType && twitterCardType !== 'summary'
+  meta(name="twitter:card" content=twitterCardType)
+if twitterSiteList
+  each twitterScreenName in twitterSiteList
+    meta(name="twitter:site" content=`@${twitterScreenName}`)
+if twitterContentsCreatorList
+  each twitterScreenName in twitterContentsCreatorList
+    meta(name="twitter:creator" content=`@${twitterScreenName}`)
+if twitterCardCescription
+  meta(name="twitter:description" content=twitterCardCescription)
+if twitterCardTitle
+  meta(name="twitter:title" content=twitterCardTitle)
+if twitterCardImageList
+  each imageData in twitterCardImageList
+    if imageData
+      meta(name="twitter:image" content=(typeof imageData === 'object' ? imageData.url : imageData))
+      if imageData.alt
+        meta(name="twitter:image:alt" content=imageData.alt)
