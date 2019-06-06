@@ -8,6 +8,7 @@
   "author": "sounisi5011",
   "scripts": {
     "build": "npm-run-all show-envs clean --parallel build:*",
+    "build:favicon": "./scripts/svg2ico.js ./src/images/favicon.svg ./public/favicon.ico",
     "build:fontawesome": "run-s build:fontawesome:copy",
     "build:fontawesome:copy": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
     "build:images": "run-p build:images:*",
@@ -53,7 +54,8 @@
     "make-dir-cli": "^2.0.0",
     "mustache": "^3.0.1",
     "npm-run-all": "^4.1.5",
-    "pug": "^2.0.3"
+    "pug": "^2.0.3",
+    "to-ico": "^1.1.5"
   },
   "devDependencies": {
     "husky": "^2.3.0",
