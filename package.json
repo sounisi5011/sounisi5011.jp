@@ -18,6 +18,7 @@
     "build:images:qiita-logo:copy": "cpy ./cache/qiita/png/qiita-favicon.png ./public/images/ --rename=icon-qiita.png",
     "build:images:qiita-logo:download": "download --extract --strip 1 --out ./cache/qiita/ https://help.qiita.com/images/qiita.zip",
     "build:pages": "./scripts/pug.js ./src/pages/index.pug ./public/",
+    "build:redirects": "./scripts/generate-redirects.js ./src/_redirects.mustache ./public/",
     "build:styles": "lessc --source-map ./src/styles/root.less ./public/root.css",
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",
