@@ -1,6 +1,6 @@
 {
   "name": "sounisi5011.jp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "sounisi5011.jp's root page",
   "repository": "git@github.com:sounisi5011/sounisi5011.jp.git",
@@ -20,6 +20,7 @@
     "build:pages": "./scripts/pug.js ./src/pages/index.pug ./public/",
     "build:redirects": "./scripts/generate-redirects.js ./src/_redirects.mustache ./public/",
     "build:styles": "lessc --source-map ./src/styles/root.less ./public/root.css",
+    "build:top-icon": "cpy ./src/images/my-symbol.svg ./public/images/",
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",
     "clean:public": "del ./public/",
