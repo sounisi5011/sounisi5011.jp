@@ -1,0 +1,37 @@
+meta(property="og:title" content=(ogpTitle ? ogpTitle : titleText))
+meta(property="og:description" content=(ogpDescription ? ogpDescription : descriptionText))
+meta(property="og:type" content=ogpType)
+meta(property="og:url" content=`${canonicalURL}`)
+each imageData in ogpImageList
+  if imageData
+    meta(property="og:image" content=(typeof imageData === 'object' ? imageData.url : imageData))
+    if imageData.type
+      meta(property="og:image:type" content=imageData.type)
+    if imageData.width
+      meta(property="og:image:width" content=imageData.width)
+    if imageData.height
+      meta(property="og:image:height" content=imageData.height)
+    if imageData.alt
+      meta(property="og:image:alt" content=imageData.alt)
+if ogpLocale
+  meta(property="og:locale" content=ogpLocale)
+if ogpSiteName && ogpSiteName !== (ogpTitle ? ogpTitle : titleText)
+  meta(property="og:site_name" content=ogpSiteName)
+if twitterCardType && twitterCardType !== 'summary'
+  meta(name="twitter:card" content=twitterCardType)
+if twitterCardServiceProviderList
+  each twitterScreenName in twitterCardServiceProviderList
+    meta(name="twitter:site" content=`@${twitterScreenName}`)
+if twitterCardContentsCreatorList
+  each twitterScreenName in twitterCardContentsCreatorList
+    meta(name="twitter:creator" content=`@${twitterScreenName}`)
+if twitterCardDescription
+  meta(name="twitter:description" content=twitterCardDescription)
+if twitterCardTitle
+  meta(name="twitter:title" content=twitterCardTitle)
+if twitterCardImageList
+  each imageData in twitterCardImageList
+    if imageData
+      meta(name="twitter:image" content=(typeof imageData === 'object' ? imageData.url : imageData))
+      if imageData.alt
+        meta(name="twitter:image:alt" content=imageData.alt)
