@@ -18,6 +18,8 @@ html(lang="ja")
     title= titleText
     meta(name="description" content=descriptionText)
     link(rel="canonical" content=`${canonicalURL}`)
+    link(rel="preload" href="/root.css" as="style")
+    link(rel="preload" href="/images/my-symbol.svg" as="image")
     include _head/ogp
     link(rel="stylesheet" href="/root.css")
   body
