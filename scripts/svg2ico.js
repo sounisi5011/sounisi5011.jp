@@ -25,6 +25,7 @@ async function main() {
         baseFile: sourceFileFullpath,
         height: size,
         width: size,
+        puppeteer: { args: ['--allow-file-access-from-files'] },
       }),
     ),
   );

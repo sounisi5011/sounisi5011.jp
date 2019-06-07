@@ -20,7 +20,7 @@
     "build:qiita-logo:download": "download --extract --strip 1 --out ./cache/qiita/ https://help.qiita.com/images/qiita.zip",
     "build:redirects": "./scripts/generate-redirects.js ./src/_redirects.mustache ./public/",
     "build:styles": "lessc --source-map ./src/styles/root.less ./public/root.css",
-    "build:top-icon": "cpy ./src/images/my-symbol.svg ./public/images/",
+    "build:top-icon": "svgo ./src/images/my-symbol.svg -o ./public/images/my-symbol.svg",
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",
     "clean:public": "del ./public/",
@@ -59,6 +59,7 @@
     "mustache": "^3.0.1",
     "npm-run-all": "^4.1.5",
     "pug": "^2.0.3",
+    "svgo": "^1.2.2",
     "to-ico": "^1.1.5"
   },
   "devDependencies": {
