@@ -13,10 +13,14 @@ async function startServer(filepath) {
     port: await getPort(),
   });
 
-  return {
-    server,
-    baseUrl: `http://localhost:${server.port}/${urlPath}`,
-  };
+  return new Promise(resolve => {
+    server.start(() => {
+      resolve({
+        server,
+        baseUrl: `http://localhost:${server.port}/${urlPath}`,
+      });
+    });
+  });
 }
 
 exports.convert = async (data, options) => {
