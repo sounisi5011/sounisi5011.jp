@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { convertFile } = require('convert-svg-to-png');
+const { convertFile } = require('./util/svg-to-png');
 const makeDir = require('make-dir');
 const path = require('path');
 
@@ -10,9 +10,7 @@ async function main() {
 
   await makeDir(path.dirname(destFileFullpath));
 
-  await convertFile(sourceFileFullpath, {
-    outputFilePath: destFileFullpath,
-  });
+  await convertFile(sourceFileFullpath, destFileFullpath);
 }
 
 (async () => {
