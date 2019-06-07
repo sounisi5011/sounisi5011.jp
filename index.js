@@ -18,6 +18,18 @@ Metalsmith(__dirname)
   .clean(false)
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
+    const rootURL = metadata.url;
+
+    Object.entries(files).forEach(([filepath, filedata]) => {
+      filedata.rootURL = rootURL;
+      filedata.canonicalURL =
+        rootURL.replace(/\/*$/, '') + filepath.replace(/^\/*/, '/');
+    });
+
+    done();
+  })
+  .use((files, metalsmith, done) => {
+    const metadata = metalsmith.metadata();
     const metadataPreloadList = Array.isArray(metadata.preloadList)
       ? metadata.preloadList
       : [];
