@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const makeDir = require('make-dir');
+const mime = require('mime');
 const path = require('path');
 const pug = require('pug');
 const util = require('util');
@@ -16,7 +17,7 @@ async function main() {
     path.basename(sourceFileFullpath, '.pug') + '.html',
   );
   const env = process.env;
-  const options = { env, cache: true };
+  const options = { env, mime, cache: true };
 
   options.rootURL =
     (env.CONTEXT === 'production' ? env.URL : env.DEPLOY_URL) || '';
