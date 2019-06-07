@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { convert } = require('./util/svg-to-png');
+const { convert } = require('convert-svg-to-png');
 const fs = require('fs');
 const makeDir = require('make-dir');
 const path = require('path');
