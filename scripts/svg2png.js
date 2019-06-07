@@ -12,6 +12,7 @@ async function main() {
 
   await convertFile(sourceFileFullpath, {
     outputFilePath: destFileFullpath,
+    puppeteer: { args: ['--allow-file-access-from-files'] },
   });
 }
 
