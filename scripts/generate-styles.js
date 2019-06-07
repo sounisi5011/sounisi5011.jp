@@ -34,6 +34,8 @@ async function genLess(sourceFilepath, destFilepath) {
   const lessText = await fsReadFile(sourceFilepath, 'utf8');
   const { css: cssText, map: mapText } = await less.render(lessText, options);
 
+  await makeDir(path.dirname(destFilepath));
+
   await Promise.all([
     fsWriteFile(destFilepath, cssText),
     fsWriteFile(destMapFilepath, mapText),
@@ -43,8 +45,6 @@ async function genLess(sourceFilepath, destFilepath) {
 async function main() {
   const sourceDirFullpath = path.resolve(process.argv[2]);
   const destDirFullpath = path.resolve(process.argv[3]);
-
-  await makeDir(destDirFullpath);
 
   const fileList = await recursive(sourceDirFullpath, ['_*']);
 
