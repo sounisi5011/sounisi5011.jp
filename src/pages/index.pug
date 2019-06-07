@@ -10,6 +10,7 @@
     },
   ];
   const preloadList = [
+    '/default.css',
     '/root.css',
     '/images/my-symbol.svg',
     '/images/icon-pixiv.png',
@@ -28,6 +29,7 @@ html(lang="ja")
     link(rel="canonical" href=`${canonicalURL}`)
     include _head/preload
     include _head/ogp
+    link(rel="stylesheet" href="/default.css")
     link(rel="stylesheet" href="/root.css")
   body
     div.main-icon
