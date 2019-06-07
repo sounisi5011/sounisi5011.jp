@@ -59,7 +59,7 @@ Metalsmith(__dirname)
       setFilename: true,
     }),
   )
-  .use(ignore(['_*/**', '**/_*', '**/_*/**']))
+  .use(ignore(['**/*.pug']))
   .build(function(err, files) {
     if (err) {
       throw err;
