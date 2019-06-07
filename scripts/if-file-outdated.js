@@ -52,10 +52,12 @@ async function main() {
     return;
   }
 
+  const commandText = [command, ...commandArgs].join(' ');
   const freshSec = toFreshSec(freshTime);
   const stats = await getStats(targetFile);
 
   if (isOutdated(stats, freshSec)) {
+    console.log(`$ ${commandText}`);
     return new Promise(resolve => {
       const child = spawn(command, commandArgs, { stdio: 'inherit' });
       child.on('close', exitCode => {
@@ -64,6 +66,8 @@ async function main() {
       });
     });
   }
+
+  console.log(`$ # ${commandText}`);
 }
 
 (async () => {
