@@ -2,5 +2,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
      viewBox="0 0 100 100">
   <circle id="background" fill="white" cx="50%" cy="50%" r="50%"/>
-  <image xlink:href="my-symbol.svg" width="100%" height="100%"/>
+  <use xlink:href="my-symbol.svg#symbol" fill="black"/>
 </svg>
