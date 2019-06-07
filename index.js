@@ -1,4 +1,6 @@
 const Metalsmith = require('metalsmith');
+const ignore = require('metalsmith-ignore');
+const inplace = require('metalsmith-in-place');
 
 Metalsmith(__dirname)
   .metadata({
@@ -13,6 +15,13 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use(
+    inplace({
+      pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],
+      setFilename: true,
+    }),
+  )
+  .use(ignore(['_*/**', '**/_*', '**/_*/**']))
   .build(function(err, files) {
     if (err) {
       throw err;
