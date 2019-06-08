@@ -3072,6 +3072,13 @@ metalsmith-in-place@^4.4.0:
     jstransformer-pug "^0.3.0"
     multimatch "^3.0.0"
 
+metalsmith-plugin-kit@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/metalsmith-plugin-kit/-/metalsmith-plugin-kit-1.0.1.tgz#af74b0e073bf0731e773bc42d187cdd6c2a16590"
+  integrity sha512-Ll1bcCvWyYmWyiz10StS5X1jIGPclqkfvgf6ke80Mqctx7uStkESV42uiBNAiHjKRwEzIFZXh52jyfByPL25xQ==
+  dependencies:
+    micromatch "^3.0.3"
+
 metalsmith@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/metalsmith/-/metalsmith-2.3.0.tgz#833afbb5a2a6385e2d9ae3d935e39e33eaea5231"
@@ -3094,7 +3101,7 @@ metalsmith@^2.3.0:
     ware "^1.2.0"
     win-fork "^1.1.1"
 
-micromatch@^3.1.10, micromatch@^3.1.8:
+micromatch@^3.0.3, micromatch@^3.1.10, micromatch@^3.1.8:
   version "3.1.10"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-3.1.10.tgz#70859bc95c9840952f359a068a3fc49f9ecfac23"
   integrity sha512-MWikgl9n9M3w+bpsY3He8L+w9eF9338xRl8IAO5viDizwSzziFEyUzo2xrrloB64ADbTf8uA8vRqqttDTOmccg==
