@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const spawn = require('cross-spawn');
 const path = require('path');
 const util = require('util');
+const spawn = require('cross-spawn');
 
 const [fsStat] = [fs.stat].map(util.promisify);
 
