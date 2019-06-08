@@ -55,6 +55,7 @@
     "cross-spawn": "^6.0.5",
     "del-cli": "^2.0.0",
     "download-cli": "^1.1.1",
+    "jstransformer-less": "^2.3.0",
     "less": "^3.9.0",
     "make-dir-cli": "^2.0.0",
     "metalsmith": "^2.3.0",
