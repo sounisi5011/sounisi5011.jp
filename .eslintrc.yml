@@ -5,6 +5,8 @@ extends:
   - eslint:recommended
   - standard
   - plugin:prettier/recommended
+plugins:
+  - sort-requires-by-path
 parserOptions:
   ecmaVersion: 2018
 rules:
@@ -15,3 +17,4 @@ rules:
     - error
     - newlines-between: always
   prettier/prettier: error
+  sort-requires-by-path/sort-requires-by-path: error
