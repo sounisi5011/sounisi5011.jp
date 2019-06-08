@@ -3,6 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
+
 const { convert } = require('convert-svg-to-png');
 const makeDir = require('make-dir');
 const toIco = require('to-ico');
