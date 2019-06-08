@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
-const { convert } = require('convert-svg-to-png');
 const fs = require('fs');
-const makeDir = require('make-dir');
 const path = require('path');
-const toIco = require('to-ico');
 const util = require('util');
+
+const { convert } = require('convert-svg-to-png');
+const makeDir = require('make-dir');
+const toIco = require('to-ico');
 
 const ICO_IMAGE_SIZES = [16, 24, 32, 48, 64, 128, 256];
 const [fsReadFile, fsWriteFile] = [fs.readFile, fs.writeFile].map(
@@ -24,8 +25,8 @@ async function main() {
       convert(svgData, {
         baseFile: sourceFileFullpath,
         height: size,
-        width: size,
         puppeteer: { args: ['--allow-file-access-from-files'] },
+        width: size,
       }),
     ),
   );

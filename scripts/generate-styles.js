@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
+const path = require('path');
+const util = require('util');
+
 const less = require('less');
 const makeDir = require('make-dir');
-const path = require('path');
 const recursive = require('recursive-readdir');
-const util = require('util');
 
 const [fsReadFile, fsWriteFile] = [fs.readFile, fs.writeFile].map(
   util.promisify,
@@ -19,11 +20,11 @@ async function genLess(sourceFilepath, destFilepath) {
     filename: sourceFilepath,
     paths: [sourceDirpath],
     sourceMap: {
+      sourceMapBasepath: sourceDirpath,
+      sourceMapFilename: path.basename(destMapFilepath),
+      sourceMapFullFilename: destMapFilepath,
       sourceMapInputFilename: sourceFilepath,
       sourceMapOutputFilename: path.basename(destFilepath),
-      sourceMapFullFilename: destMapFilepath,
-      sourceMapFilename: path.basename(destMapFilepath),
-      sourceMapBasepath: sourceDirpath,
       sourceMapRootpath: path.relative(
         path.dirname(destMapFilepath),
         sourceDirpath,

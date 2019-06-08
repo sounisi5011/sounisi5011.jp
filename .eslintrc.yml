@@ -5,8 +5,16 @@ extends:
   - eslint:recommended
   - standard
   - plugin:prettier/recommended
+plugins:
+  - sort-requires-by-path
 parserOptions:
   ecmaVersion: 2018
 rules:
-  prettier/prettier: error
   no-console: off
+  sort-imports: error
+  sort-keys: error
+  import/order:
+    - error
+    - newlines-between: always
+  prettier/prettier: error
+  sort-requires-by-path/sort-requires-by-path: error

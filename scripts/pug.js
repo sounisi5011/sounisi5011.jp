@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
+const path = require('path');
+const util = require('util');
+
 const makeDir = require('make-dir');
 const mime = require('mime');
-const path = require('path');
 const pug = require('pug');
-const util = require('util');
 
 const [fsWriteFile] = [fs.writeFile].map(util.promisify);
 
@@ -17,7 +18,7 @@ async function main() {
     path.basename(sourceFileFullpath, '.pug') + '.html',
   );
   const env = process.env;
-  const options = { env, mime, cache: true };
+  const options = { cache: true, env, mime };
 
   options.rootURL =
     (env.CONTEXT === 'production' ? env.URL : env.DEPLOY_URL) || '';

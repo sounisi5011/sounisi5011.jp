@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 const fs = require('fs');
-const makeDir = require('make-dir');
-const Mustache = require('mustache');
 const path = require('path');
 const util = require('util');
+
+const makeDir = require('make-dir');
+const Mustache = require('mustache');
 
 const [fsReadFile, fsWriteFile] = [fs.readFile, fs.writeFile].map(
   util.promisify,
