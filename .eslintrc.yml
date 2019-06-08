@@ -10,3 +10,4 @@ parserOptions:
 rules:
   prettier/prettier: error
   no-console: off
+  import/order: error
