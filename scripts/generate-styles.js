@@ -19,11 +19,11 @@ async function genLess(sourceFilepath, destFilepath) {
     filename: sourceFilepath,
     paths: [sourceDirpath],
     sourceMap: {
+      sourceMapBasepath: sourceDirpath,
+      sourceMapFilename: path.basename(destMapFilepath),
+      sourceMapFullFilename: destMapFilepath,
       sourceMapInputFilename: sourceFilepath,
       sourceMapOutputFilename: path.basename(destFilepath),
-      sourceMapFullFilename: destMapFilepath,
-      sourceMapFilename: path.basename(destMapFilepath),
-      sourceMapBasepath: sourceDirpath,
       sourceMapRootpath: path.relative(
         path.dirname(destMapFilepath),
         sourceDirpath,

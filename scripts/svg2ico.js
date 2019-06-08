@@ -24,8 +24,8 @@ async function main() {
       convert(svgData, {
         baseFile: sourceFileFullpath,
         height: size,
-        width: size,
         puppeteer: { args: ['--allow-file-access-from-files'] },
+        width: size,
       }),
     ),
   );

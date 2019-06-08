@@ -17,7 +17,7 @@ async function main() {
     path.basename(sourceFileFullpath, '.pug') + '.html',
   );
   const env = process.env;
-  const options = { env, mime, cache: true };
+  const options = { cache: true, env, mime };
 
   options.rootURL =
     (env.CONTEXT === 'production' ? env.URL : env.DEPLOY_URL) || '';
