@@ -1334,6 +1334,11 @@ eslint-plugin-promise@^4.1.1:
   resolved "https://registry.yarnpkg.com/eslint-plugin-promise/-/eslint-plugin-promise-4.1.1.tgz#1e08cb68b5b2cd8839f8d5864c796f56d82746db"
   integrity sha512-faAHw7uzlNPy7b45J1guyjazw28M+7gJokKUjC5JSFoYfUEyy6Gw/i7YQvmv2Yk00sUjWcmzXQLpU1Ki/C2IZQ==
 
+eslint-plugin-sort-requires-by-path@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-sort-requires-by-path/-/eslint-plugin-sort-requires-by-path-1.0.2.tgz#1491bafa546e77478eda4b9697098c907762f954"
+  integrity sha512-xTjiwPeanMwgGtkfGfBlO9MDvog7u+oxrR0NPnBydfjUKHSVkRTLPz0QA2boKCuYiIRBr9OERQLvInaeJYCngg==
+
 eslint-plugin-standard@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/eslint-plugin-standard/-/eslint-plugin-standard-4.0.0.tgz#f845b45109c99cd90e77796940a344546c8f6b5c"
