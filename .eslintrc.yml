@@ -8,10 +8,10 @@ extends:
 parserOptions:
   ecmaVersion: 2018
 rules:
-  prettier/prettier: error
   no-console: off
+  sort-imports: error
+  sort-keys: error
   import/order:
     - error
     - newlines-between: always
-  sort-keys: error
-  sort-imports: error
+  prettier/prettier: error
