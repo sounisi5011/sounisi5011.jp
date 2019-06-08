@@ -1,4 +1,5 @@
 const Metalsmith = require('metalsmith');
+const assets = require('metalsmith-assets-convention');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
 const mime = require('mime');
@@ -20,6 +21,7 @@ Metalsmith(__dirname)
   .destination('./public')
   .clean(false)
   .use(netlifyMetadata())
+  .use(assets())
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
     const rootURL = metadata.url;
