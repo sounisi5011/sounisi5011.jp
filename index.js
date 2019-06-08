@@ -4,6 +4,7 @@ const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
 const mime = require('mime');
 
+const less = require('./src/plugins/less');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 
@@ -78,6 +79,8 @@ Metalsmith(__dirname)
     });
     done();
   })
+  .use(less())
+  .use(ignore(['**/*.less']))
   .use(
     inplace({
       pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],
