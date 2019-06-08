@@ -3,6 +3,8 @@ const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
 const mime = require('mime');
 
+const mustache = require('./src/plugins/mustache');
+
 Metalsmith(__dirname)
   .metadata({
     title: 'sounisi5011.jp',
@@ -78,12 +80,7 @@ Metalsmith(__dirname)
       setFilename: true,
     }),
   )
-  .use(
-    inplace({
-      pattern: ['**/*.mustache'],
-      setFilename: true,
-    }),
-  )
+  .use(mustache())
   .use(ignore(['**/*.pug']))
   .build(function(err, files) {
     if (err) {
