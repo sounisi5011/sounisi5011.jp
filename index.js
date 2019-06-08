@@ -2,6 +2,7 @@ const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
+const rename = require('metalsmith-rename');
 const mime = require('mime');
 
 const less = require('./src/plugins/less');
@@ -88,6 +89,7 @@ Metalsmith(__dirname)
   )
   .use(mustache())
   .use(ignore(['**/*.pug']))
+  .use(rename([[/^styles\//, '']]))
   .build(function(err, files) {
     if (err) {
       throw err;
