@@ -78,6 +78,12 @@ Metalsmith(__dirname)
       setFilename: true,
     }),
   )
+  .use(
+    inplace({
+      pattern: ['**/*.mustache'],
+      setFilename: true,
+    }),
+  )
   .use(ignore(['**/*.pug']))
   .build(function(err, files) {
     if (err) {
