@@ -10,5 +10,7 @@ parserOptions:
 rules:
   prettier/prettier: error
   no-console: off
-  import/order: error
+  import/order:
+    - error
+    - newlines-between: always
   sort-keys: error
