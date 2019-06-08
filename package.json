@@ -25,7 +25,8 @@
     "clean:cache": "del ./cache/",
     "clean:public": "del ./public/",
     "lint": "eslint ./",
-    "show-envs": "./scripts/show-envs.js"
+    "show-envs": "./scripts/show-envs.js",
+    "test": "run-p lint"
   },
   "husky": {
     "hooks": {
