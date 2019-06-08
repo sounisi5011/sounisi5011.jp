@@ -51,7 +51,7 @@ module.exports = opts => {
               sourceMapFilename: path.basename(sourcemapFullname),
               sourceMapFullFilename: sourcemapFullname,
               sourceMapInputFilename: sourceFilepath,
-              sourceMapOutputFilename: path.basename(sourcemapFullname),
+              sourceMapOutputFilename: path.basename(convertedFilename),
               sourceMapRootpath: path.relative(
                 path.dirname(sourcemapFullname),
                 sourceDirpath,
