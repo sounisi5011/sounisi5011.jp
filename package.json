@@ -58,6 +58,7 @@
     "less": "^3.9.0",
     "make-dir-cli": "^2.0.0",
     "metalsmith": "^2.3.0",
+    "metalsmith-assets-convention": "^2.1.1",
     "metalsmith-ignore": "^1.0.0",
     "metalsmith-in-place": "^4.4.0",
     "metalsmith-plugin-kit": "^1.0.1",
