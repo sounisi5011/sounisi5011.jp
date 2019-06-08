@@ -5,6 +5,8 @@ extends:
   - eslint:recommended
   - standard
   - plugin:prettier/recommended
+plugins:
+  - import-order-autofix
 parserOptions:
   ecmaVersion: 2018
 rules:
