@@ -4,12 +4,13 @@ const inplace = require('metalsmith-in-place');
 const mime = require('mime');
 
 const mustache = require('./src/plugins/mustache');
+const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 
 Metalsmith(__dirname)
   .metadata({
-    title: 'sounisi5011.jp',
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
+    title: 'sounisi5011.jp',
     url:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
@@ -18,6 +19,7 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use(netlifyMetadata())
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
     const rootURL = metadata.url;
