@@ -80,7 +80,6 @@ Metalsmith(__dirname)
     done();
   })
   .use(less())
-  .use(ignore(['**/*.less']))
   .use(
     inplace({
       pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],
