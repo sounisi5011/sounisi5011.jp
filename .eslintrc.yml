@@ -14,3 +14,4 @@ rules:
     - error
     - newlines-between: always
   sort-keys: error
+  sort-imports: error
