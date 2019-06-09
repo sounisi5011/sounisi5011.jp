@@ -3,12 +3,12 @@ const assets = require('metalsmith-assets-convention');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
 const rename = require('metalsmith-rename');
-const mime = require('mime');
 
 const anotherSource = require('./src/plugins/another-source');
 const less = require('./src/plugins/less');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
+const preloadList = require('./src/plugins/preload-list');
 
 Metalsmith(__dirname)
   .metadata({
@@ -44,43 +44,7 @@ Metalsmith(__dirname)
 
     done();
   })
-  .use((files, metalsmith, done) => {
-    const metadata = metalsmith.metadata();
-    const metadataPreloadList = Array.isArray(metadata.preloadList)
-      ? metadata.preloadList
-      : [];
-
-    Object.values(files).forEach(file => {
-      const preloadList = Array.isArray(file.preloadList)
-        ? file.preloadList
-        : [];
-      file.preloadList = metadataPreloadList.concat(preloadList).map(data => {
-        const resourceData =
-          typeof data === 'object' ? data : { url: String(data) };
-
-        if (!resourceData.type) {
-          resourceData.type = mime.getType(resourceData.url);
-        }
-
-        if (!resourceData.as) {
-          const resourceMIME = resourceData.type;
-          resourceData.as =
-            resourceMIME === 'text/css'
-              ? 'style'
-              : resourceMIME === 'application/javascript'
-              ? 'script'
-              : /^image\//.test(resourceMIME)
-              ? 'image'
-              : /^font\//.test(resourceMIME)
-              ? 'font'
-              : 'unknown';
-        }
-
-        return resourceData;
-      });
-    });
-    done();
-  })
+  .use(preloadList())
   .use(
     anotherSource('./src/styles')
       .ignore('_*')
