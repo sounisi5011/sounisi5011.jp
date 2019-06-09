@@ -8,6 +8,7 @@ const anotherSource = require('./src/plugins/another-source');
 const less = require('./src/plugins/less');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
+const pageURLData = require('./src/plugins/page-url-data');
 const preloadList = require('./src/plugins/preload-list');
 
 Metalsmith(__dirname)
@@ -25,25 +26,7 @@ Metalsmith(__dirname)
   .clean(false)
   .use(netlifyMetadata())
   .use(assets())
-  .use((files, metalsmith, done) => {
-    const metadata = metalsmith.metadata();
-    const rootURL = metadata.url;
-
-    Object.entries(files)
-      .map(([filepath, filedata]) => [
-        filepath
-          .replace(/\.pug$/, '.html')
-          .replace(/(?:^|\/)index\.html?$/, ''),
-        filedata,
-      ])
-      .forEach(([filepath, filedata]) => {
-        filedata.rootURL = rootURL;
-        filedata.canonicalURL =
-          rootURL.replace(/\/*$/, '') + filepath.replace(/^\/*/, '/');
-      });
-
-    done();
-  })
+  .use(pageURLData())
   .use(preloadList())
   .use(
     anotherSource('./src/styles')
