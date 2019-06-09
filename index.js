@@ -19,7 +19,7 @@ Metalsmith(__dirname)
   .metadata({
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
-    pageStyles: ['/default.css'],
+    globalPageStyles: ['/default.css'],
     title: 'sounisi5011.jp',
     url:
       (process.env.CONTEXT === 'production'
