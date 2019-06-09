@@ -10,6 +10,7 @@ const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 const pageURLData = require('./src/plugins/page-url-data');
 const preloadList = require('./src/plugins/preload-list');
+const svg2png = require('./src/plugins/svg-to-png');
 
 Metalsmith(__dirname)
   .metadata({
@@ -28,6 +29,7 @@ Metalsmith(__dirname)
   .use(assets())
   .use(pageURLData())
   .use(preloadList())
+  .use(svg2png())
   .use(
     anotherSource('./src/styles')
       .ignore('_*')
