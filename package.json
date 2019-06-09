@@ -54,6 +54,7 @@
     "cpy-cli": "^2.0.0",
     "cross-spawn": "^6.0.5",
     "del-cli": "^2.0.0",
+    "download": "^7.1.0",
     "download-cli": "^1.1.1",
     "less": "^3.9.0",
     "make-dir-cli": "^2.0.0",
