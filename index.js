@@ -12,6 +12,7 @@ const pageURLData = require('./src/plugins/page-url-data');
 const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
+const svgo = require('./src/plugins/svgo');
 
 Metalsmith(__dirname)
   .metadata({
@@ -45,6 +46,7 @@ Metalsmith(__dirname)
   )
   .use(mustache())
   .use(ignore(['**/*.pug']))
+  .use(svgo())
   .use(rename([[/^styles\//, '']]))
   .build(function(err, files) {
     if (err) {
