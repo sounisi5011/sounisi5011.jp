@@ -56,22 +56,12 @@ html(lang="ja")
       span.bunsetsu ここには創作を投稿していくつもり。
     hr
     ul.social-links
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=4676860944" target="_blank" title="Twitter @sounisi5011")
-          span.service-name Twitter: 
-          | @sounisi5011
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=4676837791" target="_blank" title="Twitter @sounisi5011Prog")
-          span.service-name Twitter: 
-          | @sounisi5011Prog
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=4676885804" target="_blank" title="Twitter @sounisi5011Vore")
-          span.service-name Twitter: 
-          | @sounisi5011Vore
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=768680194244612096" target="_blank" title="Twitter @sounisi5011R18G")
-          span.service-name Twitter: 
-          | @sounisi5011R18G
+      each socialLink in socialLinkList
+        if socialLink.type === 'twitter'
+          li.twitter
+            a(href=socialLink.url target="_blank" title=`Twitter @${socialLink.screenName}`)
+              span.service-name Twitter: 
+              = `@${socialLink.screenName}`
       li.github
         a(href="https://github.com/sounisi5011" target="_blank" title="GitHub")
           span.service-name GitHub: 
