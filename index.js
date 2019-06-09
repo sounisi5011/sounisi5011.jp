@@ -2,7 +2,6 @@ const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
-const rename = require('metalsmith-rename');
 
 const anotherSource = require('./src/plugins/another-source');
 const copy = require('./src/plugins/copy-convention');
@@ -51,7 +50,6 @@ Metalsmith(__dirname)
   .use(mustache())
   .use(ignore(['**/*.pug']))
   .use(svgo())
-  .use(rename([[/^styles\//, '']]))
   .build(function(err, files) {
     if (err) {
       throw err;
