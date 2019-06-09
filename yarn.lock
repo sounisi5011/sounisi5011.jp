@@ -3019,11 +3019,6 @@ metalsmith-plugin-kit@^1.0.1:
   dependencies:
     micromatch "^3.0.3"
 
-metalsmith-rename@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/metalsmith-rename/-/metalsmith-rename-1.0.0.tgz#938e12dde5eb2cdd6e9da6d53070e9485093ac88"
-  integrity sha1-k44S3eXrLN1unabVMHDpSFCTrIg=
-
 metalsmith@^2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/metalsmith/-/metalsmith-2.3.0.tgz#833afbb5a2a6385e2d9ae3d935e39e33eaea5231"
