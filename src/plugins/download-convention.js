@@ -2,6 +2,7 @@ const path = require('path');
 
 const download = require('download');
 const isUrl = require('is-url');
+const KeyvFile = require('keyv-file');
 const pluginKit = require('metalsmith-plugin-kit');
 
 function isValidPath(filepath) {
@@ -106,10 +107,17 @@ function processSingleFile({
 
 module.exports = opts => {
   const options = {
+    cacheFilename: path.join(
+      process.cwd(),
+      './cache/metalsmith-download-convention/keyv-file.json',
+    ),
     override: false,
     pattern: ['**/*.download'],
     ...opts,
   };
+  const store = new KeyvFile({
+    filename: options.cacheFilename,
+  });
 
   return pluginKit.middleware({
     each: async (filename, file, files, metalsmith) => {
@@ -121,6 +129,7 @@ module.exports = opts => {
       const extractMode = Array.isArray(destination);
       const newFiles = {};
       const rawData = await download(sourceURL, {
+        cache: store,
         extract: extractMode,
       });
 
