@@ -7,11 +7,11 @@
   "license": "UNLICENSED",
   "author": "sounisi5011",
   "scripts": {
-    "build": "npm-run-all show-envs clean:public --parallel build:*",
+    "build": "npm-run-all show-envs clean:public --parallel build:pages",
     "build:favicon": "./scripts/svg2ico.js ./src/images/favicon.svg ./public/favicon.ico",
     "build:fontawesome": "cpy ./node_modules/@fortawesome/fontawesome-free/webfonts/ ./public/fontawesome/",
     "build:ogp-images": "./scripts/svg2png.js ./src/images/ogp.square.svg ./public/images/ogp.png",
-    "build:pages": "./scripts/pug.js ./src/pages/index.pug ./public/",
+    "build:pages": "node ./index.js",
     "build:pixiv-logo": "run-s build:pixiv-logo:download build:pixiv-logo:copy",
     "build:pixiv-logo:copy": "cpy ./cache/pixiv/icon/logo_icon_r.png ./public/images/ --rename=icon-pixiv.png",
     "build:pixiv-logo:download": "./scripts/if-file-outdated.js ./cache/pixiv/ 1h download --extract --strip 1 --out ./cache/pixiv/ https://s.pximg.net/www/images/terms/logo_pixiv_20181115.zip",
