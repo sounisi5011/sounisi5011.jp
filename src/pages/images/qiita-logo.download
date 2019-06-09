@@ -1,0 +1,6 @@
+---
+sourceURL: https://help.qiita.com/images/qiita.zip
+destination:
+  - source: Qiita/png/qiita-favicon.png
+    destination: ./icon-qiita.png
+---
