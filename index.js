@@ -10,6 +10,7 @@ const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 const pageURLData = require('./src/plugins/page-url-data');
 const preloadList = require('./src/plugins/preload-list');
+const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 
 Metalsmith(__dirname)
@@ -30,6 +31,7 @@ Metalsmith(__dirname)
   .use(pageURLData())
   .use(preloadList())
   .use(svg2png())
+  .use(svg2ico())
   .use(
     anotherSource('./src/styles')
       .ignore('_*')
