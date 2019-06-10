@@ -79,7 +79,8 @@ Metalsmith(__dirname)
         }),
       )
       .use(less())
-      .use(mergePreloadDependencies()),
+      .use(mergePreloadDependencies())
+      .use(ignore('**/*.less')),
   )
   .use(
     inplace({
