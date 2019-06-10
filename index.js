@@ -2,6 +2,7 @@ const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
+const metafiles = require('metalsmith-metafiles');
 
 const anotherSource = require('./src/plugins/another-source');
 const copy = require('./src/plugins/copy-convention');
@@ -40,6 +41,12 @@ Metalsmith(__dirname)
   .use(
     anotherSource('./src/styles')
       .ignore('_*')
+      .use(
+        metafiles({
+          '.yaml': true,
+          '.yml': true,
+        }),
+      )
       .use(less()),
   )
   .use(
