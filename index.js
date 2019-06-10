@@ -70,7 +70,6 @@ Metalsmith(__dirname)
   .use(svg2ico())
   .use(
     anotherSource('./src/styles')
-      .ignore('_*')
       .use(
         metafiles({
           parsers: {
