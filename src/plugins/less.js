@@ -27,6 +27,7 @@ module.exports = opts => {
   const ignoreMatchList = patternList
     .filter(pattern => /^!/.test(pattern))
     .map(pattern => pattern.replace(/^!/, ''));
+  const ignoreMatcher = pluginKit.filenameMatcher(ignoreMatchList);
 
   const deleteFileSet = new Set();
 
@@ -46,7 +47,8 @@ module.exports = opts => {
 
       if (
         filename !== convertedFilename &&
-        !files.hasOwnProperty(convertedFilename)
+        !files.hasOwnProperty(convertedFilename) &&
+        !ignoreMatcher(filename)
       ) {
         const sourceDirpath = path.dirname(sourceFilepath);
         const lessOptions = {
@@ -99,8 +101,5 @@ module.exports = opts => {
       }
     },
     match: matchList,
-    matchOptions: {
-      ignore: ignoreMatchList,
-    },
   });
 };
