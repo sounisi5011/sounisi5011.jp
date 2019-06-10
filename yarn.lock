@@ -728,13 +728,6 @@ code-point-at@^1.0.0:
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
   integrity sha1-DQcLTQQ6W+ozovGkDi7bPZpMz3c=
 
-codependency@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/codependency/-/codependency-0.1.4.tgz#d1763ab7264bd70c91d9626e98862d3792bf8d4a"
-  integrity sha1-0XY6tyZL1wyR2WJumIYtN5K/jUo=
-  dependencies:
-    semver "5.0.1"
-
 coffee-script@^1.12.4:
   version "1.12.7"
   resolved "https://registry.yarnpkg.com/coffee-script/-/coffee-script-1.12.7.tgz#c05dae0cb79591d05b3070a8433a98c9a89ccc53"
@@ -3024,14 +3017,6 @@ metalsmith-in-place@^4.4.0:
     jstransformer-pug "^0.3.0"
     multimatch "^3.0.0"
 
-metalsmith-metafiles@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/metalsmith-metafiles/-/metalsmith-metafiles-2.0.0.tgz#9f05c6914d2ceb7e77a8d71cc5e4932c5e9f7526"
-  integrity sha1-nwXGkU0s6353qNccxeSTLF6fdSY=
-  dependencies:
-    codependency "^0.1.4"
-    object-assign "^4.0.1"
-
 metalsmith-plugin-kit@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/metalsmith-plugin-kit/-/metalsmith-plugin-kit-1.0.1.tgz#af74b0e073bf0731e773bc42d187cdd6c2a16590"
@@ -4196,11 +4181,6 @@ semver-compare@^1.0.0:
   version "5.7.0"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.7.0.tgz#790a7cf6fea5459bac96110b29b60412dc8ff96b"
   integrity sha512-Ya52jSX2u7QKghxeoFGpLwCtGlt7j0oY9DYb5apt9nPlJ42ID+ulTXESnt/qAQcoSERyZ5sl3LDIOw0nAn/5DA==
-
-semver@5.0.1:
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-5.0.1.tgz#9fb3f4004f900d83c47968fe42f7583e05832cc9"
-  integrity sha1-n7P0AE+QDYPEeWj+QvdYPgWDLMk=
 
 semver@^6.1.0:
   version "6.1.1"
