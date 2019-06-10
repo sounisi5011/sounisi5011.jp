@@ -16,6 +16,36 @@ const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
 
+function mergePreloadDependencies(opts) {
+  const options = {
+    dependenciesKey: 'dependencies',
+    preloadURLsKey: 'preloadDependencies',
+    ...opts,
+  };
+
+  return (files, metalsmith, done) => {
+    for (const file of Object.values(files)) {
+      if (
+        file[options.dependenciesKey] &&
+        (!file[options.preloadURLsKey] ||
+          Array.isArray(file[options.preloadURLsKey]))
+      ) {
+        const newDependencies = Object.values(file[options.dependenciesKey])
+          .filter(
+            dependentFile =>
+              dependentFile &&
+              Array.isArray(dependentFile[options.preloadURLsKey]),
+          )
+          .map(dependentFile => dependentFile[options.preloadURLsKey]);
+        file[options.preloadURLsKey] = (
+          file[options.preloadURLsKey] || []
+        ).concat(...newDependencies);
+      }
+    }
+    done();
+  };
+}
+
 Metalsmith(__dirname)
   .metadata({
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
@@ -49,7 +79,8 @@ Metalsmith(__dirname)
           },
         }),
       )
-      .use(less()),
+      .use(less())
+      .use(mergePreloadDependencies()),
   )
   .use(
     inplace({
