@@ -1,4 +1,6 @@
 ---
+localPageStyles:
+  - /root.css
 ogpType: website
 ogpImageList:
   - url: /images/ogp.png
@@ -12,6 +14,53 @@ preloadList:
   - /images/icon-qiita.png
   # Note: preloadに対応しているブラウザはWOFF2フォントにも対応しているため、他のフォントを指定する必要は無い
   - /fontawesome/fa-brands-400.woff2
+socialLinkList:
+  - type: twitter
+    screenName: sounisi5011
+    id: '4676860944'
+  - type: twitter
+    screenName: sounisi5011Prog
+    id: '4676837791'
+  - type: twitter
+    screenName: sounisi5011Vore
+    id: '4676885804'
+  - type: twitter
+    screenName: sounisi5011R18G
+    id: '768680194244612096'
+  - type: github
+    url: https://github.com/sounisi5011
+    title: GitHub
+    serviceName: 'GitHub: '
+    userName: sounisi5011
+  - type: qiita
+    url: https://qiita.com/sounisi5011
+    title: Qiita
+    serviceName: 'Qiita: '
+    userName: sounisi5011
+  - type: pixiv
+    url: https://www.pixiv.net/member.php?id=3910454
+    title: pixiv
+    serviceName: 'pixiv: '
+    userName: 3910454
+  - type: furaffinity
+    url: https://www.furaffinity.net/user/sounisi5011/
+    title: Fur Affinity
+    serviceName: 'Fur Affinity: '
+    userName: sounisi5011
+  - type: deviantart
+    url: https://www.deviantart.com/sounisi5011
+    title: DeviantArt
+    serviceName: 'DeviantArt: '
+    userName: sounisi5011
+  - type: e621
+    url: https://e621.net/user/show/306135
+    title: e621
+    serviceName: 'e621: '
+    userName: sounisi5011
+  - type: vore-pokemori
+    url: https://vore.pokemori.jp/list/?id=443&mode=show
+    serviceName: なりきりチャット用キャラ名簿：
+    userName: 壱冢想西
 ---
 
 -
@@ -28,8 +77,7 @@ html(lang="ja")
     link(rel="canonical" href=`${canonicalURL}`)
     include _head/preload
     include _head/ogp
-    link(rel="stylesheet" href="/default.css")
-    link(rel="stylesheet" href="/root.css")
+    include _head/stylesheets
   body
     div.main-icon
       img(src="/images/my-symbol.svg" alt="")
@@ -42,47 +90,15 @@ html(lang="ja")
       span.bunsetsu ここには創作を投稿していくつもり。
     hr
     ul.social-links
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=4676860944" target="_blank" title="Twitter @sounisi5011")
-          span.service-name Twitter: 
-          | @sounisi5011
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=4676837791" target="_blank" title="Twitter @sounisi5011Prog")
-          span.service-name Twitter: 
-          | @sounisi5011Prog
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=4676885804" target="_blank" title="Twitter @sounisi5011Vore")
-          span.service-name Twitter: 
-          | @sounisi5011Vore
-      li.twitter
-        a(href="https://twitter.com/intent/user?user_id=768680194244612096" target="_blank" title="Twitter @sounisi5011R18G")
-          span.service-name Twitter: 
-          | @sounisi5011R18G
-      li.github
-        a(href="https://github.com/sounisi5011" target="_blank" title="GitHub")
-          span.service-name GitHub: 
-          | sounisi5011
-      li.qiita
-        a(href="https://qiita.com/sounisi5011" target="_blank" title="Qiita")
-          span.service-name Qiita: 
-          | sounisi5011
-      li.pixiv
-        a(href="https://www.pixiv.net/member.php?id=3910454" target="_blank" title="pixiv")
-          span.service-name pixiv: 
-          | 3910454
-      li.furaffinity
-        a(href="https://www.furaffinity.net/user/sounisi5011/" target="_blank" title="Fur Affinity")
-          span.service-name Fur Affinity: 
-          | sounisi5011
-      li.deviantart
-        a(href="https://www.deviantart.com/sounisi5011" target="_blank" title="DeviantArt")
-          span.service-name DeviantArt: 
-          | sounisi5011
-      li.e621
-        a(href="https://e621.net/user/show/306135" target="_blank" title="e621")
-          span.service-name e621: 
-          | sounisi5011
-      li.vore-pokemori
-        a(href="https://vore.pokemori.jp/list/?id=443&mode=show" target="_blank")
-          span.service-name なりきりチャット用キャラ名簿：
-          | 壱冢想西
+      each socialLink in socialLinkList
+        case socialLink.type
+          when 'twitter'
+            li.twitter
+              a(href=`https://twitter.com/intent/user?user_id=${socialLink.id}` target="_blank" title=`Twitter @${socialLink.screenName}`)
+                span.service-name Twitter: 
+                = `@${socialLink.screenName}`
+          default
+            li(class=socialLink.type)
+              a(href=socialLink.url target="_blank" title=socialLink.title)
+                span.service-name= socialLink.serviceName
+                = socialLink.userName
