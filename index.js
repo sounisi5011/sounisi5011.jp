@@ -43,8 +43,10 @@ Metalsmith(__dirname)
       .ignore('_*')
       .use(
         metafiles({
-          '.yaml': true,
-          '.yml': true,
+          parsers: {
+            '.yaml': true,
+            '.yml': true,
+          },
         }),
       )
       .use(less()),
