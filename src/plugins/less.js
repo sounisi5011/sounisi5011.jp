@@ -31,7 +31,15 @@ module.exports = opts => {
     options.ignoreCompilePattern,
   );
 
+  const deleteFileSet = new Set();
+
   return pluginKit.middleware({
+    after: files => {
+      deleteFileSet.forEach(filename => {
+        delete files[filename];
+      });
+      deleteFileSet.clear();
+    },
     each: async (filename, file, files, metalsmith) => {
       const sourceDirFullpath = getSourceFullpath(metalsmith, '.');
       const sourceFilepath = getSourceFullpath(metalsmith, filename);
@@ -90,7 +98,7 @@ module.exports = opts => {
           }
         }
 
-        delete files[filename];
+        deleteFileSet.add(filename);
       }
     },
     match: matchList,
