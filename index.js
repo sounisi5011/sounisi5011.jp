@@ -2,9 +2,9 @@ const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
-const metafiles = require('metalsmith-metafiles');
 
 const anotherSource = require('./src/plugins/another-source');
+const commentFrontmatter = require('./src/plugins/comment-matters');
 const copy = require('./src/plugins/copy-convention');
 const download = require('./src/plugins/download-convention');
 const less = require('./src/plugins/less');
@@ -70,14 +70,7 @@ Metalsmith(__dirname)
   .use(svg2ico())
   .use(
     anotherSource('./src/styles')
-      .use(
-        metafiles({
-          parsers: {
-            '.yaml': true,
-            '.yml': true,
-          },
-        }),
-      )
+      .use(commentFrontmatter())
       .use(less())
       .use(mergePreloadDependencies())
       .use(ignore('**/*.less')),
