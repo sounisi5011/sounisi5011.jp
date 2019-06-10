@@ -17,16 +17,16 @@ preloadList:
 socialLinkList:
   - type: twitter
     screenName: sounisi5011
-    url: https://twitter.com/intent/user?user_id=4676860944
+    id: '4676860944'
   - type: twitter
     screenName: sounisi5011Prog
-    url: https://twitter.com/intent/user?user_id=4676837791
+    id: '4676837791'
   - type: twitter
     screenName: sounisi5011Vore
-    url: https://twitter.com/intent/user?user_id=4676885804
+    id: '4676885804'
   - type: twitter
     screenName: sounisi5011R18G
-    url: https://twitter.com/intent/user?user_id=768680194244612096    
+    id: '768680194244612096'
   - type: github
     url: https://github.com/sounisi5011
     title: GitHub
@@ -94,7 +94,7 @@ html(lang="ja")
         case socialLink.type
           when 'twitter'
             li.twitter
-              a(href=socialLink.url target="_blank" title=`Twitter @${socialLink.screenName}`)
+              a(href=`https://twitter.com/intent/user?user_id=${socialLink.id}` target="_blank" title=`Twitter @${socialLink.screenName}`)
                 span.service-name Twitter: 
                 = `@${socialLink.screenName}`
           default
