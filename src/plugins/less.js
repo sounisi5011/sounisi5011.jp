@@ -13,6 +13,7 @@ function getDestFullpath(metalsmith, filename) {
 
 module.exports = opts => {
   const options = {
+    dependenciesKey: 'dependencies',
     ignoreCompilePattern: ['_*/**', '**/_*', '**/_*/**'],
     pattern: ['**/*.less'],
     renamer: filename => filename.replace(/\.less$/, '.css'),
@@ -32,6 +33,7 @@ module.exports = opts => {
 
   return pluginKit.middleware({
     each: async (filename, file, files, metalsmith) => {
+      const sourceDirFullpath = getSourceFullpath(metalsmith, '.');
       const sourceFilepath = getSourceFullpath(metalsmith, filename);
       const convertedFilename = options.renamer(filename);
       const sourcemapFilename = `${convertedFilename}.map`;
@@ -60,11 +62,29 @@ module.exports = opts => {
           };
 
           const lessText = file.contents.toString();
-          const { css: cssText, map: sourcemapText } = await less.render(
-            lessText,
-            lessOptions,
-          );
+          const {
+            css: cssText,
+            map: sourcemapText,
+            imports: importAbsolutePathList,
+          } = await less.render(lessText, lessOptions);
+
           pluginKit.addFile(files, convertedFilename, cssText);
+          const convertedFileData = files[convertedFilename];
+
+          if (options.dependenciesKey) {
+            convertedFileData[options.dependenciesKey] = [
+              ...new Set([
+                filename,
+                ...importAbsolutePathList.map(absolutePath =>
+                  path.relative(sourceDirFullpath, absolutePath),
+                ),
+              ]),
+            ].reduce((obj, filename) => {
+              obj[filename] = files[filename];
+              return obj;
+            }, {});
+          }
+
           if (typeof sourcemapText === 'string') {
             pluginKit.addFile(files, sourcemapFilename, sourcemapText);
           }
