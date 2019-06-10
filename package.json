@@ -14,7 +14,8 @@
     "clean:public": "del ./public/",
     "lint": "eslint ./",
     "show-envs": "./scripts/show-envs.js",
-    "start": "static ./public/",
+    "start": "run-s build start:server",
+    "start:server": "static ./public/",
     "test": "run-p lint"
   },
   "husky": {
