@@ -36,7 +36,6 @@ Metalsmith(__dirname)
   .use(copy())
   .use(download())
   .use(pageURLData())
-  .use(preloadList())
   .use(svg2png())
   .use(svg2ico())
   .use(
@@ -47,6 +46,7 @@ Metalsmith(__dirname)
       .use(ignore('**/*.less')),
   )
   .use(mergePreloadDependencies())
+  .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
   .use(
     inplace({
       pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],
