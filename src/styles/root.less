@@ -12,6 +12,7 @@ html {
 }
 
 h1,
+h2,
 .about-text {
   text-align: center;
 }
@@ -31,6 +32,18 @@ h1,
 
   & + h1 {
     margin-top: 0;
+  }
+}
+
+h2 {
+  &:before {
+    content: "-";
+    margin-right: 0.5em;
+  }
+
+  &:after {
+    content: "-";
+    margin-left: 0.5em;
   }
 }
 
