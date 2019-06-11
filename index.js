@@ -4,9 +4,11 @@ const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
 
 const anotherSource = require('./src/plugins/another-source');
+const commentFrontmatter = require('./src/plugins/comment-matters');
 const copy = require('./src/plugins/copy-convention');
 const download = require('./src/plugins/download-convention');
 const less = require('./src/plugins/less');
+const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 const pageURLData = require('./src/plugins/page-url-data');
@@ -34,14 +36,17 @@ Metalsmith(__dirname)
   .use(copy())
   .use(download())
   .use(pageURLData())
-  .use(preloadList())
   .use(svg2png())
   .use(svg2ico())
   .use(
     anotherSource('./src/styles')
-      .ignore('_*')
-      .use(less()),
+      .use(commentFrontmatter())
+      .use(less())
+      .use(mergePreloadDependencies())
+      .use(ignore('**/*.less')),
   )
+  .use(mergePreloadDependencies())
+  .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
   .use(
     inplace({
       pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],

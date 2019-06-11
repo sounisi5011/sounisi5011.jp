@@ -4,13 +4,20 @@ function toArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
-module.exports = ({ preloadListKey = 'preloadList' } = {}) => {
+module.exports = ({
+  preloadListKey = 'preloadList',
+  preloadListIncludeKeys = [],
+} = {}) => {
   return (files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
-    const metadataPreloadList = toArray(metadata[preloadListKey]);
+    const metadataPreloadList = toArray(metadata[preloadListKey]).concat(
+      ...preloadListIncludeKeys.map(key => toArray(metadata[key])),
+    );
 
     Object.values(files).forEach(filedata => {
-      const preloadList = toArray(filedata[preloadListKey]);
+      const preloadList = toArray(filedata[preloadListKey]).concat(
+        ...preloadListIncludeKeys.map(key => toArray(filedata[key])),
+      );
       filedata[preloadListKey] = [...metadataPreloadList, ...preloadList].map(
         data => {
           const resourceData = {};

@@ -13,8 +13,9 @@ function getDestFullpath(metalsmith, filename) {
 
 module.exports = opts => {
   const options = {
-    ignoreCompilePattern: ['_*/**', '**/_*', '**/_*/**'],
-    pattern: ['**/*.less'],
+    deleteConvertedFiles: true,
+    dependenciesKey: 'dependencies',
+    pattern: ['**/*.less', '!_*/**', '!**/_*', '!**/_*/**'],
     renamer: filename => filename.replace(/\.less$/, '.css'),
     ...opts,
   };
@@ -26,12 +27,19 @@ module.exports = opts => {
   const ignoreMatchList = patternList
     .filter(pattern => /^!/.test(pattern))
     .map(pattern => pattern.replace(/^!/, ''));
-  const ignoreCompilematcher = pluginKit.filenameMatcher(
-    options.ignoreCompilePattern,
-  );
+  const ignoreMatcher = pluginKit.filenameMatcher(ignoreMatchList);
+
+  const deleteFileSet = new Set();
 
   return pluginKit.middleware({
+    after: files => {
+      deleteFileSet.forEach(filename => {
+        delete files[filename];
+      });
+      deleteFileSet.clear();
+    },
     each: async (filename, file, files, metalsmith) => {
+      const sourceDirFullpath = getSourceFullpath(metalsmith, '.');
       const sourceFilepath = getSourceFullpath(metalsmith, filename);
       const convertedFilename = options.renamer(filename);
       const sourcemapFilename = `${convertedFilename}.map`;
@@ -39,43 +47,59 @@ module.exports = opts => {
 
       if (
         filename !== convertedFilename &&
-        !files.hasOwnProperty(convertedFilename)
+        !files.hasOwnProperty(convertedFilename) &&
+        !ignoreMatcher(filename)
       ) {
-        if (!ignoreCompilematcher(filename)) {
-          const sourceDirpath = path.dirname(sourceFilepath);
-          const lessOptions = {
-            filename: sourceFilepath,
-            paths: [sourceDirpath],
-            sourceMap: {
-              sourceMapBasepath: sourceDirpath,
-              sourceMapFilename: path.basename(sourcemapFullname),
-              sourceMapFullFilename: sourcemapFullname,
-              sourceMapInputFilename: sourceFilepath,
-              sourceMapOutputFilename: path.basename(convertedFilename),
-              sourceMapRootpath: path.relative(
-                path.dirname(sourcemapFullname),
-                sourceDirpath,
-              ),
-            },
-          };
+        const sourceDirpath = path.dirname(sourceFilepath);
+        const lessOptions = {
+          filename: sourceFilepath,
+          paths: [sourceDirpath],
+          sourceMap: {
+            sourceMapBasepath: sourceDirpath,
+            sourceMapFilename: path.basename(sourcemapFullname),
+            sourceMapFullFilename: sourcemapFullname,
+            sourceMapInputFilename: sourceFilepath,
+            sourceMapOutputFilename: path.basename(convertedFilename),
+            sourceMapRootpath: path.relative(
+              path.dirname(sourcemapFullname),
+              sourceDirpath,
+            ),
+          },
+        };
 
-          const lessText = file.contents.toString();
-          const { css: cssText, map: sourcemapText } = await less.render(
-            lessText,
-            lessOptions,
-          );
-          pluginKit.addFile(files, convertedFilename, cssText);
-          if (typeof sourcemapText === 'string') {
-            pluginKit.addFile(files, sourcemapFilename, sourcemapText);
-          }
+        const lessText = file.contents.toString();
+        const {
+          css: cssText,
+          map: sourcemapText,
+          imports: importAbsolutePathList,
+        } = await less.render(lessText, lessOptions);
+
+        pluginKit.addFile(files, convertedFilename, cssText);
+        const convertedFileData = files[convertedFilename];
+
+        if (options.dependenciesKey) {
+          convertedFileData[options.dependenciesKey] = [
+            ...new Set([
+              filename,
+              ...importAbsolutePathList.map(absolutePath =>
+                path.relative(sourceDirFullpath, absolutePath),
+              ),
+            ]),
+          ].reduce((obj, filename) => {
+            obj[filename] = files[filename];
+            return obj;
+          }, {});
         }
 
-        delete files[filename];
+        if (typeof sourcemapText === 'string') {
+          pluginKit.addFile(files, sourcemapFilename, sourcemapText);
+        }
+
+        if (options.deleteConvertedFiles) {
+          deleteFileSet.add(filename);
+        }
       }
     },
     match: matchList,
-    matchOptions: {
-      ignore: ignoreMatchList,
-    },
   });
 };
