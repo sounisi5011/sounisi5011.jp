@@ -1,0 +1,31 @@
+---
+localPageStyles:
+  - /characters.css
+ogpType: website
+ogpImageList:
+  - url: /images/ogp.png
+    width: 400
+    height: 400
+preloadDependencies:
+  - /default.css
+  - /characters.css
+---
+
+-
+  const titleText = '創作キャラ一覧';
+  const descriptionText = 'sounisi5011が創作したオリジナルキャラクターのまとめ/紹介ページ';
+  const ogpSiteName = title;
+doctype html
+html(lang="ja")
+  head(prefix="og: http://ogp.me/ns#")
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width,initial-scale=1")
+    meta(name="format-detection" content="telephone=no,email=no,address=no")
+    title= titleText
+    meta(name="description" content=descriptionText)
+    link(rel="canonical" href=`${canonicalURL}`)
+    include _head/preload
+    include _head/ogp
+    include _head/stylesheets
+  body
+    h1= titleText
