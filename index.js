@@ -8,6 +8,7 @@ const commentFrontmatter = require('./src/plugins/comment-matters');
 const copy = require('./src/plugins/copy-convention');
 const download = require('./src/plugins/download-convention');
 const less = require('./src/plugins/less');
+const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 const pageURLData = require('./src/plugins/page-url-data');
@@ -15,36 +16,6 @@ const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
-
-function mergePreloadDependencies(opts) {
-  const options = {
-    dependenciesKey: 'dependencies',
-    preloadURLsKey: 'preloadDependencies',
-    ...opts,
-  };
-
-  return (files, metalsmith, done) => {
-    for (const file of Object.values(files)) {
-      if (
-        file[options.dependenciesKey] &&
-        (!file[options.preloadURLsKey] ||
-          Array.isArray(file[options.preloadURLsKey]))
-      ) {
-        const newDependencies = Object.values(file[options.dependenciesKey])
-          .filter(
-            dependentFile =>
-              dependentFile &&
-              Array.isArray(dependentFile[options.preloadURLsKey]),
-          )
-          .map(dependentFile => dependentFile[options.preloadURLsKey]);
-        file[options.preloadURLsKey] = (
-          file[options.preloadURLsKey] || []
-        ).concat(...newDependencies);
-      }
-    }
-    done();
-  };
-}
 
 Metalsmith(__dirname)
   .metadata({
@@ -75,6 +46,7 @@ Metalsmith(__dirname)
       .use(mergePreloadDependencies())
       .use(ignore('**/*.less')),
   )
+  .use(mergePreloadDependencies())
   .use(
     inplace({
       pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],
