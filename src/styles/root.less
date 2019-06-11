@@ -34,6 +34,39 @@ h1,
   }
 }
 
+.contents-links {
+  @links-gap: 0.25em;
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  list-style: none;
+  padding: 0;
+
+  margin: (1em - @links-gap) (0 - @links-gap);
+
+  & > li {
+    margin: @links-gap;
+    flex: 1 1 auto;
+    text-align: center;
+
+    & > a {
+      @bg-color: $background-color;
+
+      display: block;
+      padding: 0.6em 0.3em;
+      background-color: #333;
+      color: #fff;
+      text-decoration: unset;
+
+      &:hover,
+      &:focus {
+        background-color: lighten(@bg-color, 10%);
+      }
+    }
+  }
+}
+
 .social-links {
   @social-links-gap: 0.25em;
 
