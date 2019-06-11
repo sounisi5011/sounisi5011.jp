@@ -19,7 +19,30 @@ function stripIndent(text) {
 
 module.exports = opts => {
   const options = {
-    '**/*.less': /^\/\*(?:\r\n?|\n)?((?:(?!\*\/).)+)\*\//s,
+    '**/*.less': text => {
+      /*
+       * 複数行コメントを処理
+       */
+      const multiLineMatch = /^\/\*(?:\r\n?|\n)?((?:(?!\*\/).)+)\*\//s.exec(
+        text,
+      );
+      if (multiLineMatch) {
+        return multiLineMatch[1];
+      }
+
+      /*
+       * 単一行コメントを処理
+       */
+      const inineMatch = /^\/\/[^\r\n]*(?:(?:\r\n?|\n)(?:\/\/[^\r\n]*|))*/.exec(
+        text,
+      );
+      if (inineMatch) {
+        const commentText = inineMatch[0]
+          // 各行の行頭の"//"を削除
+          .replace(/(^|\r\n?|\n)\/\//g, '$1');
+        return stripIndent(commentText);
+      }
+    },
     '**/*.pug': text => {
       const match = /^\/\/-(?:\r\n?|\n)((?:(?:| +[^\r\n]*)(?:\r\n?|\n|$))+)/.exec(
         text,
