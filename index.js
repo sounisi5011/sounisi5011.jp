@@ -2,6 +2,7 @@ const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
+const permalinks = require('metalsmith-permalinks');
 
 const anotherSource = require('./src/plugins/another-source');
 const commentFrontmatter = require('./src/plugins/comment-matters');
@@ -56,6 +57,11 @@ Metalsmith(__dirname)
   .use(mustache())
   .use(ignore(['**/*.pug']))
   .use(svgo())
+  .use(
+    permalinks({
+      relative: false,
+    }),
+  )
   .build(function(err, files) {
     if (err) {
       throw err;
