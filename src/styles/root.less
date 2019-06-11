@@ -63,22 +63,24 @@ h2 {
       text-decoration: underline;
       font-size: 1.6em;
 
-      // Inspiration by: https://tympanus.net/Development/CreativeLinkEffects/#cl-effect-9
-      &:after {
-        content: attr(title);
-        display: block;
-        text-decoration: unset;
-        font-size: 0.7em;
-        opacity: 0;
-        transform: translateY(-100%);
-        transition: opacity 0.2s, transform 0.2s;
-      }
-
-      &:hover,
-      &:focus {
+      &[title] {
+        // Inspiration by: https://tympanus.net/Development/CreativeLinkEffects/#cl-effect-9
         &:after {
-          opacity: 1;
-          transform: translateY(0);
+          content: attr(title);
+          display: block;
+          text-decoration: unset;
+          font-size: 0.7em;
+          opacity: 0;
+          transform: translateY(-100%);
+          transition: opacity 0.2s, transform 0.2s;
+        }
+
+        &:hover,
+        &:focus {
+          &:after {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       }
     }
