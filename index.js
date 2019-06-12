@@ -4,6 +4,7 @@ const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
 
 const anotherSource = require('./src/plugins/another-source');
+const blankshield = require('./src/plugins/blankshield');
 const commentFrontmatter = require('./src/plugins/comment-matters');
 const copy = require('./src/plugins/copy-convention');
 const download = require('./src/plugins/download-convention');
@@ -57,6 +58,7 @@ Metalsmith(__dirname)
   .use(mustache())
   .use(ignore(['**/*.pug']))
   .use(svgo())
+  .use(blankshield({ insertNoreferrer: true }))
   .build(function(err, files) {
     if (err) {
       throw err;
