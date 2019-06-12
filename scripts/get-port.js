@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const path = require('path');
+
 const spawn = require('cross-spawn');
 const getPort = require('get-port');
 
@@ -11,10 +13,28 @@ async function main() {
     arg.replace(/\{\}/g, port),
   );
 
-  const commandText = [command, ...replacedCommandArgs].join(' ');
-  console.log(`$ ${commandText}`);
+  /**
+   * @see https://github.com/mysticatea/npm-run-all/blob/v4.1.5/lib/run-task.js#L156-L174
+   */
+  const npmPath = process.env.npm_execpath;
+  const npmPathIsJs =
+    typeof npmPath === 'string' && /\.m?js/.test(path.extname(npmPath));
+  const isYarn = path.basename(npmPath || 'npm').startsWith('yarn');
+  const execPath = isYarn
+    ? npmPathIsJs
+      ? process.execPath
+      : npmPath
+    : command;
+  const spawnArgs = [...replacedCommandArgs];
 
-  const child = spawn(command, replacedCommandArgs, { stdio: 'inherit' });
+  if (execPath !== command) {
+    spawnArgs.unshift(...(npmPathIsJs ? [npmPath] : []), 'run', command);
+  } else {
+    const commandText = [command, ...replacedCommandArgs].join(' ');
+    console.log(`> ${commandText}\n`);
+  }
+
+  const child = spawn(execPath, spawnArgs, { stdio: 'inherit' });
   return new Promise(resolve => {
     child.on('close', exitCode => {
       process.exitCode = exitCode;
