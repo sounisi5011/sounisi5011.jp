@@ -104,6 +104,11 @@ h2 {
     flex: 1 1 auto;
     text-align: center;
 
+    @supports (min-width: max-content) {
+      max-width: 50%;
+      min-width: max-content;
+    }
+
     & > a {
       @bg-color: $background-color;
 
