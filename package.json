@@ -49,6 +49,7 @@
     "less": "^3.9.0",
     "metalsmith": "^2.3.0",
     "metalsmith-assets-convention": "^2.1.1",
+    "metalsmith-collections": "^0.9.0",
     "metalsmith-ignore": "^1.0.0",
     "metalsmith-in-place": "^4.4.0",
     "metalsmith-permalinks": "^2.2.0",

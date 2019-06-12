@@ -2605,7 +2605,7 @@ extend-shallow@^3.0.0, extend-shallow@^3.0.2:
     assign-symbols "^1.0.0"
     is-extendable "^1.0.1"
 
-extend@~3.0.2:
+extend@^3.0.0, extend@~3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.2.tgz#f8b1136b4071fbd8eb140aff858b1019ec2915fa"
   integrity sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==
@@ -4642,6 +4642,17 @@ metalsmith-assets-convention@^2.1.1:
     async "^2.6.0"
     metalsmith-assets-2 "^2.0.0"
 
+metalsmith-collections@^0.9.0:
+  version "0.9.0"
+  resolved "https://registry.yarnpkg.com/metalsmith-collections/-/metalsmith-collections-0.9.0.tgz#a0d19347a51d5fbd026899dfc1f4d68af50e0e17"
+  integrity sha1-oNGTR6UdX70CaJnfwfTWivUODhc=
+  dependencies:
+    debug "^2.2.0"
+    extend "^3.0.0"
+    multimatch "^2.1.0"
+    read-metadata "^1.0.0"
+    uniq "^1.0.1"
+
 metalsmith-ignore@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/metalsmith-ignore/-/metalsmith-ignore-1.0.0.tgz#9a1eb87659c5de1821efa6bea903748b49d47ffc"
@@ -6145,6 +6156,13 @@ read-chunk@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/read-chunk/-/read-chunk-1.0.1.tgz#5f68cab307e663f19993527d9b589cace4661194"
   integrity sha1-X2jKswfmY/GZk1J9m1icrORmEZQ=
+
+read-metadata@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/read-metadata/-/read-metadata-1.0.0.tgz#6df9cbe51184e8ceb7d0668b40ee5191e6f3dac6"
+  integrity sha1-bfnL5RGE6M630GaLQO5Rkebz2sY=
+  dependencies:
+    yaml-js "0.0.8"
 
 read-pkg-up@^2.0.0:
   version "2.0.0"
@@ -7719,6 +7737,11 @@ yallist@^3.0.0, yallist@^3.0.3:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/yallist/-/yallist-3.0.3.tgz#b4b049e314be545e3ce802236d6cd22cd91c3de9"
   integrity sha512-S+Zk8DEWE6oKpV+vI3qWkaK+jSbIK86pCwe2IF/xwIpQ8jEuxpw9NyaGjmp9+BoJv5FV2piqCDcoCtStppiq2A==
+
+yaml-js@0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/yaml-js/-/yaml-js-0.0.8.tgz#87cfa5a9613f48e26005420d6a8ee0da6fe8daec"
+  integrity sha1-h8+lqWE/SOJgBUINao7g2m/o2uw=
 
 yargs-parser@^10.0.0:
   version "10.1.0"
