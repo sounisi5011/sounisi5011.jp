@@ -15,7 +15,7 @@
     "lint": "eslint ./",
     "show-envs": "./scripts/show-envs.js",
     "start": "run-s build start:server",
-    "start:server": "netlify dev -c 'static ./public/' -p 8080",
+    "start:server": "env-cmd -f ./.env.js --use-shell 'netlify dev -c \"static ./public/ -p $PORT\" -p $PORT'",
     "test": "run-p lint"
   },
   "husky": {
