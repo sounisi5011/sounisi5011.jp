@@ -1,5 +1,6 @@
 const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
+const collections = require('metalsmith-collections');
 const ignore = require('metalsmith-ignore');
 const inplace = require('metalsmith-in-place');
 const permalinks = require('metalsmith-permalinks');
@@ -33,6 +34,14 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use(
+    collections({
+      characters: {
+        pattern: ['characters/*.pug', 'characters/*/*.pug'],
+        refer: false,
+      },
+    }),
+  )
   .use(anotherSource('./src/assets'))
   .use(netlifyMetadata())
   .use(assets())
