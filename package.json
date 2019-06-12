@@ -58,6 +58,7 @@
     "to-ico": "^1.1.5"
   },
   "devDependencies": {
+    "cross-spawn": "^6.0.5",
     "env-cmd": "^9.0.3",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.3.0",
