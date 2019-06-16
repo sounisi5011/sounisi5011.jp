@@ -29,3 +29,9 @@ html(lang="ja")
     include _head/stylesheets
   body
     h1= titleText
+
+    if collections && collections.characters
+      ul
+        each fileData in collections.characters
+          li
+            a(href=`/${fileData.path}`)= fileData.path
