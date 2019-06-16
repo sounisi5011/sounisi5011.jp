@@ -4752,10 +4752,10 @@ metalsmith-plugin-kit@^1.0.1:
   dependencies:
     micromatch "^3.0.3"
 
-metalsmith-pug-extra@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/metalsmith-pug-extra/-/metalsmith-pug-extra-1.0.0.tgz#34326bdaaa960df42c9ac371e31643afc5ec2d37"
-  integrity sha512-RpCQ4E972BR8grHj9GkW2635LVVP67Or1+hrdmGdPsdbOsu67pGauPc4547t1So5GKpRxB4tW02PZhTPTbwV+A==
+metalsmith-pug-extra@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/metalsmith-pug-extra/-/metalsmith-pug-extra-1.0.1.tgz#061f33b36631ca4f83a46c548d9f58400ec9741a"
+  integrity sha512-LF/d+aEfCSzyP42Mbn85vB5ntf+IeUEGTohL6EevleZZZ3KPwHyFA54HJfMwwiDJsiRirEVdIZGasXsWNGBJGw==
   dependencies:
     "@types/debug" "4.1.4"
     "@types/deep-freeze-strict" "1.1.0"
