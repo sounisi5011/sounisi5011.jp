@@ -2,8 +2,11 @@ const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
 const ignore = require('metalsmith-ignore');
-const inplace = require('metalsmith-in-place');
 const permalinks = require('metalsmith-permalinks');
+const {
+  compile: pugCompile,
+  render: pugRender,
+} = require('metalsmith-pug-extra');
 
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
@@ -35,9 +38,20 @@ Metalsmith(__dirname)
   .destination('./public')
   .clean(false)
   .use(
+    pugCompile({
+      copyFileData: true,
+      pattern: [
+        ...pugCompile.defaultOptions.pattern,
+        '!_*/**',
+        '!**/_*',
+        '!**/_*/**',
+      ],
+    }),
+  )
+  .use(
     collections({
       characters: {
-        pattern: ['characters/*.pug', 'characters/*/*.pug'],
+        pattern: ['characters/*.html', 'characters/*/*.html'],
         refer: false,
       },
     }),
@@ -59,12 +73,6 @@ Metalsmith(__dirname)
   )
   .use(mergePreloadDependencies())
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
-  .use(
-    inplace({
-      pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],
-      setFilename: true,
-    }),
-  )
   .use(mustache())
   .use(ignore(['**/*.pug']))
   .use(svgo())
@@ -73,6 +81,7 @@ Metalsmith(__dirname)
       relative: false,
     }),
   )
+  .use(pugRender({ useMetadata: true }))
   .use(blankshield({ insertNoreferrer: true }))
   .build(function(err, files) {
     if (err) {
