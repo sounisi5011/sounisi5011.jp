@@ -1,3 +1,5 @@
+const path = require('path');
+
 const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
@@ -7,6 +9,7 @@ const {
   compile: pugCompile,
   render: pugRender,
 } = require('metalsmith-pug-extra');
+const strictUriEncode = require('strict-uri-encode');
 
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
@@ -81,7 +84,19 @@ Metalsmith(__dirname)
       relative: false,
     }),
   )
-  .use(pugRender({ useMetadata: true }))
+  .use(
+    pugRender({
+      locals: {
+        path2url(pathstr) {
+          return pathstr
+            .split(path.sep === '\\' ? /[\\/]/ : path.sep)
+            .map(strictUriEncode)
+            .join('/');
+        },
+      },
+      useMetadata: true,
+    }),
+  )
   .use(blankshield({ insertNoreferrer: true }))
   .build(function(err, files) {
     if (err) {
