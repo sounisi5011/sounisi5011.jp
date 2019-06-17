@@ -33,16 +33,16 @@ html(lang="ja")
     -
       const characterRecord = collections.characters
         .reduce((obj, fileData) => {
-          const path = fileData.path;
-          const pathMatch = /^characters(?:\/([^/]+))?\/([^/]+)\/?$/.exec(path);
-          const series = pathMatch[1] || '';
-          const name = pathMatch[2];
+          const url = path2url(`/${fileData.path}`);
+          const pathMatch = /^\/characters(?:\/([^/]+))?\/([^/]+)\/?$/.exec(url);
+          const series = decodeURIComponent(pathMatch[1] || '');
+          const name = decodeURIComponent(pathMatch[2]);
           if (!obj.hasOwnProperty(series)) {
             obj[series] = [];
           }
           obj[series].push({
             name,
-            url: path,
+            url,
           });
           return obj;
         }, {})
@@ -53,6 +53,6 @@ html(lang="ja")
       ul
         each characterData in characterList
           li
-            a(href=path2url(`/${characterData.url}`))= characterData.name
+            a(href=characterData.url)= characterData.name
     else
       p 創作キャラはまだ存在しません。
