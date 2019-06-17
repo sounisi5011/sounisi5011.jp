@@ -15,7 +15,7 @@
     "lint": "eslint ./",
     "show-envs": "./scripts/show-envs.js",
     "start": "run-s build start:server",
-    "start:server": "./scripts/get-port.js netlify dev -c 'static ./public/ -p {}' -p '{}'",
+    "start:server": "./scripts/get-port.js netlify dev -c 'static-server ./public/ -p {}' -p '{}'",
     "test": "run-p lint"
   },
   "husky": {
@@ -73,10 +73,10 @@
     "husky": "^2.3.0",
     "lint-staged": "^8.1.7",
     "netlify-cli": "^2.11.22",
-    "node-static": "^0.7.11",
     "prettier": "^1.17.1",
     "prettier-package-json": "^2.1.0",
     "prettier-plugin-toml": "^0.3.1",
-    "sort-package-json": "^1.22.1"
+    "sort-package-json": "^1.22.1",
+    "static-server": "^2.2.1"
   }
 }
