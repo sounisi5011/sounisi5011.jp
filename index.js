@@ -3,6 +3,7 @@ const path = require('path');
 const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
+const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
 const permalinks = require('metalsmith-permalinks');
 const {
@@ -84,6 +85,7 @@ Metalsmith(__dirname)
       relative: false,
     }),
   )
+  .use(excerpts())
   .use(
     pugRender({
       locals: {

@@ -40,10 +40,10 @@ html(lang="ja")
           if (!obj.hasOwnProperty(series)) {
             obj[series] = [];
           }
-          obj[series].push({
+          obj[series].push(Object.assign({}, fileData, {
             name,
             url,
-          });
+          }));
           return obj;
         }, {})
     each data in Object.entries(characterRecord)
@@ -53,6 +53,10 @@ html(lang="ja")
       ul
         each characterData in characterList
           li
-            a(href=characterData.url)= characterData.name
+            p
+              a(href=characterData.url)= characterData.name
+            if characterData.excerpt
+              p
+                != characterData.excerpt
     else
       p 創作キャラはまだ存在しません。
