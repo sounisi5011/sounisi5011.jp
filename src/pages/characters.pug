@@ -30,10 +30,29 @@ html(lang="ja")
   body
     h1= titleText
 
-    if collections.characters.length > 0
+    -
+      const characterRecord = collections.characters
+        .reduce((obj, fileData) => {
+          const path = fileData.path;
+          const pathMatch = /^characters(?:\/([^/]+))?\/([^/]+)\/?$/.exec(path);
+          const series = pathMatch[1] || '';
+          const name = pathMatch[2];
+          if (!obj.hasOwnProperty(series)) {
+            obj[series] = [];
+          }
+          obj[series].push({
+            name,
+            url: path,
+          });
+          return obj;
+        }, {})
+    each data in Object.entries(characterRecord)
+      - const [series, characterList] = data;
+      if series
+        h2= series
       ul
-        each fileData in collections.characters
+        each characterData in characterList
           li
-            a(href=`/${fileData.path}`)= fileData.path
+            a(href=characterData.url)= characterData.name
     else
       p 創作キャラはまだ存在しません。
