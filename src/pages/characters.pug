@@ -83,9 +83,10 @@ html(lang="ja")
         h2= series
       dl
         each characterData in characterList
-          dt
-            a(href=characterData.url)= characterData.name
-          dd
-            != characterData.excerpt
+          div
+            dt
+              a(href=characterData.url)= characterData.name
+            dd
+              != characterData.excerpt
     else
       p 創作キャラはまだ存在しません。
