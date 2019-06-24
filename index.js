@@ -70,6 +70,7 @@ Metalsmith(__dirname)
       characters: {
         pattern: ['characters/*.html', 'characters/*/*.html'],
         refer: false,
+        sortBy: 'sortOrder',
       },
     }),
   )
