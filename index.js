@@ -6,7 +6,6 @@ const branch = require('metalsmith-branch');
 const collections = require('metalsmith-collections');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
-const metadataDirectory = require('metalsmith-metadata-directory');
 const permalinks = require('metalsmith-permalinks');
 const {
   compile: pugCompile,
@@ -75,11 +74,6 @@ Metalsmith(__dirname)
     }),
   )
   .use(anotherSource('./src/assets'))
-  .use(
-    metadataDirectory({
-      directory: 'characters/**/*.yml',
-    }),
-  )
   .use(netlifyMetadata())
   .use(assets())
   .use(copy())
