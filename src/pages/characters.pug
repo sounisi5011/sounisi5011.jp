@@ -46,8 +46,8 @@ html(lang="ja")
           }));
           return obj;
         }, {})
-    each data in Object.entries(characterRecord)
-      - const [series, characterList] = data;
+    each series in Object.keys(characterRecord).sort()
+      - const characterList = characterRecord[series];
       if series
         h2= series
       ul
