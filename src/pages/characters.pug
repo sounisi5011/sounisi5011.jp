@@ -85,8 +85,7 @@ html(lang="ja")
         each characterData in characterList
           dt
             a(href=characterData.url)= characterData.name
-          if characterData.excerpt
-            dd
-              != characterData.excerpt
+          dd
+            != characterData.excerpt
     else
       p 創作キャラはまだ存在しません。
