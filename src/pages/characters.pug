@@ -81,12 +81,12 @@ html(lang="ja")
       - const [series, characterList] = data;
       if series
         h2= series
-      ul
+      dl
         each characterData in characterList
-          li
-            p
-              a(href=characterData.url)= characterData.name
-            if characterData.excerpt
+          dt
+            a(href=characterData.url)= characterData.name
+          if characterData.excerpt
+            dd
               != characterData.excerpt
     else
       p 創作キャラはまだ存在しません。
