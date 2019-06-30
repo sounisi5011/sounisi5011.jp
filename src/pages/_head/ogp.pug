@@ -37,6 +37,11 @@ if twitterCardTitle
 if twitterCardImageList
   each imageData in twitterCardImageList
     if imageData
-      meta(name="twitter:image" content=normalizeAbsoluteURL(typeof imageData === 'object' ? imageData.url : imageData))
+      -
+        const imageURL = canonicalURL(
+          rootURL,
+          typeof imageData === 'object' ? imageData.url : imageData
+        );
+      meta(name="twitter:image" content=imageURL)
       if imageData.alt
         meta(name="twitter:image:alt" content=imageData.alt)
