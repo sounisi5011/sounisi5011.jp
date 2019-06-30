@@ -49,7 +49,6 @@
     "less": "^3.9.0",
     "metalsmith": "^2.3.0",
     "metalsmith-assets-convention": "^2.1.1",
-    "metalsmith-branch": "^0.0.5",
     "metalsmith-collections": "^0.9.0",
     "metalsmith-excerpts": "^1.2.0",
     "metalsmith-ignore": "^1.0.0",

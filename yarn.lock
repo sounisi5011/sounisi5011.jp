@@ -1431,11 +1431,6 @@ clone-response@1.0.2:
   dependencies:
     mimic-response "^1.0.0"
 
-clone@^0.1.11:
-  version "0.1.19"
-  resolved "https://registry.yarnpkg.com/clone/-/clone-0.1.19.tgz#613fb68639b26a494ac53253e15b1a6bd88ada85"
-  integrity sha1-YT+2hjmyaklKxTJT4Vsaa9iK2oU=
-
 clone@^1.0.2:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/clone/-/clone-1.0.4.tgz#da309cc263df15994c688ca902179ca3c7cd7c7e"
@@ -4778,16 +4773,6 @@ metalsmith-assets-convention@^2.1.1:
     async "^2.6.0"
     metalsmith-assets-2 "^2.0.0"
 
-metalsmith-branch@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/metalsmith-branch/-/metalsmith-branch-0.0.5.tgz#42f79f99c5ff0dd848f261255668afb3fcfe04bc"
-  integrity sha1-QvefmcX/DdhI8mElVmivs/z+BLw=
-  dependencies:
-    clone "^0.1.11"
-    debug "~0.7.4"
-    multimatch "^2.1.0"
-    ware "~0.3.0"
-
 metalsmith-collections@^0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/metalsmith-collections/-/metalsmith-collections-0.9.0.tgz#a0d19347a51d5fbd026899dfc1f4d68af50e0e17"
@@ -7767,11 +7752,6 @@ ware@^1.2.0:
   integrity sha1-0bFPOdLiy0q4xAmPdW/ksWTkc9Q=
   dependencies:
     wrap-fn "^0.1.0"
-
-ware@~0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/ware/-/ware-0.3.0.tgz#2df8044973542ecb5eb54397d7cd3773bcf8e9eb"
-  integrity sha1-LfgESXNULstetUOX1803c7z46es=
 
 wcwidth@^1.0.1:
   version "1.0.1"
