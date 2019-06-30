@@ -61,9 +61,10 @@ socialLinkList:
 
 extends _layout
 
--
-  const titleText = title;
-  const descriptionText = description;
+block vars
+  -
+    const titleText = title;
+    const descriptionText = description;
 
 block content
   div.main-icon
