@@ -99,7 +99,7 @@ Metalsmith(__dirname)
     }),
   )
   .use(blankshield({ insertNoreferrer: true }))
-  .build(function(err, files) {
+  .build(err => {
     if (err) {
       throw err;
     }
