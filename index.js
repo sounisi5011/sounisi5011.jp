@@ -1,5 +1,5 @@
 const Metalsmith = require('metalsmith');
-const assets = require('metalsmith-assets-convention');
+const assetsConvention = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
@@ -12,8 +12,8 @@ const {
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
 const commentFrontmatter = require('./src/plugins/comment-matters');
-const copy = require('./src/plugins/copy-convention');
-const download = require('./src/plugins/download-convention');
+const copyConvention = require('./src/plugins/copy-convention');
+const downloadConvention = require('./src/plugins/download-convention');
 const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const mustache = require('./src/plugins/mustache');
@@ -60,9 +60,9 @@ Metalsmith(__dirname)
   )
   .use(anotherSource('./src/assets'))
   .use(netlifyMetadata())
-  .use(assets())
-  .use(copy())
-  .use(download())
+  .use(assetsConvention())
+  .use(copyConvention())
+  .use(downloadConvention())
   .use(svg2png())
   .use(svg2ico())
   .use(
