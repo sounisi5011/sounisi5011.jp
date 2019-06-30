@@ -2,7 +2,6 @@ const path = require('path');
 
 const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
-const branch = require('metalsmith-branch');
 const collections = require('metalsmith-collections');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
@@ -27,18 +26,6 @@ const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
-
-const pugRenderOptions = {
-  locals: {
-    path2url(pathstr) {
-      return pathstr
-        .split(path.sep === '\\' ? /[\\/]/ : path.sep)
-        .map(strictUriEncode)
-        .join('/');
-    },
-  },
-  useMetadata: true,
-};
 
 Metalsmith(__dirname)
   .metadata({
@@ -99,9 +86,27 @@ Metalsmith(__dirname)
       relative: false,
     }),
   )
-  .use(branch('characters/**/*.html').use(pugRender(pugRenderOptions)))
+  .use(
+    pugRender({
+      locals: {
+        path2url(pathstr) {
+          return pathstr
+            .split(path.sep === '\\' ? /[\\/]/ : path.sep)
+            .map(strictUriEncode)
+            .join('/');
+        },
+      },
+      pattern: 'characters/**/*.html',
+      useMetadata: true,
+    }),
+  )
   .use(excerpts())
-  .use(pugRender(pugRenderOptions))
+  .use(
+    pugRender({
+      pattern: pugRender.defaultOptions.pattern,
+      reuse: true,
+    }),
+  )
   .use(blankshield({ insertNoreferrer: true }))
   .build(function(err, files) {
     if (err) {
