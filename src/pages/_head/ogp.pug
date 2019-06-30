@@ -9,7 +9,7 @@
 meta(property="og:title" content=(ogpTitle ? ogpTitle : titleText))
 meta(property="og:description" content=(ogpDescription ? ogpDescription : descriptionText))
 meta(property="og:type" content=ogpType)
-meta(property="og:url" content=`${canonicalURL}`)
+meta(property="og:url" content=canonicalURL(rootURL, path))
 each imageData in ogpImageList
   if imageData
     meta(property="og:image" content=normalizeAbsoluteURL(typeof imageData === 'object' ? imageData.url : imageData))

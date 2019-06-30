@@ -21,22 +21,28 @@ const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
-const pageURLData = require('./src/plugins/page-url-data');
 const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
+
+function path2url(pathstr) {
+  return pathstr
+    .split(path.sep === '\\' ? /[\\/]/ : path.sep)
+    .map(strictUriEncode)
+    .join('/');
+}
 
 Metalsmith(__dirname)
   .metadata({
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css'],
-    title: 'sounisi5011.jp',
-    url:
+    rootURL:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
         : process.env.DEPLOY_URL) || '',
+    title: 'sounisi5011.jp',
   })
   .source('./src/pages')
   .destination('./public')
@@ -66,7 +72,6 @@ Metalsmith(__dirname)
   .use(assets())
   .use(copy())
   .use(download())
-  .use(pageURLData())
   .use(svg2png())
   .use(svg2ico())
   .use(
@@ -89,12 +94,13 @@ Metalsmith(__dirname)
   .use(
     pugRender({
       locals: {
-        path2url(pathstr) {
-          return pathstr
-            .split(path.sep === '\\' ? /[\\/]/ : path.sep)
-            .map(strictUriEncode)
-            .join('/');
+        canonicalURL(rootURL, path) {
+          return (
+            rootURL.replace(/[/]*$/, '') +
+            path2url(path).replace(/^[/]*(?=.)/, '/')
+          );
         },
+        path2url,
       },
       pattern: 'characters/**/*.html',
       useMetadata: true,
