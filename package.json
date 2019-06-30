@@ -75,7 +75,7 @@
     "eslint-plugin-sort-requires-by-path": "^1.0.2",
     "eslint-plugin-standard": "^4.0.0",
     "get-port": "^5.0.0",
-    "husky": "^2.3.0",
+    "husky": "^2.7.0",
     "lint-staged": "^8.1.7",
     "netlify-cli": "^2.11.22",
     "prettier": "^1.17.1",
