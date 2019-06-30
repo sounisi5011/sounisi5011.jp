@@ -11,82 +11,73 @@ preloadDependencies:
   - /characters.css
 ---
 
+extends _layout
+
 -
   const titleText = '創作キャラ一覧';
   const descriptionText = 'sounisi5011が創作したオリジナルキャラクターのまとめ/紹介ページ';
   const ogpSiteName = title;
-doctype html
-html(lang="ja")
-  head(prefix="og: http://ogp.me/ns#")
-    meta(charset="utf-8")
-    meta(name="viewport" content="width=device-width,initial-scale=1")
-    meta(name="format-detection" content="telephone=no,email=no,address=no")
-    title= titleText
-    meta(name="description" content=descriptionText)
-    link(rel="canonical" href=canonicalURL(rootURL, path))
-    include _head/preload
-    include _head/ogp
-    include _head/stylesheets
-  body
-    h1= titleText
 
-    -
-      function getProp(objList, propName) {
-        const obj = objList.find(data => data.hasOwnProperty(propName));
-        return obj ? obj[propName] : undefined;
+block content
+  h1= titleText
+
+  -
+    function getProp(objList, propName) {
+      const obj = objList.find(data => data.hasOwnProperty(propName));
+      return obj ? obj[propName] : undefined;
+    }
+    function compareDefaultSort(a, b) {
+      return [a, b].sort()[0] === a ? -1 : 1;
+    }
+    function sortSeries([seriesA, characterListA], [seriesB, characterListB]) {
+      const aFirst = -1;
+      const bFirst = 1;
+
+      // シリーズ名のどちらかが空文字列の場合は先頭にソート
+      if (!seriesA && seriesB) return aFirst;
+      if (seriesA && !seriesB) return bFirst;
+
+      const sortSeriesOrderA = getProp(characterListA, 'sortSeriesOrder');
+      const sortSeriesOrderB = getProp(characterListB, 'sortSeriesOrder');
+
+      // sortSeriesOrderプロパティを持たない作品シリーズは後ろにソート
+      if (sortSeriesOrderA && !sortSeriesOrderB) return aFirst;
+      if (!sortSeriesOrderA && sortSeriesOrderB) return bFirst;
+
+      // sortSeriesOrderプロパティを持つ作品シリーズ同士は、sortSeriesOrderの値でソート
+      if (sortSeriesOrderA && sortSeriesOrderB) {
+        return sortSeriesOrderA - sortSeriesOrderB;
       }
-      function compareDefaultSort(a, b) {
-        return [a, b].sort()[0] === a ? -1 : 1;
-      }
-      function sortSeries([seriesA, characterListA], [seriesB, characterListB]) {
-        const aFirst = -1;
-        const bFirst = 1;
 
-        // シリーズ名のどちらかが空文字列の場合は先頭にソート
-        if (!seriesA && seriesB) return aFirst;
-        if (seriesA && !seriesB) return bFirst;
-
-        const sortSeriesOrderA = getProp(characterListA, 'sortSeriesOrder');
-        const sortSeriesOrderB = getProp(characterListB, 'sortSeriesOrder');
-
-        // sortSeriesOrderプロパティを持たない作品シリーズは後ろにソート
-        if (sortSeriesOrderA && !sortSeriesOrderB) return aFirst;
-        if (!sortSeriesOrderA && sortSeriesOrderB) return bFirst;
-
-        // sortSeriesOrderプロパティを持つ作品シリーズ同士は、sortSeriesOrderの値でソート
-        if (sortSeriesOrderA && sortSeriesOrderB) {
-          return sortSeriesOrderA - sortSeriesOrderB;
+      // sortSeriesOrderプロパティを持たない作品シリーズ同士は、シリーズ名の比較でソート
+      return compareDefaultSort(seriesA, seriesB);
+    }
+    const characterRecord = collections.characters
+      .reduce((obj, fileData) => {
+        const url = path2url(`/${fileData.path}`);
+        const pathMatch = /^\/characters(?:\/([^/]+))?\/([^/]+)\/?$/.exec(url);
+        const series = decodeURIComponent(pathMatch[1] || '');
+        const name = decodeURIComponent(pathMatch[2]);
+        if (!obj.hasOwnProperty(series)) {
+          obj[series] = [];
         }
+        obj[series].push(Object.assign({}, fileData, {
+          name,
+          url,
+        }));
+        return obj;
+      }, {})
 
-        // sortSeriesOrderプロパティを持たない作品シリーズ同士は、シリーズ名の比較でソート
-        return compareDefaultSort(seriesA, seriesB);
-      }
-      const characterRecord = collections.characters
-        .reduce((obj, fileData) => {
-          const url = path2url(`/${fileData.path}`);
-          const pathMatch = /^\/characters(?:\/([^/]+))?\/([^/]+)\/?$/.exec(url);
-          const series = decodeURIComponent(pathMatch[1] || '');
-          const name = decodeURIComponent(pathMatch[2]);
-          if (!obj.hasOwnProperty(series)) {
-            obj[series] = [];
-          }
-          obj[series].push(Object.assign({}, fileData, {
-            name,
-            url,
-          }));
-          return obj;
-        }, {})
-
-    each data in Object.entries(characterRecord).sort(sortSeries)
-      - const [series, characterList] = data;
-      if series
-        h2= series
-      dl.characters
-        each characterData in characterList
-          div
-            dt
-              a(href=characterData.url)= characterData.name
-            dd
-              != characterData.excerpt
-    else
-      p 創作キャラはまだ存在しません。
+  each data in Object.entries(characterRecord).sort(sortSeries)
+    - const [series, characterList] = data;
+    if series
+      h2= series
+    dl.characters
+      each characterData in characterList
+        div
+          dt
+            a(href=characterData.url)= characterData.name
+          dd
+            != characterData.excerpt
+  else
+    p 創作キャラはまだ存在しません。
