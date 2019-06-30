@@ -1,5 +1,3 @@
-const path = require('path');
-
 const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
@@ -10,7 +8,6 @@ const {
   compile: pugCompile,
   render: pugRender,
 } = require('metalsmith-pug-extra');
-const strictUriEncode = require('strict-uri-encode');
 
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
@@ -25,13 +22,7 @@ const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
-
-function path2url(pathstr) {
-  return pathstr
-    .split(path.sep === '\\' ? /[\\/]/ : path.sep)
-    .map(strictUriEncode)
-    .join('/');
-}
+const templateFuncs = require('./src/utils/template-functions');
 
 Metalsmith(__dirname)
   .metadata({
@@ -94,13 +85,7 @@ Metalsmith(__dirname)
   .use(
     pugRender({
       locals: {
-        canonicalURL(rootURL, path) {
-          return (
-            rootURL.replace(/[/]*$/, '') +
-            path2url(path).replace(/^[/]*(?=.)/, '/')
-          );
-        },
-        path2url,
+        ...templateFuncs,
       },
       pattern: 'characters/**/*.html',
       useMetadata: true,
