@@ -1,7 +1,17 @@
+const path = require('path');
+
 const Metalsmith = require('metalsmith');
 const assets = require('metalsmith-assets-convention');
+const branch = require('metalsmith-branch');
+const collections = require('metalsmith-collections');
+const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
-const inplace = require('metalsmith-in-place');
+const permalinks = require('metalsmith-permalinks');
+const {
+  compile: pugCompile,
+  render: pugRender,
+} = require('metalsmith-pug-extra');
+const strictUriEncode = require('strict-uri-encode');
 
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
@@ -18,6 +28,18 @@ const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
 
+const pugRenderOptions = {
+  locals: {
+    path2url(pathstr) {
+      return pathstr
+        .split(path.sep === '\\' ? /[\\/]/ : path.sep)
+        .map(strictUriEncode)
+        .join('/');
+    },
+  },
+  useMetadata: true,
+};
+
 Metalsmith(__dirname)
   .metadata({
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
@@ -32,6 +54,26 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use(
+    pugCompile({
+      copyFileData: true,
+      pattern: [
+        ...pugCompile.defaultOptions.pattern,
+        '!_*/**',
+        '!**/_*',
+        '!**/_*/**',
+      ],
+    }),
+  )
+  .use(
+    collections({
+      characters: {
+        pattern: ['characters/*.html', 'characters/*/*.html'],
+        refer: false,
+        sortBy: 'sortOrder',
+      },
+    }),
+  )
   .use(anotherSource('./src/assets'))
   .use(netlifyMetadata())
   .use(assets())
@@ -49,15 +91,17 @@ Metalsmith(__dirname)
   )
   .use(mergePreloadDependencies())
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
-  .use(
-    inplace({
-      pattern: ['**', '!_*/**', '!**/_*', '!**/_*/**'],
-      setFilename: true,
-    }),
-  )
   .use(mustache())
   .use(ignore(['**/*.pug']))
   .use(svgo())
+  .use(
+    permalinks({
+      relative: false,
+    }),
+  )
+  .use(branch('characters/**/*.html').use(pugRender(pugRenderOptions)))
+  .use(excerpts())
+  .use(pugRender(pugRenderOptions))
   .use(blankshield({ insertNoreferrer: true }))
   .build(function(err, files) {
     if (err) {
