@@ -1,8 +1,5 @@
-const path = require('path');
-
 const Metalsmith = require('metalsmith');
-const assets = require('metalsmith-assets-convention');
-const branch = require('metalsmith-branch');
+const assetsConvention = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
@@ -11,45 +8,32 @@ const {
   compile: pugCompile,
   render: pugRender,
 } = require('metalsmith-pug-extra');
-const strictUriEncode = require('strict-uri-encode');
 
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
 const commentFrontmatter = require('./src/plugins/comment-matters');
-const copy = require('./src/plugins/copy-convention');
-const download = require('./src/plugins/download-convention');
+const copyConvention = require('./src/plugins/copy-convention');
+const downloadConvention = require('./src/plugins/download-convention');
 const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
-const pageURLData = require('./src/plugins/page-url-data');
 const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
-
-const pugRenderOptions = {
-  locals: {
-    path2url(pathstr) {
-      return pathstr
-        .split(path.sep === '\\' ? /[\\/]/ : path.sep)
-        .map(strictUriEncode)
-        .join('/');
-    },
-  },
-  useMetadata: true,
-};
+const templateFuncs = require('./src/utils/template-functions');
 
 Metalsmith(__dirname)
   .metadata({
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css'],
-    title: 'sounisi5011.jp',
-    url:
+    rootURL:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
         : process.env.DEPLOY_URL) || '',
+    title: 'sounisi5011.jp',
   })
   .source('./src/pages')
   .destination('./public')
@@ -76,10 +60,9 @@ Metalsmith(__dirname)
   )
   .use(anotherSource('./src/assets'))
   .use(netlifyMetadata())
-  .use(assets())
-  .use(copy())
-  .use(download())
-  .use(pageURLData())
+  .use(assetsConvention())
+  .use(copyConvention())
+  .use(downloadConvention())
   .use(svg2png())
   .use(svg2ico())
   .use(
@@ -99,11 +82,24 @@ Metalsmith(__dirname)
       relative: false,
     }),
   )
-  .use(branch('characters/**/*.html').use(pugRender(pugRenderOptions)))
+  .use(
+    pugRender({
+      locals: {
+        ...templateFuncs,
+      },
+      pattern: 'characters/**/*.html',
+      useMetadata: true,
+    }),
+  )
   .use(excerpts())
-  .use(pugRender(pugRenderOptions))
+  .use(
+    pugRender({
+      pattern: pugRender.defaultOptions.pattern,
+      reuse: true,
+    }),
+  )
   .use(blankshield({ insertNoreferrer: true }))
-  .build(function(err, files) {
+  .build(err => {
     if (err) {
       throw err;
     }
