@@ -10,9 +10,13 @@ function path2url(pathstr) {
 }
 exports.path2url = path2url;
 
-function canonicalURL(rootURL, path) {
+function canonicalURL(rootURL, pathOrURL) {
+  if (/^(?:https?:)?[/]{2}/.test(pathOrURL)) {
+    return pathOrURL;
+  }
   return (
-    rootURL.replace(/[/]*$/, '') + path2url(path).replace(/^[/]*(?=.)/, '/')
+    rootURL.replace(/[/]*$/, '') +
+    path2url(pathOrURL).replace(/^[/]*(?=.)/, '/')
   );
 }
 exports.canonicalURL = canonicalURL;
