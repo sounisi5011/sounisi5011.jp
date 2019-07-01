@@ -1,1 +1,3 @@
 footer
+  img.qr-code(src=`/qr/${sha1(path)}.png`)
+  = canonicalURL(rootURL, path)
