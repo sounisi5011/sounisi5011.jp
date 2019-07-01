@@ -122,116 +122,116 @@ h2 {
       &:focus {
         background-color: lighten(@bg-color, 10%);
       }
-    }
 
-    /* see https://about.twitter.com/ja/company/brand-resources.html */
-    & > a[href^='https://twitter.com/'] {
-      @bg-color: $background-color;
+      /* see https://about.twitter.com/ja/company/brand-resources.html */
+      &[href^='https://twitter.com/'] {
+        @bg-color: $background-color;
 
-      background-color: #1da1f2;
-      color: #ffffff;
+        background-color: #1da1f2;
+        color: #ffffff;
 
-      &:hover,
-      &:focus {
-        background-color: lighten(@bg-color, 10%);
+        &:hover,
+        &:focus {
+          background-color: lighten(@bg-color, 10%);
+        }
+
+        &:before {
+          .fa-icon;
+          .fab;
+          content: @fa-var-twitter;
+          margin-right: @icon-right-space;
+        }
+
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      &:before {
-        .fa-icon;
-        .fab;
-        content: @fa-var-twitter;
-        margin-right: @icon-right-space;
+      /* https://github.com/logos */
+      &[href^="https://github.com/"] {
+        @bg-color: $background-color;
+        @text-color: $color;
+
+        background-color: #171516;
+        color: #ffffff;
+
+        &:hover,
+        &:focus {
+          background-color: @text-color;
+          color: @bg-color;
+        }
+
+        &:before {
+          .fa-icon;
+          .fab;
+          content: @fa-var-github;
+          margin-right: @icon-right-space;
+        }
+
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      & .service-name {
-        .invisible-text;
-      }
-    }
+      /* see https://www.pixiv.net/terms/?page=brand */
+      &[href^='https://www.pixiv.net/'] {
+        @bg-color: $background-color;
 
-    /* https://github.com/logos */
-    & > a[href^="https://github.com/"] {
-      @bg-color: $background-color;
-      @text-color: $color;
+        background-color: #ffffff;
+        color: #009cff;
 
-      background-color: #171516;
-      color: #ffffff;
+        &:hover,
+        &:focus {
+          background-color: darken(@bg-color, 10%);
+        }
 
-      &:hover,
-      &:focus {
-        background-color: @text-color;
-        color: @bg-color;
-      }
+        &:before {
+          .pseudo-image-resize(url("/images/icon-pixiv.png"));
+          min-width: 24px;
+          min-height: 24px;
+          vertical-align: top;
+          margin-right: @icon-right-space;
+        }
 
-      &:before {
-        .fa-icon;
-        .fab;
-        content: @fa-var-github;
-        margin-right: @icon-right-space;
-      }
-
-      & .service-name {
-        .invisible-text;
-      }
-    }
-
-    /* see https://www.pixiv.net/terms/?page=brand */
-    & > a[href^='https://www.pixiv.net/'] {
-      @bg-color: $background-color;
-
-      background-color: #ffffff;
-      color: #009cff;
-
-      &:hover,
-      &:focus {
-        background-color: darken(@bg-color, 10%);
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      &:before {
-        .pseudo-image-resize(url("/images/icon-pixiv.png"));
-        min-width: 24px;
-        min-height: 24px;
-        vertical-align: top;
-        margin-right: @icon-right-space;
+      /* see https://help.qiita.com/ja/articles/others-brand-guideline */
+      &[href^="https://qiita.com/"] {
+        @bg-color: $background-color;
+
+        background-color: #fff;
+        color: #4aac00;
+
+        &:hover,
+        &:focus {
+          background-color: darken(@bg-color, 10%);
+        }
+
+        &:before {
+          .pseudo-image-resize(url("/images/icon-qiita.png"));
+          margin-right: @icon-right-space;
+        }
+
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      & .service-name {
-        .invisible-text;
-      }
-    }
+      &[href^="https://e621.net/"] {
+        background-color: #152f56;
+        color: #b4c7d9;
 
-    /* see https://help.qiita.com/ja/articles/others-brand-guideline */
-    & > a[href^="https://qiita.com/"] {
-      @bg-color: $background-color;
+        &:hover,
+        &:focus {
+          color: #2e76b4;
+        }
 
-      background-color: #fff;
-      color: #4aac00;
-
-      &:hover,
-      &:focus {
-        background-color: darken(@bg-color, 10%);
-      }
-
-      &:before {
-        .pseudo-image-resize(url("/images/icon-qiita.png"));
-        margin-right: @icon-right-space;
-      }
-
-      & .service-name {
-        .invisible-text;
-      }
-    }
-
-    & > a[href^="https://e621.net/"] {
-      background-color: #152f56;
-      color: #b4c7d9;
-
-      &:hover,
-      &:focus {
-        color: #2e76b4;
-      }
-
-      & .service-name {
-        color: #fff;
+        & .service-name {
+          color: #fff;
+        }
       }
     }
   }
