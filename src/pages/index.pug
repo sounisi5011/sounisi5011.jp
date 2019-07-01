@@ -23,78 +23,62 @@ socialLinkList:
   - type: twitter
     screenName: sounisi5011R18G
     id: '768680194244612096'
-  - type: github
-    url: https://github.com/sounisi5011
+  - url: https://github.com/sounisi5011
     title: GitHub
     serviceName: 'GitHub: '
     userName: sounisi5011
-  - type: qiita
-    url: https://qiita.com/sounisi5011
+  - url: https://qiita.com/sounisi5011
     title: Qiita
     serviceName: 'Qiita: '
     userName: sounisi5011
-  - type: pixiv
-    url: https://www.pixiv.net/member.php?id=3910454
+  - url: https://www.pixiv.net/member.php?id=3910454
     title: pixiv
     serviceName: 'pixiv: '
     userName: 3910454
-  - type: furaffinity
-    url: https://www.furaffinity.net/user/sounisi5011/
+  - url: https://www.furaffinity.net/user/sounisi5011/
     title: Fur Affinity
     serviceName: 'Fur Affinity: '
     userName: sounisi5011
-  - type: deviantart
-    url: https://www.deviantart.com/sounisi5011
+  - url: https://www.deviantart.com/sounisi5011
     title: DeviantArt
     serviceName: 'DeviantArt: '
     userName: sounisi5011
-  - type: e621
-    url: https://e621.net/user/show/306135
+  - url: https://e621.net/user/show/306135
     title: e621
     serviceName: 'e621: '
     userName: sounisi5011
-  - type: vore-pokemori
-    url: https://vore.pokemori.jp/list/?id=443&mode=show
+  - url: https://vore.pokemori.jp/list/?id=443&mode=show
     serviceName: なりきりチャット用キャラ名簿：
     userName: 壱冢想西
 ---
 
--
-  const titleText = title;
-  const descriptionText = description;
-doctype html
-html(lang="ja")
-  head(prefix="og: http://ogp.me/ns#")
-    meta(charset="utf-8")
-    meta(name="viewport" content="width=device-width,initial-scale=1")
-    meta(name="format-detection" content="telephone=no,email=no,address=no")
-    title= titleText
-    meta(name="description" content=descriptionText)
-    link(rel="canonical" href=`${canonicalURL}`)
-    include _head/preload
-    include _head/ogp
-    include _head/stylesheets
-  body
-    div.main-icon
-      img(src="/images/my-symbol.svg" alt="")
-    h1= titleText
-    p.about-text
-      span.bunsetsu いろいろやってます。
-      wbr
-      span.bunsetsu 最近はフェチ関係のことばっかり。
-      wbr
-      span.bunsetsu ここには創作を投稿していくつもり。
-    hr
-    ul.social-links
-      each socialLink in socialLinkList
-        case socialLink.type
-          when 'twitter'
-            li.twitter
-              a(href=`https://twitter.com/intent/user?user_id=${socialLink.id}` target="_blank" title=`Twitter @${socialLink.screenName}`)
-                span.service-name Twitter: 
-                = `@${socialLink.screenName}`
-          default
-            li(class=socialLink.type)
-              a(href=socialLink.url target="_blank" title=socialLink.title)
-                span.service-name= socialLink.serviceName
-                = socialLink.userName
+extends _layout
+
+block content
+  div.main-icon
+    img(src="/images/my-symbol.svg" alt="")
+  h1= titleText
+  p.about-text
+    span.bunsetsu いろいろやってます。
+    wbr
+    span.bunsetsu 最近はフェチ関係のことばっかり。
+    wbr
+    span.bunsetsu ここには創作を投稿していくつもり。
+  h2 創作
+  ul.contents-links
+    li.characters
+      a(href="/characters" title="創作キャラ一覧") Characters
+  h2 外部サイト
+  ul.social-links
+    each socialLink in socialLinkList
+      case socialLink.type
+        when 'twitter'
+          li
+            a(href=`https://twitter.com/intent/user?user_id=${socialLink.id}` target="_blank" title=`Twitter @${socialLink.screenName}`)
+              span.service-name Twitter: 
+              = `@${socialLink.screenName}`
+        default
+          li
+            a(href=socialLink.url target="_blank" title=socialLink.title)
+              span.service-name= socialLink.serviceName
+              = socialLink.userName

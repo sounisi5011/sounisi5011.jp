@@ -1,18 +1,15 @@
--
-  function normalizeAbsoluteURL(absolutePath) {
-    if (/^\//.test(absolutePath)) {
-      return rootURL.replace(/\/+$/,'') + absolutePath;
-    }
-    return absolutePath;
-  }
-
 meta(property="og:title" content=(ogpTitle ? ogpTitle : titleText))
 meta(property="og:description" content=(ogpDescription ? ogpDescription : descriptionText))
 meta(property="og:type" content=ogpType)
-meta(property="og:url" content=`${canonicalURL}`)
+meta(property="og:url" content=canonicalURL(rootURL, path))
 each imageData in ogpImageList
   if imageData
-    meta(property="og:image" content=normalizeAbsoluteURL(typeof imageData === 'object' ? imageData.url : imageData))
+    -
+      const imageURL = canonicalURL(
+        rootURL,
+        typeof imageData === 'object' ? imageData.url : imageData
+      );
+    meta(property="og:image" content=imageURL)
     if imageData.type
       meta(property="og:image:type" content=imageData.type)
     if imageData.width
@@ -40,6 +37,11 @@ if twitterCardTitle
 if twitterCardImageList
   each imageData in twitterCardImageList
     if imageData
-      meta(name="twitter:image" content=normalizeAbsoluteURL(typeof imageData === 'object' ? imageData.url : imageData))
+      -
+        const imageURL = canonicalURL(
+          rootURL,
+          typeof imageData === 'object' ? imageData.url : imageData
+        );
+      meta(name="twitter:image" content=imageURL)
       if imageData.alt
         meta(name="twitter:image:alt" content=imageData.alt)

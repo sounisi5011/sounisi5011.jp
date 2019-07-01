@@ -15,7 +15,7 @@
     "lint": "eslint ./",
     "show-envs": "./scripts/show-envs.js",
     "start": "run-s build start:server",
-    "start:server": "static ./public/",
+    "start:server": "./scripts/get-port.js netlify dev -c 'static-server ./public/ -p {}' -p '{}'",
     "test": "run-p lint"
   },
   "husky": {
@@ -24,7 +24,7 @@
     }
   },
   "lint-staged": {
-    "!(package).json|*.{html,css,less,yaml,yml}": [
+    "!(package).json|*.{html,css,less,yaml,yml,toml}": [
       "prettier --write",
       "git add"
     ],
@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
+    "cheerio": "^1.0.0-rc.3",
     "convert-svg-to-png": "^0.5.0",
     "del-cli": "^2.0.0",
     "download": "^7.1.0",
@@ -48,18 +49,24 @@
     "less": "^3.9.0",
     "metalsmith": "^2.3.0",
     "metalsmith-assets-convention": "^2.1.1",
+    "metalsmith-collections": "^0.9.0",
+    "metalsmith-excerpts": "^1.2.0",
     "metalsmith-ignore": "^1.0.0",
     "metalsmith-in-place": "^4.4.0",
+    "metalsmith-permalinks": "^2.2.0",
     "metalsmith-plugin-kit": "^1.0.1",
+    "metalsmith-pug-extra": "^1.0.1",
     "mime": "^2.4.3",
     "mustache": "^3.0.1",
     "npm-run-all": "^4.1.5",
+    "strict-uri-encode": "^2.0.0",
     "svgo": "^1.2.2",
     "to-ico": "^1.1.5"
   },
   "devDependencies": {
+    "cross-spawn": "^6.0.5",
     "eslint": "^5.16.0",
-    "eslint-config-prettier": "^4.3.0",
+    "eslint-config-prettier": "^6.0.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.17.3",
     "eslint-plugin-node": "^9.1.0",
@@ -67,11 +74,14 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-sort-requires-by-path": "^1.0.2",
     "eslint-plugin-standard": "^4.0.0",
-    "husky": "^2.3.0",
+    "get-port": "^5.0.0",
+    "husky": "^2.7.0",
     "lint-staged": "^8.1.7",
-    "node-static": "^0.7.11",
+    "netlify-cli": "^2.11.22",
     "prettier": "^1.17.1",
     "prettier-package-json": "^2.1.0",
-    "sort-package-json": "^1.22.1"
+    "prettier-plugin-toml": "^0.3.1",
+    "sort-package-json": "^1.22.1",
+    "static-server": "^2.2.1"
   }
 }

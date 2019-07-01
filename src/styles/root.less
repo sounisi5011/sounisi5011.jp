@@ -12,6 +12,7 @@ html {
 }
 
 h1,
+h2,
 .about-text {
   text-align: center;
 }
@@ -34,6 +35,57 @@ h1,
   }
 }
 
+h2 {
+  &:before {
+    content: "-";
+    margin-right: 0.5em;
+  }
+
+  &:after {
+    content: "-";
+    margin-left: 0.5em;
+  }
+}
+
+.contents-links {
+  @links-gap: 0.25em;
+
+  list-style: none;
+  padding: 0;
+
+  & > li {
+    margin: @links-gap;
+    text-align: center;
+
+    & > a {
+      display: inline-block;
+      color: #111;
+      text-decoration: underline;
+      font-size: 1.6em;
+
+      &[title] {
+        // Inspiration by: https://tympanus.net/Development/CreativeLinkEffects/#cl-effect-9
+        &:after {
+          content: attr(title);
+          display: block;
+          font-size: 0.7em;
+          opacity: 0;
+          transform: translateY(-100%);
+          transition: opacity 0.2s, transform 0.2s;
+        }
+
+        &:hover,
+        &:focus {
+          &:after {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      }
+    }
+  }
+}
+
 .social-links {
   @social-links-gap: 0.25em;
 
@@ -52,6 +104,11 @@ h1,
     flex: 1 1 auto;
     text-align: center;
 
+    @supports (min-width: max-content) {
+      max-width: 50%;
+      min-width: max-content;
+    }
+
     & > a {
       @bg-color: $background-color;
 
@@ -65,116 +122,116 @@ h1,
       &:focus {
         background-color: lighten(@bg-color, 10%);
       }
-    }
 
-    /* see https://about.twitter.com/ja/company/brand-resources.html */
-    &.twitter > a {
-      @bg-color: $background-color;
+      &[href^='https://twitter.com/'] {
+        /* see https://about.twitter.com/ja/company/brand-resources.html */
+        @bg-color: $background-color;
 
-      background-color: #1da1f2;
-      color: #ffffff;
+        background-color: #1da1f2;
+        color: #ffffff;
 
-      &:hover,
-      &:focus {
-        background-color: lighten(@bg-color, 10%);
+        &:hover,
+        &:focus {
+          background-color: lighten(@bg-color, 10%);
+        }
+
+        &:before {
+          .fa-icon;
+          .fab;
+          content: @fa-var-twitter;
+          margin-right: @icon-right-space;
+        }
+
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      &:before {
-        .fa-icon;
-        .fab;
-        content: @fa-var-twitter;
-        margin-right: @icon-right-space;
+      &[href^="https://github.com/"] {
+        /* https://github.com/logos */
+        @bg-color: $background-color;
+        @text-color: $color;
+
+        background-color: #171516;
+        color: #ffffff;
+
+        &:hover,
+        &:focus {
+          background-color: @text-color;
+          color: @bg-color;
+        }
+
+        &:before {
+          .fa-icon;
+          .fab;
+          content: @fa-var-github;
+          margin-right: @icon-right-space;
+        }
+
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      & .service-name {
-        .invisible-text;
-      }
-    }
+      &[href^='https://www.pixiv.net/'] {
+        /* see https://www.pixiv.net/terms/?page=brand */
+        @bg-color: $background-color;
 
-    /* https://github.com/logos */
-    &.github > a {
-      @bg-color: $background-color;
-      @text-color: $color;
+        background-color: #ffffff;
+        color: #009cff;
 
-      background-color: #171516;
-      color: #ffffff;
+        &:hover,
+        &:focus {
+          background-color: darken(@bg-color, 10%);
+        }
 
-      &:hover,
-      &:focus {
-        background-color: @text-color;
-        color: @bg-color;
-      }
+        &:before {
+          .pseudo-image-resize(url("/images/icon-pixiv.png"));
+          min-width: 24px;
+          min-height: 24px;
+          vertical-align: top;
+          margin-right: @icon-right-space;
+        }
 
-      &:before {
-        .fa-icon;
-        .fab;
-        content: @fa-var-github;
-        margin-right: @icon-right-space;
-      }
-
-      & .service-name {
-        .invisible-text;
-      }
-    }
-
-    /* see https://www.pixiv.net/terms/?page=brand */
-    &.pixiv > a {
-      @bg-color: $background-color;
-
-      background-color: #ffffff;
-      color: #009cff;
-
-      &:hover,
-      &:focus {
-        background-color: darken(@bg-color, 10%);
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      &:before {
-        .pseudo-image-resize(url("/images/icon-pixiv.png"));
-        min-width: 24px;
-        min-height: 24px;
-        vertical-align: top;
-        margin-right: @icon-right-space;
+      &[href^="https://qiita.com/"] {
+        /* see https://help.qiita.com/ja/articles/others-brand-guideline */
+        @bg-color: $background-color;
+
+        background-color: #fff;
+        color: #4aac00;
+
+        &:hover,
+        &:focus {
+          background-color: darken(@bg-color, 10%);
+        }
+
+        &:before {
+          .pseudo-image-resize(url("/images/icon-qiita.png"));
+          margin-right: @icon-right-space;
+        }
+
+        & .service-name {
+          .invisible-text;
+        }
       }
 
-      & .service-name {
-        .invisible-text;
-      }
-    }
+      &[href^="https://e621.net/"] {
+        background-color: #152f56;
+        color: #b4c7d9;
 
-    /* see https://help.qiita.com/ja/articles/others-brand-guideline */
-    &.qiita > a {
-      @bg-color: $background-color;
+        &:hover,
+        &:focus {
+          color: #2e76b4;
+        }
 
-      background-color: #fff;
-      color: #4aac00;
-
-      &:hover,
-      &:focus {
-        background-color: darken(@bg-color, 10%);
-      }
-
-      &:before {
-        .pseudo-image-resize(url("/images/icon-qiita.png"));
-        margin-right: @icon-right-space;
-      }
-
-      & .service-name {
-        .invisible-text;
-      }
-    }
-
-    &.e621 > a {
-      background-color: #152f56;
-      color: #b4c7d9;
-
-      &:hover,
-      &:focus {
-        color: #2e76b4;
-      }
-
-      & .service-name {
-        color: #fff;
+        & .service-name {
+          color: #fff;
+        }
       }
     }
   }
