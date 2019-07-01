@@ -23,38 +23,31 @@ socialLinkList:
   - type: twitter
     screenName: sounisi5011R18G
     id: '768680194244612096'
-  - type: github
-    url: https://github.com/sounisi5011
+  - url: https://github.com/sounisi5011
     title: GitHub
     serviceName: 'GitHub: '
     userName: sounisi5011
-  - type: qiita
-    url: https://qiita.com/sounisi5011
+  - url: https://qiita.com/sounisi5011
     title: Qiita
     serviceName: 'Qiita: '
     userName: sounisi5011
-  - type: pixiv
-    url: https://www.pixiv.net/member.php?id=3910454
+  - url: https://www.pixiv.net/member.php?id=3910454
     title: pixiv
     serviceName: 'pixiv: '
     userName: 3910454
-  - type: furaffinity
-    url: https://www.furaffinity.net/user/sounisi5011/
+  - url: https://www.furaffinity.net/user/sounisi5011/
     title: Fur Affinity
     serviceName: 'Fur Affinity: '
     userName: sounisi5011
-  - type: deviantart
-    url: https://www.deviantart.com/sounisi5011
+  - url: https://www.deviantart.com/sounisi5011
     title: DeviantArt
     serviceName: 'DeviantArt: '
     userName: sounisi5011
-  - type: e621
-    url: https://e621.net/user/show/306135
+  - url: https://e621.net/user/show/306135
     title: e621
     serviceName: 'e621: '
     userName: sounisi5011
-  - type: vore-pokemori
-    url: https://vore.pokemori.jp/list/?id=443&mode=show
+  - url: https://vore.pokemori.jp/list/?id=443&mode=show
     serviceName: なりきりチャット用キャラ名簿：
     userName: 壱冢想西
 ---
@@ -80,12 +73,12 @@ block content
     each socialLink in socialLinkList
       case socialLink.type
         when 'twitter'
-          li.twitter
+          li
             a(href=`https://twitter.com/intent/user?user_id=${socialLink.id}` target="_blank" title=`Twitter @${socialLink.screenName}`)
               span.service-name Twitter: 
               = `@${socialLink.screenName}`
         default
-          li(class=socialLink.type)
+          li
             a(href=socialLink.url target="_blank" title=socialLink.title)
               span.service-name= socialLink.serviceName
               = socialLink.userName
