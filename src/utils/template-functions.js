@@ -2,6 +2,10 @@ const path = require('path');
 
 const strictUriEncode = require('strict-uri-encode');
 
+const hashFuncs = require('./hash');
+
+Object.assign(exports, hashFuncs);
+
 function path2url(pathstr) {
   return pathstr
     .split(path.sep === '\\' ? /[\\/]/ : path.sep)
