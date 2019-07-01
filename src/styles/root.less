@@ -125,7 +125,7 @@ h2 {
     }
 
     /* see https://about.twitter.com/ja/company/brand-resources.html */
-    &.twitter > a {
+    & > a[href^='https://twitter.com/'] {
       @bg-color: $background-color;
 
       background-color: #1da1f2;
@@ -149,7 +149,7 @@ h2 {
     }
 
     /* https://github.com/logos */
-    &.github > a {
+    & > a[href^="https://github.com/"] {
       @bg-color: $background-color;
       @text-color: $color;
 
@@ -175,7 +175,7 @@ h2 {
     }
 
     /* see https://www.pixiv.net/terms/?page=brand */
-    &.pixiv > a {
+    & > a[href^='https://www.pixiv.net/'] {
       @bg-color: $background-color;
 
       background-color: #ffffff;
@@ -200,7 +200,7 @@ h2 {
     }
 
     /* see https://help.qiita.com/ja/articles/others-brand-guideline */
-    &.qiita > a {
+    & > a[href^="https://qiita.com/"] {
       @bg-color: $background-color;
 
       background-color: #fff;
@@ -221,7 +221,7 @@ h2 {
       }
     }
 
-    &.e621 > a {
+    & > a[href^="https://e621.net/"] {
       background-color: #152f56;
       color: #b4c7d9;
 
