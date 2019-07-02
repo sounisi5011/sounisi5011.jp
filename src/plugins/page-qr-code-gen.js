@@ -4,17 +4,21 @@ const pluginKit = require('metalsmith-plugin-kit');
 const QRCode = require('qrcode');
 
 const { sha1 } = require('../utils/hash');
-const { canonicalURL } = require('../utils/template-functions');
-
-const URL_REGEXP = /^(?:https?:)?[/]{2}/;
 
 module.exports = opts => {
   const options = {
     destDir: 'qr',
+    pageURL: 'URL',
     pattern: ['**/*.html'],
-    rootURL: 'rootURL',
     ...opts,
   };
+
+  if (typeof options.pageURL !== 'function') {
+    const pageURLKey = String(options.pageURL);
+    options.pageURL = (filename, file, files, metalsmith) => {
+      return file[pageURLKey];
+    };
+  }
 
   const qrCodeOptions = {
     scale: 1,
@@ -23,10 +27,11 @@ module.exports = opts => {
   return pluginKit.middleware({
     each: async (filename, file, files, metalsmith) => {
       const filePath = file.hasOwnProperty('path') ? file.path : filename;
-      const rootURL = URL_REGEXP.test(options.rootURL)
-        ? options.rootURL
-        : metalsmith.metadata()[options.rootURL];
-      const pageURL = canonicalURL(rootURL, filePath);
+      const pageURL = options.pageURL(filename, file, files, metalsmith);
+      if (!pageURL) {
+        return;
+      }
+
       const qrCodePrefix = path.join(options.destDir, sha1(filePath));
 
       await Promise.all(

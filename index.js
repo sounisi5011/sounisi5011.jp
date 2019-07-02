@@ -83,7 +83,20 @@ Metalsmith(__dirname)
       relative: false,
     }),
   )
-  .use(pageQrCodeGenerator())
+  .use(
+    pageQrCodeGenerator({
+      pageURL(filename, file, files, metalsmith) {
+        const data = {
+          ...metalsmith.metadata(),
+          ...file,
+        };
+        return templateFuncs.canonicalURL(
+          data.rootURL,
+          data.hasOwnProperty('path') ? data.path : filename,
+        );
+      },
+    }),
+  )
   .use(
     pugRender({
       locals: {
