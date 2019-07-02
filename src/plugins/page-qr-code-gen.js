@@ -10,7 +10,7 @@ module.exports = opts => {
     destDir: 'qr',
     pageURL: 'URL',
     pattern: ['**/*.html'],
-    qrCodeImagesProp: 'qrCodeImageFileList',
+    qrCodeImagesProp: 'qrCodeImageFiles',
     ...opts,
   };
 
@@ -38,26 +38,34 @@ module.exports = opts => {
       const qrCodeFiles = await Promise.all(
         [
           // Generate SVG
-          [
-            `${qrCodePrefix}.svg`,
-            QRCode.toString(pageURL, { ...qrCodeOptions, type: 'svg' }),
-          ],
+          ['svg', QRCode.toString],
           // Generate PNG
-          [
-            `${qrCodePrefix}.png`,
-            QRCode.toBuffer(pageURL, { ...qrCodeOptions, type: 'png' }),
-          ],
-        ].map(async ([filename, content]) => {
-          pluginKit.addFile(files, filename, await content);
-          const filedata = files[filename];
-          return Object.assign(filedata, {
-            path: filename,
+          ['png', QRCode.toBuffer],
+        ].map(async ([filetype, contentGenerator]) => {
+          const filename = `${qrCodePrefix}.${filetype}`;
+          const content = await contentGenerator(pageURL, {
+            ...qrCodeOptions,
+            type: filetype,
           });
+          pluginKit.addFile(files, filename, content);
+          const filedata = files[filename];
+          return [
+            filetype,
+            Object.assign(filedata, {
+              path: filename,
+            }),
+          ];
         }),
       );
 
       if (options.qrCodeImagesProp) {
-        file[options.qrCodeImagesProp] = qrCodeFiles;
+        file[options.qrCodeImagesProp] = qrCodeFiles.reduce(
+          (obj, [filetype, fileData]) => {
+            obj[filetype] = fileData;
+            return obj;
+          },
+          {},
+        );
       }
     },
     match: options.pattern,
