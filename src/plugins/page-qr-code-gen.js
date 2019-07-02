@@ -1,5 +1,6 @@
 const path = require('path');
 
+const sizeOf = require('image-size');
 const pluginKit = require('metalsmith-plugin-kit');
 const QRCode = require('qrcode');
 
@@ -49,10 +50,12 @@ module.exports = opts => {
           });
           pluginKit.addFile(files, filename, content);
           const filedata = files[filename];
+          const dimensions = sizeOf(filedata.contents);
           return [
             filetype,
             Object.assign(filedata, {
               path: filename,
+              ...dimensions,
             }),
           ];
         }),
