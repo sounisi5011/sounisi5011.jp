@@ -1,3 +1,6 @@
 footer
-  img.qr-code(src=`/qr/${sha1(path)}.png`)
+  picture.qr-code
+    - const qrCodeFilePrefix = `/qr/${sha1(path)}`;
+    source(srcset=`${qrCodeFilePrefix}.svg` type="image/svg+xml")
+    img(src=`${qrCodeFilePrefix}.png`)
   = canonicalURL(rootURL, path)
