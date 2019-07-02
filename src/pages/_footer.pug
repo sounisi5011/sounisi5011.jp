@@ -6,7 +6,12 @@ footer
     if svgImage && pngImage
       picture.qr-code
         source(srcset=`/${path2url(svgImage.path)}` type="image/svg+xml")
-        img(src=`/${path2url(pngImage.path)}`)
+        img(src=`/${path2url(pngImage.path)}`
+            width=pngImage.width
+            height=pngImage.height)
     else if svgImage || pngImage
-      img.qr-code(src=`/${path2url((svgImage || pngImage).path)}`)
+      - const image = svgImage || pngImage;
+      img.qr-code(src=`/${path2url(image.path)}`
+                  width=image.width
+                  height=image.height)
   = canonicalURL(rootURL, path)
