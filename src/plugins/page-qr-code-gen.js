@@ -10,6 +10,7 @@ module.exports = opts => {
     destDir: 'qr',
     pageURL: 'URL',
     pattern: ['**/*.html'],
+    qrCodeImagesProp: 'qrCodeImageFileList',
     ...opts,
   };
 
@@ -34,7 +35,7 @@ module.exports = opts => {
 
       const qrCodePrefix = path.join(options.destDir, sha1(filePath));
 
-      await Promise.all(
+      const qrCodeFiles = await Promise.all(
         [
           // Generate SVG
           [
@@ -48,8 +49,16 @@ module.exports = opts => {
           ],
         ].map(async ([filename, content]) => {
           pluginKit.addFile(files, filename, await content);
+          const filedata = files[filename];
+          return Object.assign(filedata, {
+            path: filename,
+          });
         }),
       );
+
+      if (options.qrCodeImagesProp) {
+        file[options.qrCodeImagesProp] = qrCodeFiles;
+      }
     },
     match: options.pattern,
   });
