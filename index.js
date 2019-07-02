@@ -18,6 +18,7 @@ const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
+const pageQrCodeGenerator = require('./src/plugins/page-qr-code-gen');
 const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
@@ -82,6 +83,7 @@ Metalsmith(__dirname)
       relative: false,
     }),
   )
+  .use(pageQrCodeGenerator())
   .use(
     pugRender({
       locals: {
