@@ -1,14 +1,12 @@
 footer
-  if Array.isArray(qrCodeImageFileList)
+  if qrCodeImageFiles
     -
-      const svgImage = qrCodeImageFileList
-        .find(({ path }) => /\.svgz?$/.test(path));
-      const pngImage = qrCodeImageFileList
-        .find(({ path }) => /\.png$/.test(path));
-    if svgImage
+      const svgImage = qrCodeImageFiles.svg;
+      const pngImage = qrCodeImageFiles.png;
+    if svgImage && pngImage
       picture.qr-code
         source(srcset=`/${path2url(svgImage.path)}` type="image/svg+xml")
         img(src=`/${path2url(pngImage.path)}`)
-    else if pngImage
-      img.qr-code(src=`/${path2url(pngImage.path)}`)
+    else if svgImage || pngImage
+      img.qr-code(src=`/${path2url((svgImage || pngImage).path)}`)
   = canonicalURL(rootURL, path)
