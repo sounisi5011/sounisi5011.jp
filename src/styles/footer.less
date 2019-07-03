@@ -1,17 +1,24 @@
-.page-location {
-  display: table;
+footer {
+  border-top: solid 1px;
+  text-align: right;
+  font-size: smaller;
 
-  & > * {
-    display: table-cell;
-    vertical-align: middle;
-  }
+  .page-location {
+    display: table;
+    width: 100%;
+    text-align: left;
 
-  & > .url {
-    padding-left: 0.5em;
-    font-size: smaller;
-  }
+    & > * {
+      display: table-cell;
+      vertical-align: middle;
+    }
 
-  picture > img {
-    vertical-align: middle;
+    & > .url {
+      padding-left: 0.5em;
+    }
+
+    picture > img {
+      vertical-align: middle;
+    }
   }
 }
