@@ -1,3 +1,4 @@
+- modifiedDate = modifiedDate || new Date
 footer
   p.page-location
     if qrCodeImageFiles
@@ -20,6 +21,10 @@ footer
         if index !== 0
           wbr
         span.bunsetsu= urlItem
+  p
+    | 最終更新日：
+    time(datetime=formatDate(modifiedDate, '%Y-%m-%dT%H:%M:%SZ', 0))
+      = formatDate(modifiedDate, '%Y年%-m月%-d日 %H:%M:%S JST', 9 * 60*60)
   p.license
     a(rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja" hreflang="ja")
       picture
@@ -28,8 +33,7 @@ footer
             alt="クリエイティブ・コモンズ 表示 - 継承 4.0 国際ライセンス"
             width="88" height="31")
   p.copyright
-    - modifiedDate = modifiedDate || new Date
     | Copyright © 
     time(datetime=formatDate(modifiedDate, '%Y-%m-%dT%H:%M:%SZ', 0))
-      | #{formatDate(modifiedDate, '%Y')}
+      = formatDate(modifiedDate, '%Y')
     |  sounisi5011 Some Rights Reserved.
