@@ -3,6 +3,12 @@ footer {
   text-align: right;
   font-size: smaller;
 
+  @supports (position: sticky) {
+    position: sticky;
+    bottom: 0;
+    background-color: inherit;
+  }
+
   .page-location {
     display: table;
     width: 100%;
