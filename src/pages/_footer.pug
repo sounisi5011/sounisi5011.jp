@@ -25,7 +25,7 @@ footer
     | 最終更新日：
     time(datetime=formatDate(modifiedDate, '%Y-%m-%dT%H:%M:%SZ', 0))
       = formatDate(modifiedDate, '%Y年%-m月%-d日 %H:%M:%S JST', 9 * 60*60)
-  p.copyright
+  p.copyright(lang="en")
     | Copyright © 
     time(datetime=formatDate(modifiedDate, '%Y-%m-%dT%H:%M:%SZ', 0))
       = formatDate(modifiedDate, '%Y')
