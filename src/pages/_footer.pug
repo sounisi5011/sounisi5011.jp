@@ -27,6 +27,10 @@ footer
       = formatDate(modifiedDate, '%Y年%-m月%-d日 %H:%M:%S JST', 9 * 60*60)
   p.copyright(lang="en")
     | Copyright © 
+    if published
+      time(datetime=formatDate(published, '%Y-%m-%dT%H:%M:%SZ', 0))
+        | #{formatDate(published, '%Y')}
+      |  - 
     time(datetime=formatDate(modifiedDate, '%Y-%m-%dT%H:%M:%SZ', 0))
       = formatDate(modifiedDate, '%Y')
     |  sounisi5011 Some Rights Reserved.
