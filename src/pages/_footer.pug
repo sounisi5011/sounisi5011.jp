@@ -16,4 +16,7 @@ footer
                     width=image.width
                     height=image.height)
     span.url
-      = canonicalURL(rootURL, path)
+      each urlItem, index in yahooStyleURLBreaker(canonicalURL(rootURL, path))
+        if index !== 0
+          wbr
+        = urlItem
