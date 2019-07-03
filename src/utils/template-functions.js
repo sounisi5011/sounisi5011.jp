@@ -140,3 +140,134 @@ function yahooStyleURLBreaker(url) {
 });
 
 Object.assign(exports, { yahooStyleURLBreaker });
+
+/**
+ * Dateオブジェクトを見やすい表示に変換する
+ * @param {!Date} date 変換元のDateオブジェクト
+ * @param {string} format 変換形式を指定する文字列。UNIXのdateコマンド互換
+ * @param {number} timezoneSec タイムゾーンの秒数。
+ *     例えば、+09:00のタイムゾーンを指定したい場合は、
+ *     32400（`9 * 60 * 60`の計算結果）を指定する
+ * @see https://github.com/sounisi5011/novel-dinner-from-twitter-977500688279154688/blob/9413effa03c43ac512b9d1e59c5e4f236d9f6f3d/src/pug/_funcs.pug#L52-L188
+ */
+function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
+  /*
+   * 引数の型チェックを行う
+   */
+  if (!(date && date instanceof Date)) {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  date parameter must be Date object.\n` +
+        `  buy it's value: ${JSON.stringify(date)}.`,
+    );
+  }
+  if (typeof format !== 'string') {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  format parameter must be string.\n` +
+        `  buy it's value: ${JSON.stringify(format)}.`,
+    );
+  }
+  /*
+   * timezoneSecパラメータの値を数値へ型変換する。
+   * 同時に、小数部を切り捨てる。
+   */
+  timezoneSec = Math.trunc(timezoneSec);
+  /*
+   * Dateオブジェクトから、タイムゾーンの秒数を取得する
+   */
+  const systemTimezoneSec = date.getTimezoneOffset() * -1 * 60;
+  if (isFinite(timezoneSec)) {
+    /*
+     * timezoneSecの値が範囲内かを判定
+     */
+    if (!(-(24 * 3600) < timezoneSec)) {
+      throw new TypeError(
+        'formatDate(date, format, timezoneSec):\n' +
+          `  timezoneSec parameter must be greater than ${-(24 * 3600)} ` +
+          `( ${-(24 * 3600)} < timezoneSec ).\n` +
+          `  buy it's value: ${timezoneSec}.`,
+      );
+    } else if (!(timezoneSec < 24 * 3600)) {
+      throw new TypeError(
+        'formatDate(date, format, timezoneSec):\n' +
+          `  timezoneSec parameter must be less than ${24 * 3600} ` +
+          `( timezoneSec < ${24 * 3600} ).\n` +
+          `  buy it's value: ${timezoneSec}.`,
+      );
+    }
+    /*
+     * タイムゾーンに合わせて、Dateオブジェクトの時間をずらす
+     */
+    const unixtime = date.getTime();
+    date = new Date(unixtime - (systemTimezoneSec - timezoneSec) * 1000);
+  } else {
+    /*
+     * タイムゾーンの指定が無い場合、Dateオブジェクトのタイムゾーンから求める
+     */
+    timezoneSec = systemTimezoneSec;
+  }
+  /*
+   * タイムゾーンの文字列に使用する値を求める
+   */
+  const timezoneSign = timezoneSec < 0 ? '-' : '+';
+  const timezoneAbs = Math.abs(timezoneSec);
+  const timezoneH = String(Math.floor(timezoneAbs / 3600)).padStart(2, '0');
+  const timezoneM = String(Math.floor((timezoneAbs % 3600) / 60)).padStart(
+    2,
+    '0',
+  );
+  const timezoneS = String(timezoneAbs % 60).padStart(2, '0');
+  /*
+   * ナノ秒の数値文字列を生成する
+   */
+  const ns = String(date.getMilliseconds()).padStart(3, '0') + '0'.repeat(6);
+  /*
+   * 置換元と置換先の組み合わせを定義する
+   */
+  const replaceDict = {
+    /* eslint-disable sort-keys */
+    '%%': '%',
+    '%Y': String(date.getFullYear()),
+    '%-m': String(date.getMonth() + 1),
+    '%m': String(date.getMonth() + 1).padStart(2, '0'),
+    '%-d': String(date.getDate()),
+    '%d': String(date.getDate()).padStart(2, '0'),
+    '%-H': String(date.getHours()),
+    '%H': String(date.getHours()).padStart(2, '0'),
+    '%-M': String(date.getMinutes()),
+    '%M': String(date.getMinutes()).padStart(2, '0'),
+    '%-S': String(date.getSeconds()),
+    '%S': String(date.getSeconds()).padStart(2, '0'),
+    '%s': String(date.getTime()),
+    '%N': ns,
+    '%1N': ns.substr(0, 1),
+    '%2N': ns.substr(0, 2),
+    '%3N': ns.substr(0, 3),
+    '%4N': ns.substr(0, 4),
+    '%5N': ns.substr(0, 5),
+    '%6N': ns.substr(0, 6),
+    '%7N': ns.substr(0, 7),
+    '%8N': ns.substr(0, 8),
+    '%9N': ns.substr(0, 9),
+    '%z': `${timezoneSign}${timezoneH}${timezoneM}`,
+    '%:z': `${timezoneSign}${timezoneH}:${timezoneM}`,
+    '%::z': `${timezoneSign}${timezoneH}:${timezoneM}:${timezoneS}`,
+    /* eslint-enable sort-keys */
+  };
+  /*
+   * 置換する
+   * Note: この実装では、例えば"constructor"のような値を
+   *       置換しようとした時に正しく動作しない。
+   *       これは、オブジェクトのプロトタイプにconstructorメソッドが存在するためで、
+   *       適切な動作を求めるならhasOwnPropertyメソッドで
+   *       プロパティの存在判定をする必要がある。
+   *       が、今回の場合はいずれも"%〜"のような値だけを置換するため、
+   *       冗長な判定は使用していない。
+   */
+  return format.replace(
+    /%(?:y|-?[mdhms%]|[1-9]n|:{0,2}z)/gi,
+    match => replaceDict[match] || match,
+  );
+}
+Object.assign(exports, { formatDate });

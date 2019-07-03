@@ -27,3 +27,9 @@ footer
         img(src="/images/creativecommons.by-sa.png"
             alt="クリエイティブ・コモンズ 表示 - 継承 4.0 国際ライセンス"
             width="88" height="31")
+  p.copyright
+    - modifiedDate = modifiedDate || new Date
+    | Copyright © 
+    time(datetime=formatDate(modifiedDate, '%Y-%m-%dT%H:%M:%SZ', 0))
+      | #{formatDate(modifiedDate, '%Y')}
+    |  sounisi5011 Some Rights Reserved.
