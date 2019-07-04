@@ -32,9 +32,11 @@ footer
       if published
         time(datetime=formatDate(published, '%Y-%m-%dT%H:%M:%SZ', 0))
           = formatDate(published, '%Y')
+      if published && modified
         | -
-      time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0))
-        = formatDate(modified, '%Y')
+      if modified
+        time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0))
+          = formatDate(modified, '%Y')
       |
       | sounisi5011 Some Rights Reserved.
   p.license
