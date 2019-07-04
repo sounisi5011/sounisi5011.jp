@@ -1,28 +1,29 @@
 - modified = modified || new Date
 footer.page
-  p.page-location
-    if qrCodeImageFiles
-      -
-        const svgImage = qrCodeImageFiles.svg;
-        const pngImage = qrCodeImageFiles.png;
-      if svgImage && pngImage
-        picture.qr-code
-          source(srcset=`/${path2url(svgImage.path)}` type="image/svg+xml")
-          img(src=`/${path2url(pngImage.path)}`
-              width=pngImage.width
-              height=pngImage.height
-              alt="")
-      else if svgImage || pngImage
-        - const image = svgImage || pngImage;
-        img.qr-code(src=`/${path2url(image.path)}`
-                    width=image.width
-                    height=image.height
-                    alt="")
-    span.url
-      each urlItem, index in yahooStyleURLBreaker(canonicalURL(rootURL, path))
-        if index !== 0
-          wbr
-        span.bunsetsu= urlItem
+  //-
+    p.page-location
+      if qrCodeImageFiles
+        -
+          const svgImage = qrCodeImageFiles.svg;
+          const pngImage = qrCodeImageFiles.png;
+        if svgImage && pngImage
+          picture.qr-code
+            source(srcset=`/${path2url(svgImage.path)}` type="image/svg+xml")
+            img(src=`/${path2url(pngImage.path)}`
+                width=pngImage.width
+                height=pngImage.height
+                alt="")
+        else if svgImage || pngImage
+          - const image = svgImage || pngImage;
+          img.qr-code(src=`/${path2url(image.path)}`
+                      width=image.width
+                      height=image.height
+                      alt="")
+      span.url
+        each urlItem, index in yahooStyleURLBreaker(canonicalURL(rootURL, path))
+          if index !== 0
+            wbr
+          span.bunsetsu= urlItem
   p
     | 最終更新日：
     time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0)
