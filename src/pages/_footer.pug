@@ -23,22 +23,28 @@ footer.page
         span.bunsetsu= urlItem
   p
     | 最終更新日：
-    time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0))
+    time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0)
+         itemprop="dateModified")
       = formatDate(modified, '%Y年%-m月%-d日 %H:%M:%S JST', 9 * 60*60)
   p.copyright
     small(lang="en")
       | Copyright ©
       |
       if published
-        time(datetime=formatDate(published, '%Y-%m-%dT%H:%M:%SZ', 0))
+        time(datetime=formatDate(published, '%Y-%m-%dT%H:%M:%SZ', 0)
+             itemprop="datePublished")
           = formatDate(published, '%Y')
       if published && modified
         | -
       if modified
-        time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0))
+        time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0)
+             itemprop="dateModified")
           = formatDate(modified, '%Y')
       |
-      | sounisi5011 Some Rights Reserved.
+      |
+      span(itemprop="author") sounisi5011
+      |
+      | Some Rights Reserved.
   p.license
     a(rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja" hreflang="ja")
       picture
