@@ -47,7 +47,7 @@ footer.page
         | -
       if modified
         time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0)
-             itemprop="dateModified")
+             itemprop=((!published ? "datePublished " : "") + "dateModified"))
           = formatDate(modified, '%Y')
       |
       |
