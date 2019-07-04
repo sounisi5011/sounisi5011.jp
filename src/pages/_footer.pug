@@ -10,12 +10,14 @@ footer.page
           source(srcset=`/${path2url(svgImage.path)}` type="image/svg+xml")
           img(src=`/${path2url(pngImage.path)}`
               width=pngImage.width
-              height=pngImage.height)
+              height=pngImage.height
+              alt="")
       else if svgImage || pngImage
         - const image = svgImage || pngImage;
         img.qr-code(src=`/${path2url(image.path)}`
                     width=image.width
-                    height=image.height)
+                    height=image.height
+                    alt="")
     span.url
       each urlItem, index in yahooStyleURLBreaker(canonicalURL(rootURL, path))
         if index !== 0
