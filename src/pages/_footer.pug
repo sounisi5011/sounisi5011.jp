@@ -1,4 +1,19 @@
 - modified = modified || new Date
+-
+  const creativecommonsImageList = [
+    {
+      src: '/images/creativecommons.by-sa.88x31.png',
+      width: 88,
+    },
+    {
+      src: '/images/creativecommons.by-sa.403x141.png',
+      width: 403,
+    },
+    {
+      src: '/images/creativecommons.by-sa.svg',
+      width: Infinity,
+    },
+  ];
 footer.page
   //-
     p.page-location
@@ -31,11 +46,19 @@ footer.page
       = formatDate(modified, '%Y年%-m月%-d日 %H:%M:%S JST', 9 * 60*60)
   p.license
     a(rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja" hreflang="ja" target="_blank")
-      picture
-        source(srcset="/images/creativecommons.by-sa.svg" type="image/svg+xml")
-        img(src="/images/creativecommons.by-sa.png"
+      if creativecommonsImageList
+        -
+          const maxWidth = creativecommonsImageList
+            .map(({ width }) => width)
+            .filter(Number.isFinite)
+            .reduce((a, b) => Math.max(a, b));
+          const srcsetValue = creativecommonsImageList
+            .map(({ src, width }) => `${src} ${Math.min(width, maxWidth + 1)}w`)
+            .join(',');
+        img(src=creativecommonsImageList.find(({ width }) => width === 88).src
+            srcset=srcsetValue
             alt="クリエイティブ・コモンズ 表示 - 継承 4.0 国際ライセンス"
-            width="88" height="31")
+            width="88" height="31" sizes="88px")
   p.copyright
     small(lang="en")
       | Copyright ©
