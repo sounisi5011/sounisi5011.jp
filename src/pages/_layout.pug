@@ -14,5 +14,6 @@ html(lang="ja")
     include _head/preload
     include _head/ogp
     include _head/stylesheets
-  body
+  body(itemscope itemtype="http://schema.org/WebPage")
     block content
+    include _footer

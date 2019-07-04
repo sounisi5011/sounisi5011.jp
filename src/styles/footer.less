@@ -1,0 +1,52 @@
+footer.page {
+  border-top: solid 1px;
+  text-align: right;
+  font-size: smaller;
+
+  @supports (position: sticky) {
+    position: sticky;
+    bottom: 0;
+    background-color: inherit;
+  }
+
+  & > * {
+    @margin-v: 0.5em;
+    margin-top: @margin-v;
+    margin-bottom: @margin-v;
+  }
+
+  small {
+    font-size: 100%;
+  }
+
+  img {
+    vertical-align: middle;
+  }
+
+  .page-location {
+    display: table;
+    width: 100%;
+    text-align: left;
+
+    & > * {
+      display: table-cell;
+      vertical-align: middle;
+    }
+
+    & > .qr-code {
+      image-rendering: pixelated;
+    }
+
+    & > .url {
+      padding-left: 0.5em;
+    }
+  }
+
+  .license {
+    text-align: center;
+  }
+
+  .copyright {
+    text-align: center;
+  }
+}

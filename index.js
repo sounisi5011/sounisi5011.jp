@@ -18,6 +18,7 @@ const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
+const pageQrCodeGenerator = require('./src/plugins/page-qr-code-gen');
 const preloadList = require('./src/plugins/preload-list');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
@@ -28,7 +29,7 @@ Metalsmith(__dirname)
   .metadata({
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
-    globalPageStyles: ['/default.css'],
+    globalPageStyles: ['/default.css', '/footer.css'],
     rootURL:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
@@ -80,6 +81,20 @@ Metalsmith(__dirname)
   .use(
     permalinks({
       relative: false,
+    }),
+  )
+  .use(
+    pageQrCodeGenerator({
+      pageURL(filename, file, files, metalsmith) {
+        const data = {
+          ...metalsmith.metadata(),
+          ...file,
+        };
+        return templateFuncs.canonicalURL(
+          data.rootURL,
+          data.hasOwnProperty('path') ? data.path : filename,
+        );
+      },
     }),
   )
   .use(
