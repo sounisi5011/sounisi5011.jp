@@ -1,4 +1,5 @@
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
+const cheerio = require('cheerio');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
@@ -100,6 +101,37 @@ Metalsmith(__dirname)
   )
   .use(
     netlifyPublishedDate({
+      contentsConverter(contents) {
+        /**
+         * @see https://github.com/sounisi5011/metalsmith-netlify-published-date/blob/v0.1.0/example/remove-time-elem.js
+         */
+
+        try {
+          const $ = cheerio.load(contents.toString());
+
+          const $timeElems = $(
+            'time[itemprop~=datePublished],time[itemprop~=dateModified]',
+          );
+
+          // Note: If the file contents is not valid HTML, cheerio will not throw an error.
+          //       However, the number of detected "time" elements will be 0.
+          if ($timeElems.length >= 1) {
+            $timeElems.each((index, element) => {
+              const $time = $(element);
+              console.log('before HTML', $time.html());
+              $time.empty();
+              if ($time.is('[datetime]')) {
+                $time.attr('datetime', '');
+              }
+            });
+            return Buffer.from($.html());
+          }
+        } catch (err) {
+          //
+        }
+
+        return contents;
+      },
       plugins: [
         pugRender({
           locals: {
