@@ -41,7 +41,7 @@ footer.page
           span.bunsetsu= urlItem
   p
     | 最終更新日：
-    time(datetime=formatDate(modified || generated, '%Y-%m-%dT%H:%M:%SZ', 0)
+    time(datetime=formatDate(modified || generated, '%<time>', 0)
          itemprop=(modified ? "dateModified" : null))
       = formatDate(modified || generated, '%Y年%-m月%-d日 %H時%M分%S秒', timezone*60)
   p.license
@@ -63,13 +63,13 @@ footer.page
     small(lang="en")
       | Copyright ©
       |
-      time(datetime=formatDate(published || generated, '%Y-%m-%dT%H:%M:%SZ', 0)
+      time(datetime=formatDate(published || generated, '%<time>', 0)
            itemprop=(published ? "datePublished" : null))
         = formatDate(published || generated, '%Y', timezone*60)
       if published && modified
         | -
       if modified
-        time(datetime=formatDate(modified, '%Y-%m-%dT%H:%M:%SZ', 0)
+        time(datetime=formatDate(modified, '%<time>', 0)
              itemprop=((!published ? "datePublished " : "") + "dateModified"))
           = formatDate(modified, '%Y', timezone*60)
       |

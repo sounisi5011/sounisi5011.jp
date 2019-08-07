@@ -257,6 +257,19 @@ function formatDate(
     '%::z': `${timezoneSign}${timezoneH}:${timezoneM}:${timezoneS}`,
     /* eslint-enable sort-keys */
   };
+  /**
+   * @see https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#valid-global-date-and-time-string
+   */
+  replaceDict['%<time>'] = [
+    [replaceDict['%Y'], replaceDict['%m'], replaceDict['%d']].join('-'),
+    'T',
+    [
+      replaceDict['%H'],
+      replaceDict['%M'],
+      replaceDict['%S'] + '.' + replaceDict['%3N'],
+    ].join(':'),
+    timezoneSec === 0 ? 'Z' : replaceDict['%:z'],
+  ].join('');
   /*
    * 置換する
    * Note: この実装では、例えば"constructor"のような値を
