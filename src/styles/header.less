@@ -1,5 +1,6 @@
 header {
   border-bottom: solid 1px;
+  overflow-x: auto;
 
   @supports (position: sticky) {
     position: sticky;
@@ -29,6 +30,11 @@ header {
 
     & > .qr-code {
       image-rendering: pixelated;
+
+      @supports (position: sticky) {
+        position: sticky;
+        left: 0;
+      }
     }
 
     & > .url {
