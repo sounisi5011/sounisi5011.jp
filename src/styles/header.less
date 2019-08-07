@@ -12,4 +12,27 @@ header {
     margin-top: @margin-v;
     margin-bottom: @margin-v;
   }
+
+  img {
+    vertical-align: middle;
+  }
+
+  .page-location {
+    display: table;
+    width: 100%;
+    text-align: left;
+
+    & > * {
+      display: table-cell;
+      vertical-align: middle;
+    }
+
+    & > .qr-code {
+      image-rendering: pixelated;
+    }
+
+    & > .url {
+      padding-left: 0.5em;
+    }
+  }
 }
