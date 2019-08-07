@@ -1,3 +1,4 @@
+const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
@@ -98,19 +99,21 @@ Metalsmith(__dirname)
     }),
   )
   .use(
-    pugRender({
-      locals: {
-        ...templateFuncs,
-      },
-      pattern: 'characters/**/*.html',
-      useMetadata: true,
-    }),
-  )
-  .use(excerpts())
-  .use(
-    pugRender({
-      pattern: pugRender.defaultOptions.pattern,
-      reuse: true,
+    netlifyPublishedDate({
+      plugins: [
+        pugRender({
+          locals: {
+            ...templateFuncs,
+          },
+          pattern: 'characters/**/*.html',
+          useMetadata: true,
+        }),
+        excerpts(),
+        pugRender({
+          pattern: pugRender.defaultOptions.pattern,
+          reuse: true,
+        }),
+      ],
     }),
   )
   .use(blankshield({ insertNoreferrer: true }))
