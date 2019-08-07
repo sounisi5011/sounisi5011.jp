@@ -40,6 +40,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
+    "@sounisi5011/metalsmith-netlify-published-date": "0.1.0",
     "cheerio": "^1.0.0-rc.3",
     "convert-svg-to-png": "^0.5.0",
     "del-cli": "^2.0.0",

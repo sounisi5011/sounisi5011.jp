@@ -1,3 +1,4 @@
+const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
@@ -9,6 +10,9 @@ const {
   render: pugRender,
 } = require('metalsmith-pug-extra');
 
+const {
+  ignoreContentsEquals,
+} = require('./src/plugin-options/netlify-published-date');
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
 const commentFrontmatter = require('./src/plugins/comment-matters');
@@ -98,22 +102,25 @@ Metalsmith(__dirname)
     }),
   )
   .use(
-    pugRender({
-      locals: {
-        ...templateFuncs,
-      },
-      pattern: 'characters/**/*.html',
-      useMetadata: true,
+    netlifyPublishedDate({
+      contentsConverter: ignoreContentsEquals,
+      plugins: [
+        pugRender({
+          locals: {
+            ...templateFuncs,
+          },
+          pattern: 'characters/**/*.html',
+          useMetadata: true,
+        }),
+        excerpts(),
+        pugRender({
+          pattern: pugRender.defaultOptions.pattern,
+          reuse: true,
+        }),
+        blankshield({ insertNoreferrer: true }),
+      ],
     }),
   )
-  .use(excerpts())
-  .use(
-    pugRender({
-      pattern: pugRender.defaultOptions.pattern,
-      reuse: true,
-    }),
-  )
-  .use(blankshield({ insertNoreferrer: true }))
   .build(err => {
     if (err) {
       throw err;
