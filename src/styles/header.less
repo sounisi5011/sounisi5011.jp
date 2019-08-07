@@ -1,6 +1,7 @@
 header {
+  @margin-v: 0.5em;
+
   border-bottom: solid 1px;
-  overflow-x: auto;
 
   @supports (position: sticky) {
     position: sticky;
@@ -9,7 +10,6 @@ header {
   }
 
   & > * {
-    @margin-v: 0.5em;
     margin-top: @margin-v;
     margin-bottom: @margin-v;
   }
@@ -19,26 +19,16 @@ header {
   }
 
   .page-location {
-    display: table;
-    width: 100%;
-    text-align: left;
-
-    & > * {
-      display: table-cell;
-      vertical-align: middle;
-    }
+    display: flex;
+    align-items: center;
 
     & > .qr-code {
       image-rendering: pixelated;
-
-      @supports (position: sticky) {
-        position: sticky;
-        left: 0;
-      }
     }
 
     & > .url {
-      padding-left: 0.5em;
+      overflow-x: auto;
+      margin-left: @margin-v;
     }
   }
 }
