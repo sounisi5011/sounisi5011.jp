@@ -150,7 +150,11 @@ Object.assign(exports, { yahooStyleURLBreaker });
  *     32400（`9 * 60 * 60`の計算結果）を指定する
  * @see https://github.com/sounisi5011/novel-dinner-from-twitter-977500688279154688/blob/9413effa03c43ac512b9d1e59c5e4f236d9f6f3d/src/pug/_funcs.pug#L52-L188
  */
-function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
+function formatDate(
+  date,
+  format = '%Y-%m-%dT%H:%M:%S%:z',
+  timezoneSec = undefined,
+) {
   /*
    * 引数の型チェックを行う
    */
@@ -168,44 +172,42 @@ function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
         `  buy it's value: ${JSON.stringify(format)}.`,
     );
   }
+  if (!Number.isFinite(timezoneSec)) {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  timezoneSec parameter must be finite number.\n` +
+        `  buy it's value: ${JSON.stringify(timezoneSec)}.`,
+    );
+  }
   /*
-   * timezoneSecパラメータの値を数値へ型変換する。
-   * 同時に、小数部を切り捨てる。
+   * timezoneSecパラメータの小数部を切り捨てる。
    */
   timezoneSec = Math.trunc(timezoneSec);
   /*
-   * Dateオブジェクトから、タイムゾーンの秒数を取得する
+   * timezoneSecの値が範囲内かを判定
    */
-  const systemTimezoneSec = date.getTimezoneOffset() * -1 * 60;
-  if (isFinite(timezoneSec)) {
-    /*
-     * timezoneSecの値が範囲内かを判定
-     */
-    if (!(-(24 * 3600) < timezoneSec)) {
-      throw new TypeError(
-        'formatDate(date, format, timezoneSec):\n' +
-          `  timezoneSec parameter must be greater than ${-(24 * 3600)} ` +
-          `( ${-(24 * 3600)} < timezoneSec ).\n` +
-          `  buy it's value: ${timezoneSec}.`,
-      );
-    } else if (!(timezoneSec < 24 * 3600)) {
-      throw new TypeError(
-        'formatDate(date, format, timezoneSec):\n' +
-          `  timezoneSec parameter must be less than ${24 * 3600} ` +
-          `( timezoneSec < ${24 * 3600} ).\n` +
-          `  buy it's value: ${timezoneSec}.`,
-      );
-    }
-    /*
-     * タイムゾーンに合わせて、Dateオブジェクトの時間をずらす
-     */
+  if (!(-(24 * 3600) < timezoneSec)) {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  timezoneSec parameter must be greater than ${-(24 * 3600)} ` +
+        `( ${-(24 * 3600)} < timezoneSec ).\n` +
+        `  buy it's value: ${timezoneSec}.`,
+    );
+  } else if (!(timezoneSec < 24 * 3600)) {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  timezoneSec parameter must be less than ${24 * 3600} ` +
+        `( timezoneSec < ${24 * 3600} ).\n` +
+        `  buy it's value: ${timezoneSec}.`,
+    );
+  }
+  /*
+   * タイムゾーンに合わせて、Dateオブジェクトの時間をずらす
+   */
+  if (timezoneSec !== 0) {
     const unixtime = date.getTime();
-    date = new Date(unixtime - (systemTimezoneSec - timezoneSec) * 1000);
-  } else {
-    /*
-     * タイムゾーンの指定が無い場合、Dateオブジェクトのタイムゾーンから求める
-     */
-    timezoneSec = systemTimezoneSec;
+    const timezoneMSec = timezoneSec * 1000;
+    date = new Date(unixtime + timezoneMSec);
   }
   /*
    * タイムゾーンの文字列に使用する値を求める
@@ -221,24 +223,24 @@ function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
   /*
    * ナノ秒の数値文字列を生成する
    */
-  const ns = String(date.getMilliseconds()).padStart(3, '0') + '0'.repeat(6);
+  const ns = String(date.getUTCMilliseconds()).padStart(3, '0') + '0'.repeat(6);
   /*
    * 置換元と置換先の組み合わせを定義する
    */
   const replaceDict = {
     /* eslint-disable sort-keys */
     '%%': '%',
-    '%Y': String(date.getFullYear()),
-    '%-m': String(date.getMonth() + 1),
-    '%m': String(date.getMonth() + 1).padStart(2, '0'),
-    '%-d': String(date.getDate()),
-    '%d': String(date.getDate()).padStart(2, '0'),
-    '%-H': String(date.getHours()),
-    '%H': String(date.getHours()).padStart(2, '0'),
-    '%-M': String(date.getMinutes()),
-    '%M': String(date.getMinutes()).padStart(2, '0'),
-    '%-S': String(date.getSeconds()),
-    '%S': String(date.getSeconds()).padStart(2, '0'),
+    '%Y': String(date.getUTCFullYear()),
+    '%-m': String(date.getUTCMonth() + 1),
+    '%m': String(date.getUTCMonth() + 1).padStart(2, '0'),
+    '%-d': String(date.getUTCDate()),
+    '%d': String(date.getUTCDate()).padStart(2, '0'),
+    '%-H': String(date.getUTCHours()),
+    '%H': String(date.getUTCHours()).padStart(2, '0'),
+    '%-M': String(date.getUTCMinutes()),
+    '%M': String(date.getUTCMinutes()).padStart(2, '0'),
+    '%-S': String(date.getUTCSeconds()),
+    '%S': String(date.getUTCSeconds()).padStart(2, '0'),
     '%s': String(date.getTime()),
     '%N': ns,
     '%1N': ns.substr(0, 1),
@@ -255,6 +257,19 @@ function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
     '%::z': `${timezoneSign}${timezoneH}:${timezoneM}:${timezoneS}`,
     /* eslint-enable sort-keys */
   };
+  /**
+   * @see https://html.spec.whatwg.org/multipage/common-microsyntaxes.html#valid-global-date-and-time-string
+   */
+  replaceDict['%<time>'] = [
+    [replaceDict['%Y'], replaceDict['%m'], replaceDict['%d']].join('-'),
+    'T',
+    [
+      replaceDict['%H'],
+      replaceDict['%M'],
+      replaceDict['%S'] + '.' + replaceDict['%3N'],
+    ].join(':'),
+    timezoneSec === 0 ? 'Z' : replaceDict['%:z'],
+  ].join('');
   /*
    * 置換する
    * Note: この実装では、例えば"constructor"のような値を
@@ -266,7 +281,7 @@ function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
    *       冗長な判定は使用していない。
    */
   return format.replace(
-    /%(?:y|-?[mdhms%]|[1-9]n|:{0,2}z)/gi,
+    new RegExp(Object.keys(replaceDict).join('|'), 'g'),
     match => replaceDict[match] || match,
   );
 }
