@@ -12,6 +12,11 @@ header.page {
   & > * {
     margin-top: @margin-v;
     margin-bottom: @margin-v;
+
+    &:first-child {
+      margin-top: 0;
+      padding-top: @margin-v;
+    }
   }
 
   img {
