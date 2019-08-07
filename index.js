@@ -118,7 +118,6 @@ Metalsmith(__dirname)
           if ($timeElems.length >= 1) {
             $timeElems.each((index, element) => {
               const $time = $(element);
-              console.log('before HTML', $time.html());
               $time.empty();
               if ($time.is('[datetime]')) {
                 $time.attr('datetime', '');
@@ -145,10 +144,10 @@ Metalsmith(__dirname)
           pattern: pugRender.defaultOptions.pattern,
           reuse: true,
         }),
+        blankshield({ insertNoreferrer: true }),
       ],
     }),
   )
-  .use(blankshield({ insertNoreferrer: true }))
   .build(err => {
     if (err) {
       throw err;
