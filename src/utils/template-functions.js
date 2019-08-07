@@ -184,10 +184,6 @@ function formatDate(
    */
   timezoneSec = Math.trunc(timezoneSec);
   /*
-   * Dateオブジェクトから、タイムゾーンの秒数を取得する
-   */
-  const systemTimezoneSec = date.getTimezoneOffset() * -1 * 60;
-  /*
    * timezoneSecの値が範囲内かを判定
    */
   if (!(-(24 * 3600) < timezoneSec)) {
@@ -208,8 +204,11 @@ function formatDate(
   /*
    * タイムゾーンに合わせて、Dateオブジェクトの時間をずらす
    */
-  const unixtime = date.getTime();
-  date = new Date(unixtime - (systemTimezoneSec - timezoneSec) * 1000);
+  if (timezoneSec !== 0) {
+    const unixtime = date.getTime();
+    const timezoneMSec = timezoneSec * 1000;
+    date = new Date(unixtime + timezoneMSec);
+  }
   /*
    * タイムゾーンの文字列に使用する値を求める
    */
@@ -224,24 +223,24 @@ function formatDate(
   /*
    * ナノ秒の数値文字列を生成する
    */
-  const ns = String(date.getMilliseconds()).padStart(3, '0') + '0'.repeat(6);
+  const ns = String(date.getUTCMilliseconds()).padStart(3, '0') + '0'.repeat(6);
   /*
    * 置換元と置換先の組み合わせを定義する
    */
   const replaceDict = {
     /* eslint-disable sort-keys */
     '%%': '%',
-    '%Y': String(date.getFullYear()),
-    '%-m': String(date.getMonth() + 1),
-    '%m': String(date.getMonth() + 1).padStart(2, '0'),
-    '%-d': String(date.getDate()),
-    '%d': String(date.getDate()).padStart(2, '0'),
-    '%-H': String(date.getHours()),
-    '%H': String(date.getHours()).padStart(2, '0'),
-    '%-M': String(date.getMinutes()),
-    '%M': String(date.getMinutes()).padStart(2, '0'),
-    '%-S': String(date.getSeconds()),
-    '%S': String(date.getSeconds()).padStart(2, '0'),
+    '%Y': String(date.getUTCFullYear()),
+    '%-m': String(date.getUTCMonth() + 1),
+    '%m': String(date.getUTCMonth() + 1).padStart(2, '0'),
+    '%-d': String(date.getUTCDate()),
+    '%d': String(date.getUTCDate()).padStart(2, '0'),
+    '%-H': String(date.getUTCHours()),
+    '%H': String(date.getUTCHours()).padStart(2, '0'),
+    '%-M': String(date.getUTCMinutes()),
+    '%M': String(date.getUTCMinutes()).padStart(2, '0'),
+    '%-S': String(date.getUTCSeconds()),
+    '%S': String(date.getUTCSeconds()).padStart(2, '0'),
     '%s': String(date.getTime()),
     '%N': ns,
     '%1N': ns.substr(0, 1),
@@ -269,7 +268,7 @@ function formatDate(
    *       冗長な判定は使用していない。
    */
   return format.replace(
-    /%(?:y|-?[mdhms%]|[1-9]n|:{0,2}z)/gi,
+    new RegExp(Object.keys(replaceDict).join('|'), 'g'),
     match => replaceDict[match] || match,
   );
 }
