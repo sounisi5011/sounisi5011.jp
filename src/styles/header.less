@@ -1,0 +1,42 @@
+header.page {
+  @margin-v: 0.5em;
+
+  margin: 0 -0.5em;
+  border-bottom: solid 1px;
+  padding: inherit;
+
+  @supports (position: sticky) {
+    position: sticky;
+    top: 0;
+    background-color: inherit;
+  }
+
+  & > * {
+    margin-top: @margin-v;
+    margin-bottom: @margin-v;
+
+    &:first-child {
+      margin-top: 0;
+      padding-top: @margin-v;
+    }
+  }
+
+  img {
+    vertical-align: middle;
+  }
+
+  .page-location {
+    display: flex;
+    align-items: center;
+
+    & > .qr-code {
+      image-rendering: pixelated;
+    }
+
+    & > .url {
+      overflow-x: auto;
+      margin-left: @margin-v;
+      font-size: 0.8em;
+    }
+  }
+}
