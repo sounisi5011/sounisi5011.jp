@@ -150,7 +150,11 @@ Object.assign(exports, { yahooStyleURLBreaker });
  *     32400（`9 * 60 * 60`の計算結果）を指定する
  * @see https://github.com/sounisi5011/novel-dinner-from-twitter-977500688279154688/blob/9413effa03c43ac512b9d1e59c5e4f236d9f6f3d/src/pug/_funcs.pug#L52-L188
  */
-function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
+function formatDate(
+  date,
+  format = '%Y-%m-%dT%H:%M:%S%:z',
+  timezoneSec = undefined,
+) {
   /*
    * 引数の型チェックを行う
    */
@@ -168,45 +172,44 @@ function formatDate(date, format = '%Y-%m-%dT%H:%M:%S%:z', timezoneSec = NaN) {
         `  buy it's value: ${JSON.stringify(format)}.`,
     );
   }
+  if (!Number.isFinite(timezoneSec)) {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  timezoneSec parameter must be finite number.\n` +
+        `  buy it's value: ${JSON.stringify(timezoneSec)}.`,
+    );
+  }
   /*
-   * timezoneSecパラメータの値を数値へ型変換する。
-   * 同時に、小数部を切り捨てる。
+   * timezoneSecパラメータの小数部を切り捨てる。
    */
   timezoneSec = Math.trunc(timezoneSec);
   /*
    * Dateオブジェクトから、タイムゾーンの秒数を取得する
    */
   const systemTimezoneSec = date.getTimezoneOffset() * -1 * 60;
-  if (isFinite(timezoneSec)) {
-    /*
-     * timezoneSecの値が範囲内かを判定
-     */
-    if (!(-(24 * 3600) < timezoneSec)) {
-      throw new TypeError(
-        'formatDate(date, format, timezoneSec):\n' +
-          `  timezoneSec parameter must be greater than ${-(24 * 3600)} ` +
-          `( ${-(24 * 3600)} < timezoneSec ).\n` +
-          `  buy it's value: ${timezoneSec}.`,
-      );
-    } else if (!(timezoneSec < 24 * 3600)) {
-      throw new TypeError(
-        'formatDate(date, format, timezoneSec):\n' +
-          `  timezoneSec parameter must be less than ${24 * 3600} ` +
-          `( timezoneSec < ${24 * 3600} ).\n` +
-          `  buy it's value: ${timezoneSec}.`,
-      );
-    }
-    /*
-     * タイムゾーンに合わせて、Dateオブジェクトの時間をずらす
-     */
-    const unixtime = date.getTime();
-    date = new Date(unixtime - (systemTimezoneSec - timezoneSec) * 1000);
-  } else {
-    /*
-     * タイムゾーンの指定が無い場合、Dateオブジェクトのタイムゾーンから求める
-     */
-    timezoneSec = systemTimezoneSec;
+  /*
+   * timezoneSecの値が範囲内かを判定
+   */
+  if (!(-(24 * 3600) < timezoneSec)) {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  timezoneSec parameter must be greater than ${-(24 * 3600)} ` +
+        `( ${-(24 * 3600)} < timezoneSec ).\n` +
+        `  buy it's value: ${timezoneSec}.`,
+    );
+  } else if (!(timezoneSec < 24 * 3600)) {
+    throw new TypeError(
+      'formatDate(date, format, timezoneSec):\n' +
+        `  timezoneSec parameter must be less than ${24 * 3600} ` +
+        `( timezoneSec < ${24 * 3600} ).\n` +
+        `  buy it's value: ${timezoneSec}.`,
+    );
   }
+  /*
+   * タイムゾーンに合わせて、Dateオブジェクトの時間をずらす
+   */
+  const unixtime = date.getTime();
+  date = new Date(unixtime - (systemTimezoneSec - timezoneSec) * 1000);
   /*
    * タイムゾーンの文字列に使用する値を求める
    */
