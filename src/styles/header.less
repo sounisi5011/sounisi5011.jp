@@ -1,0 +1,15 @@
+header {
+  border-bottom: solid 1px;
+
+  @supports (position: sticky) {
+    position: sticky;
+    top: 0;
+    background-color: inherit;
+  }
+
+  & > * {
+    @margin-v: 0.5em;
+    margin-top: @margin-v;
+    margin-bottom: @margin-v;
+  }
+}
