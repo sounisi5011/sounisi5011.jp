@@ -38,6 +38,7 @@ Metalsmith(__dirname)
       (process.env.CONTEXT === 'production'
         ? process.env.URL
         : process.env.DEPLOY_URL) || '',
+    timezone: 9 * 60,
     title: 'sounisi5011.jp',
   })
   .source('./src/pages')
