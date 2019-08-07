@@ -143,16 +143,27 @@ Metalsmith(__dirname)
           });
 
           // itemprop属性を持つtime要素を置換
+          const $timeListMap = new Map();
           $('time[itemprop~=datePublished],time[itemprop~=dateModified]').each(
             (index, element) => {
               const $time = $(element);
-              $time.empty();
-              if ($time.is('[datetime]')) {
-                $time.attr('datetime', '');
+              const scopeDepth = $time.parents('[itemscope]').length;
+
+              if (!$timeListMap.has(scopeDepth)) {
+                $timeListMap.set(scopeDepth, new Set());
               }
-              isUpdated = true;
+
+              $timeListMap.get(scopeDepth).add($time);
             },
           );
+          const minScopeDepth = Math.min(...$timeListMap.keys());
+          $timeListMap.get(minScopeDepth).forEach($time => {
+            $time.empty();
+            if ($time.is('[datetime]')) {
+              $time.attr('datetime', '');
+            }
+            isUpdated = true;
+          });
 
           if (isUpdated) {
             return Buffer.from($.html());
