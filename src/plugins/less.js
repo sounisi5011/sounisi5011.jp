@@ -17,6 +17,7 @@ module.exports = opts => {
     dependenciesKey: 'dependencies',
     pattern: ['**/*.less', '!_*/**', '!**/_*', '!**/_*/**'],
     renamer: filename => filename.replace(/\.less$/, '.css'),
+    sourceMap: true,
     ...opts,
   };
 
@@ -43,7 +44,6 @@ module.exports = opts => {
       const sourceFilepath = getSourceFullpath(metalsmith, filename);
       const convertedFilename = options.renamer(filename);
       const sourcemapFilename = `${convertedFilename}.map`;
-      const sourcemapFullname = getDestFullpath(metalsmith, sourcemapFilename);
 
       if (
         filename !== convertedFilename &&
@@ -54,7 +54,15 @@ module.exports = opts => {
         const lessOptions = {
           filename: sourceFilepath,
           paths: [sourceDirpath],
-          sourceMap: {
+        };
+
+        if (options.sourceMap) {
+          const sourcemapFullname = getDestFullpath(
+            metalsmith,
+            sourcemapFilename,
+          );
+
+          lessOptions.sourceMap = {
             sourceMapBasepath: sourceDirpath,
             sourceMapFilename: path.basename(sourcemapFullname),
             sourceMapFullFilename: sourcemapFullname,
@@ -64,8 +72,8 @@ module.exports = opts => {
               path.dirname(sourcemapFullname),
               sourceDirpath,
             ),
-          },
-        };
+          };
+        }
 
         const lessText = file.contents.toString();
         const {
