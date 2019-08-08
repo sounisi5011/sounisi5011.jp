@@ -75,7 +75,7 @@ Metalsmith(__dirname)
   .use(
     anotherSource('./src/styles')
       .use(commentFrontmatter())
-      .use(less())
+      .use(less({ sourceMap: false }))
       .use(
         postcss({
           // Source Mapのファイル名が<input css>になってしまうため無効化
