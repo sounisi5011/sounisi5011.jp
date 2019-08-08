@@ -5,6 +5,7 @@ const collections = require('metalsmith-collections');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
 const permalinks = require('metalsmith-permalinks');
+const postcss = require('metalsmith-postcss');
 const {
   compile: pugCompile,
   render: pugRender,
@@ -75,6 +76,16 @@ Metalsmith(__dirname)
     anotherSource('./src/styles')
       .use(commentFrontmatter())
       .use(less())
+      .use(
+        postcss({
+          // Source Mapのファイル名が<input css>になってしまうため無効化
+          map: false,
+          plugins: [
+            { autoprefixer: { remove: false } },
+            { 'postcss-clean': { level: 2 } },
+          ],
+        }),
+      )
       .use(mergePreloadDependencies())
       .use(ignore('**/*.less')),
   )
