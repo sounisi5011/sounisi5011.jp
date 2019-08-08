@@ -1,0 +1,25 @@
+---
+titleText: 創作小説一覧
+descriptionText: sounisi5011が創作した文章作品の掲載ページ
+localPageStyles:
+  - /novels.css
+ogpType: website
+ogpImageList:
+  - url: /images/ogp.png
+    width: 400
+    height: 400
+preloadDependencies:
+  - /default.css
+  - /novels.css
+---
+
+extends _layout
+
+block vars
+  -
+    const ogpSiteName = title;
+
+block content
+  h1= titleText
+
+  p まだ無いよ
