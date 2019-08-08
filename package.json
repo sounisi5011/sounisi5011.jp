@@ -38,6 +38,10 @@
       "git add"
     ]
   },
+  "browserslist": [
+    "defaults",
+    "> 0.1% in JP"
+  ],
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.9.0",
     "@sounisi5011/metalsmith-netlify-published-date": "0.1.0",
