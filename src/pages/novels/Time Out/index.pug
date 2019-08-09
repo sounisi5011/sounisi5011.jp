@@ -1,0 +1,47 @@
+---
+titleText: Time Out
+descriptionText: 異なる歴史を歩んだ世界。終身刑を言い渡された男は、竜の討伐を条件に減刑を求める。
+reprintNovel:
+  source: http://green.ribbon.to/~keiru/mts/mts.cgi?mode=view&no=1&id=5011
+  published: 2012-03-25 08:05 +09:00
+  modified: 2012-03-28 11:22 +09:00
+localPageStyles:
+  - /novels.css
+ogpType: website
+ogpImageList:
+  - url: /images/ogp.png
+    width: 400
+    height: 400
+preloadDependencies:
+  - /default.css
+  - /novels.css
+---
+
+extends ../../_layout
+
+block vars
+  -
+    const ogpSiteName = title;
+    reprintNovel.published = new Date(reprintNovel.published)
+    reprintNovel.modified = new Date(reprintNovel.modified)
+
+block content
+  h1= titleText
+
+  p
+    time(datetime=formatDate(reprintNovel.published, '%<time>', timezone*60))
+      <ruby>古<rp>（</rp><rt>いにしえ</rt><rp>）</rp></ruby>
+      | の時代
+    | に書かれた作品。
+    a(href=reprintNovel.source target="_blank") 某所
+    | から転載しました。
+
+  ul
+    li
+      a(href=canonicalURL('', `${path}/序`)) 序
+    li
+      a(href=canonicalURL('', `${path}/破`)) 破
+    li
+      a(href=canonicalURL('', `${path}/Q`)) Q
+    li
+      a(href=canonicalURL('', `${path}/完`)) 完
