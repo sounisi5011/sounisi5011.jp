@@ -7,6 +7,10 @@ function arrayStartsWith(targetArray, searchArray) {
   return false;
 }
 
+function arrayEquals(array1, array2) {
+  return array1.length === array2.length && arrayStartsWith(array1, array2);
+}
+
 function splitPath(pathstr) {
   return path.normalize(pathstr).split(path.sep);
 }
@@ -60,6 +64,24 @@ module.exports = () => {
                   );
                 })
                 .map(([, filedata]) => filedata);
+            };
+          },
+          set() {},
+        },
+        parentPage: {
+          ...defaultDesc,
+          get() {
+            return () => {
+              const parentPathList = toParentPathList(
+                getPathList(files, filedata),
+              );
+              parentPathList.pop();
+              const parentEntry = Object.entries(files).find(([filename]) => {
+                const pathList = toParentPathList(splitPath(filename));
+                return arrayEquals(parentPathList, pathList);
+              });
+
+              return parentEntry ? parentEntry[1] : undefined;
             };
           },
           set() {},
