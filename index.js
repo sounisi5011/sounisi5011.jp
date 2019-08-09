@@ -32,6 +32,7 @@ const templateFuncs = require('./src/utils/template-functions');
 
 Metalsmith(__dirname)
   .metadata({
+    /* eslint-disable sort-keys */
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css', '/header.css', '/footer.css'],
@@ -42,6 +43,15 @@ Metalsmith(__dirname)
         : process.env.DEPLOY_URL) || '',
     timezone: 9 * 60,
     title: 'sounisi5011.jp',
+    ogpType: 'website',
+    ogpImageList: [
+      {
+        url: '/images/ogp.png',
+        width: 400,
+        height: 400,
+      },
+    ],
+    /* eslint-enable */
   })
   .source('./src/pages')
   .destination('./public')
