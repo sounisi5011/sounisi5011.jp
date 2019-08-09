@@ -22,11 +22,24 @@ block vars
 block content
   h1= titleText
 
-  if collections.novels.length
-    ul
-      each data in collections.novels
-        li
-          a(href=path2url(`/${data.path}`))= data.titleText
-          = name
+  -
+    const novels = (
+      collections.novels
+        .filter(data => {
+          const { pathList } = data;
+          const basename = pathList[pathList.length - 1];
+          return pathList.length === (basename === 'index.html' ? 3 : 2);
+        })
+        .reverse()
+    );
+  each data in novels
+    h2
+      a(href=path2url(`/${data.path}`))= data.titleText
+    - const pages = data.childPages()
+    if pages.length
+      ul
+        each pageData in collections.novels.filter(data => pages.some(page => page.path === data.path))
+          li
+            a(href=path2url(`/${pageData.path}`))= pageData.titleText
   else
     p まだ無いよ
