@@ -22,4 +22,11 @@ block vars
 block content
   h1= titleText
 
-  p まだ無いよ
+  if collections.novels.length
+    ul
+      each data in collections.novels
+        li
+          a(href=path2url(`/${data.path}`))= data.titleText
+          = name
+  else
+    p まだ無いよ
