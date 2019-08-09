@@ -63,6 +63,11 @@ Metalsmith(__dirname)
         refer: false,
         sortBy: 'sortOrder',
       },
+      novels: {
+        pattern: ['novels/*.html', 'novels/*/*.html'],
+        refer: false,
+        sortBy: 'sortOrder',
+      },
     }),
   )
   .use(anotherSource('./src/assets'))
