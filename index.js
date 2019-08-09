@@ -35,6 +35,7 @@ Metalsmith(__dirname)
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css', '/header.css', '/footer.css'],
+    preloadDependencies: ['/default.css', '/header.css', '/footer.css'],
     rootURL:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
