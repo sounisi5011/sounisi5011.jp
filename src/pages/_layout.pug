@@ -11,9 +11,12 @@ html(lang="ja")
     title= titleText
     meta(name="description" content=descriptionText)
     link(rel="canonical" href=canonicalURL(rootURL, path))
-    include _head/preload
-    include _head/ogp
-    include _head/stylesheets
+    block preload
+      include _head/preload
+    block ogp
+      include _head/ogp
+    block stylesheets
+      include _head/stylesheets
   body(itemscope itemtype="http://schema.org/WebPage")
     include _header
     block content
