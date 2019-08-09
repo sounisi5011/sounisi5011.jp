@@ -25,11 +25,7 @@ block content
   -
     const novels = (
       collections.novels
-        .filter(data => {
-          const { pathList } = data;
-          const basename = pathList[pathList.length - 1];
-          return pathList.length === (basename === 'index.html' ? 3 : 2);
-        })
+        .filter(data => (data.parentPage() || {}).path === path)
         .reverse()
     );
   each data in novels
