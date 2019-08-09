@@ -38,11 +38,6 @@ block content
     | から転載しました。
 
   ul
-    li
-      a(href=canonicalURL('', `${path}/序`)) 序
-    li
-      a(href=canonicalURL('', `${path}/破`)) 破
-    li
-      a(href=canonicalURL('', `${path}/Q`)) Q
-    li
-      a(href=canonicalURL('', `${path}/完`)) 完
+    each pageData in collections.novels.filter(data => (data.parentPage() || {}).path === path)
+      li
+        a(href=path2url(`/${pageData.path}`))= pageData.titleText
