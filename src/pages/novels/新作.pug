@@ -1,0 +1,23 @@
+---
+titleText: 新作
+descriptionText: とてつもない新作。これは世界を変える。
+localPageStyles:
+  - /novels.css
+ogpType: website
+ogpImageList:
+  - url: /images/ogp.png
+    width: 400
+    height: 400
+preloadDependencies:
+  - /default.css
+  - /novels.css
+---
+
+extends ../_layout
+
+block vars
+  -
+    const ogpSiteName = title;
+
+block content
+  h1= titleText
