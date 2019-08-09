@@ -65,7 +65,12 @@ Metalsmith(__dirname)
         sortBy: 'sortOrder',
       },
       novels: {
-        pattern: ['novels/*.html', 'novels/*/*.html'],
+        pattern: ['novels/*.html', 'novels/*/index.html'],
+        refer: false,
+        sortBy: 'sortOrder',
+      },
+      novelsPages: {
+        pattern: ['novels/*/*.html', '!novels/*/index.html'],
         refer: false,
         sortBy: 'sortOrder',
       },

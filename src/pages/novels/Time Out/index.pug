@@ -38,6 +38,6 @@ block content
     | から転載しました。
 
   ul
-    each pageData in collections.novels.filter(data => (data.parentPage() || {}).path === path)
+    each pageData in collections.novelsPages.filter(pageData => pageData.parentPage().path === path)
       li
         a(href=path2url(`/${pageData.path}`))= pageData.titleText

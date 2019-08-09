@@ -22,19 +22,13 @@ block vars
 block content
   h1= titleText
 
-  -
-    const novels = (
-      collections.novels
-        .filter(data => (data.parentPage() || {}).path === path)
-        .reverse()
-    );
-  each data in novels
+  each novelData in [...collections.novels].reverse()
     h2
-      a(href=path2url(`/${data.path}`))= data.titleText
-    - const pages = data.childPages()
+      a(href=path2url(`/${novelData.path}`))= novelData.titleText
+    - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
     if pages.length
       ul
-        each pageData in collections.novels.filter(data => pages.some(page => page.path === data.path))
+        each pageData in pages
           li
             a(href=path2url(`/${pageData.path}`))= pageData.titleText
   else
