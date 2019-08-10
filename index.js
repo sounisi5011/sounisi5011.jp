@@ -70,6 +70,23 @@ Metalsmith(__dirname)
       }
       metadata.preloadDependencies = [...preloadDependenciesSet];
     }
+    Object.values(files).forEach(filedata => {
+      if (!filedata.hasOwnProperty('preloadDependencies')) {
+        filedata.preloadDependencies = [];
+      }
+      if (Array.isArray(filedata.preloadDependencies)) {
+        const preloadDependenciesSet = new Set();
+        if (Array.isArray(filedata.localPageStyles)) {
+          filedata.localPageStyles.forEach(url =>
+            preloadDependenciesSet.add(url),
+          );
+        }
+        filedata.preloadDependencies.forEach(url =>
+          preloadDependenciesSet.add(url),
+        );
+        filedata.preloadDependencies = [...preloadDependenciesSet];
+      }
+    });
     done();
   })
   .use(
