@@ -34,7 +34,6 @@ Metalsmith(__dirname)
   .metadata({
     /* eslint-disable sort-keys */
     siteName: 'sounisi5011.jp',
-    description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css', '/header.css', '/footer.css'],
     preloadDependencies: ['/default.css', '/header.css', '/footer.css'],
@@ -43,7 +42,6 @@ Metalsmith(__dirname)
         ? process.env.URL
         : process.env.DEPLOY_URL) || '',
     timezone: 9 * 60,
-    title: 'sounisi5011.jp',
     ogpType: 'website',
     ogpImageList: [
       {
