@@ -36,7 +36,6 @@ Metalsmith(__dirname)
     siteName: 'sounisi5011.jp',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css', '/header.css', '/footer.css'],
-    preloadDependencies: ['/default.css', '/header.css', '/footer.css'],
     rootURL:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
@@ -57,6 +56,22 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use((files, metalsmith, done) => {
+    const metadata = metalsmith.metadata();
+    if (!metadata.hasOwnProperty('preloadDependencies')) {
+      metadata.preloadDependencies = [];
+    }
+    if (Array.isArray(metadata.preloadDependencies)) {
+      const preloadDependenciesSet = new Set(metadata.preloadDependencies);
+      if (Array.isArray(metadata.globalPageStyles)) {
+        metadata.globalPageStyles.forEach(url =>
+          preloadDependenciesSet.add(url),
+        );
+      }
+      metadata.preloadDependencies = [...preloadDependenciesSet];
+    }
+    done();
+  })
   .use(
     pugCompile({
       copyFileData: true,
