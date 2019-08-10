@@ -71,7 +71,9 @@ block content
         when 'twitter'
           li
             a(href=`https://twitter.com/intent/user?user_id=${socialLink.id}` target="_blank" title=`Twitter @${socialLink.screenName}`)
-              span.service-name Twitter: 
+              span.service-name
+                | Twitter:
+                |
               = `@${socialLink.screenName}`
         default
           li
