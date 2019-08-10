@@ -52,7 +52,7 @@ extends _layout
 
 block content
   div.main-icon
-    img(src="/images/my-symbol.svg" alt="")
+    img(src=rootRrelativeURL("images", "my-symbol.svg") alt="")
   h1= title
   p.about-text
     span.bunsetsu いろいろやってます。
@@ -63,7 +63,7 @@ block content
   h2 創作
   ul.contents-links
     li.characters
-      a(href="/characters" title="創作キャラ一覧") Characters
+      a(href=rootRrelativeURL("characters") title="創作キャラ一覧") Characters
   h2 外部サイト
   ul.social-links
     each socialLink in socialLinkList

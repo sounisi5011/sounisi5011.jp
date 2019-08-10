@@ -45,7 +45,7 @@ block content
     }
     const characterRecord = collections.characters
       .reduce((obj, fileData) => {
-        const url = path2url(`/${fileData.path}`);
+        const url = rootRrelativeURL(fileData.path);
         const pathMatch = /^\/characters(?:\/([^/]+))?\/([^/]+)\/?$/.exec(url);
         const series = decodeURIComponent(pathMatch[1] || '');
         const name = decodeURIComponent(pathMatch[2]);

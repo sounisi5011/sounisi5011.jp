@@ -19,6 +19,15 @@ function path2url(pathstr) {
 }
 exports.path2url = path2url;
 
+function rootRrelativeURL(...paths) {
+  return path
+    .join('/', ...paths.map(pathstr => path.normalize(pathstr)))
+    .split(path.sep)
+    .map(strictUriEncode)
+    .join('/');
+}
+Object.assign(exports, { rootRrelativeURL });
+
 function canonicalURL(rootURL, pathOrURL) {
   if (/^(?:https?:)?[/]{2}/.test(pathOrURL)) {
     return pathOrURL;

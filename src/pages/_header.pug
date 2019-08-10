@@ -6,14 +6,14 @@ header.page
         const pngImage = qrCodeImageFiles.png;
       if svgImage && pngImage
         picture.qr-code
-          source(srcset=`/${path2url(svgImage.path)}` type="image/svg+xml")
-          img(src=`/${path2url(pngImage.path)}`
+          source(srcset=rootRrelativeURL(svgImage.path) type="image/svg+xml")
+          img(src=rootRrelativeURL(pngImage.path)
               width=pngImage.width
               height=pngImage.height
               alt="")
       else if svgImage || pngImage
         - const image = svgImage || pngImage;
-        img.qr-code(src=`/${path2url(image.path)}`
+        img.qr-code(src=rootRrelativeURL(image.path)
                     width=image.width
                     height=image.height
                     alt="")

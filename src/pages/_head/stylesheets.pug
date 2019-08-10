@@ -1,4 +1,4 @@
 - const unique = (...args) => [...new Set(args)];
 - const pageStyles = unique(...globalPageStyles, ...localPageStyles);
 each stylePath in pageStyles
-  link(rel="stylesheet" href=stylePath)
+  link(rel="stylesheet" href=rootRrelativeURL(stylePath))
