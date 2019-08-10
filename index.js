@@ -33,6 +33,7 @@ const templateFuncs = require('./src/utils/template-functions');
 Metalsmith(__dirname)
   .metadata({
     /* eslint-disable sort-keys */
+    siteName: 'sounisi5011.jp',
     description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css', '/header.css', '/footer.css'],

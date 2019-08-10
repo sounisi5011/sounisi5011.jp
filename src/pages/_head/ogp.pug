@@ -21,8 +21,8 @@ if ogpType && Array.isArray(ogpImageList) && 1 <= ogpImageList.length
         meta(property="og:image:alt" content=imageData.alt)
   if ogpLocale
     meta(property="og:locale" content=ogpLocale)
-  if ogpSiteName && ogpSiteName !== (ogpTitle ? ogpTitle : titleText)
-    meta(property="og:site_name" content=ogpSiteName)
+  if (ogpSiteName || siteName) !== (ogpTitle ? ogpTitle : titleText)
+    meta(property="og:site_name" content=(ogpSiteName || siteName))
 if twitterCardType && twitterCardType !== 'summary'
   meta(name="twitter:card" content=twitterCardType)
 if twitterCardServiceProviderList
