@@ -1,6 +1,6 @@
 if ogpType && Array.isArray(ogpImageList) && 1 <= ogpImageList.length
-  meta(property="og:title" content=(ogpTitle ? ogpTitle : titleText))
-  meta(property="og:description" content=(ogpDescription ? ogpDescription : descriptionText))
+  meta(property="og:title" content=(ogpTitle ? ogpTitle : title))
+  meta(property="og:description" content=(ogpDescription ? ogpDescription : description))
   meta(property="og:type" content=ogpType)
   meta(property="og:url" content=canonicalURL(rootURL, path))
   each imageData in ogpImageList
@@ -21,7 +21,7 @@ if ogpType && Array.isArray(ogpImageList) && 1 <= ogpImageList.length
         meta(property="og:image:alt" content=imageData.alt)
   if ogpLocale
     meta(property="og:locale" content=ogpLocale)
-  if (ogpSiteName || siteName) !== (ogpTitle ? ogpTitle : titleText)
+  if (ogpSiteName || siteName) !== (ogpTitle ? ogpTitle : title)
     meta(property="og:site_name" content=(ogpSiteName || siteName))
 if twitterCardType && twitterCardType !== 'summary'
   meta(name="twitter:card" content=twitterCardType)
