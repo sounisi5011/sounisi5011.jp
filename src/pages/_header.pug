@@ -18,7 +18,7 @@ header.page
                     height=image.height
                     alt="")
     span.url
-      each urlItem, index in yahooStyleURLBreaker(canonicalURL(rootURL, path))
+      each urlItem, index in yahooStyleURLBreaker(canonicalURL(visibleRootURL, path))
         if index !== 0
           wbr
         span.bunsetsu= urlItem

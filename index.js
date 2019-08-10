@@ -41,6 +41,7 @@ Metalsmith(__dirname)
       (process.env.CONTEXT === 'production'
         ? process.env.URL
         : process.env.DEPLOY_URL) || '',
+    visibleRootURL: process.env.URL,
     timezone: 9 * 60,
     ogpType: 'website',
     ogpImageList: [
@@ -118,7 +119,7 @@ Metalsmith(__dirname)
           ...file,
         };
         return templateFuncs.canonicalURL(
-          data.rootURL,
+          data.visibleRootURL,
           data.hasOwnProperty('path') ? data.path : filename,
         );
       },
