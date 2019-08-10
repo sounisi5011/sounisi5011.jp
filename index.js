@@ -52,6 +52,7 @@ Metalsmith(__dirname)
         height: 400,
       },
     ],
+    ogpLocale: 'ja_JP',
     /* eslint-enable */
   })
   .source('./src/pages')
