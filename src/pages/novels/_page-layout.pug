@@ -46,6 +46,21 @@ block content
   block novel-title
     h1= title
   block novel-header
+    p.pagination
+      block head-pagination
+        if getPagination().previous
+          a(href=rootRrelativeURL(getPagination().previous.path) rel="prev") 前へ
+          span(role="presentation")
+            |
+            | /
+            |
+        if getPagination().next
+          a(href=rootRrelativeURL(getPagination().next.path) rel="next") 次へ
+          span(role="presentation")
+            |
+            | /
+            |
+        a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
   block novel-body
   block novel-footer
     p.pagination
