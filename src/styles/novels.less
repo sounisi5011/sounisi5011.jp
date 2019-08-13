@@ -18,9 +18,8 @@ h1 {
   justify-content: center;
 
   & > a {
-    &:not(:first-child):not([rel="prev"]) {
-      margin-left: @pagination-gap;
-    }
+    margin-left: @pagination-gap / 2;
+    margin-right: @pagination-gap / 2;
 
     &[rel="prev"] {
       order: 1;
@@ -28,18 +27,10 @@ h1 {
 
     &[rel="contents"] {
       order: 2;
-
-      &:first-child {
-        margin-left: @pagination-gap;
-      }
     }
 
     &[rel="next"] {
       order: 3;
-
-      &:first-child {
-        margin-left: @pagination-gap;
-      }
     }
   }
 
