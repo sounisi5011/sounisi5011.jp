@@ -4,7 +4,6 @@ const assetsConvention = require('metalsmith-assets-convention');
 const collections = require('metalsmith-collections');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
-const pagination = require('metalsmith-pagination');
 const permalinks = require('metalsmith-permalinks');
 const postcss = require('metalsmith-postcss');
 const {
@@ -118,15 +117,6 @@ Metalsmith(__dirname)
         pattern: ['novels/*/*.html', '!novels/*/index.html'],
         refer: false,
         sortBy: 'sortOrder',
-      },
-    }),
-  )
-  .use(
-    pagination({
-      'collections.novelsPages': {
-        pageContents: Buffer.from(''),
-        path: 'novels/:novelname/index.html',
-        perPage: 1,
       },
     }),
   )
