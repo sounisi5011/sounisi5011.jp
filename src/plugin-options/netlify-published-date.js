@@ -11,8 +11,8 @@ exports.ignoreContentsEquals = contents => {
   try {
     const $ = cheerio.load(contents.toString());
 
-    // canonical URLを置換
-    $('head link[rel~=canonical][href^="http"]').each((index, element) => {
+    // link要素のURLを置換
+    $('link[href^="http"]').each((index, element) => {
       const $meta = $(element);
       const hrefAttr = $meta.attr('href');
       if (netlifyDeployUrlRegExp.test(hrefAttr)) {
