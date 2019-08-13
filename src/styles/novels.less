@@ -65,3 +65,22 @@ h1 {
   }
 }
 .spacing-loop(30);
+
+.spacing-vh {
+  @default-hr-margin: 0.5em;
+  @spacing: 100vh;
+
+  p& {
+    margin-top: @spacing;
+    margin-bottom: @spacing;
+  }
+
+  hr& {
+    margin-top: calc(@spacing + @default-hr-margin);
+    margin-bottom: calc(@spacing + @default-hr-margin);
+  }
+
+  br& {
+    line-height: @spacing;
+  }
+}
