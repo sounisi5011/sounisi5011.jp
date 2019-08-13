@@ -40,3 +40,28 @@ h1 {
     display: none;
   }
 }
+
+.spacing-loop (@lines) when (1 < @lines) {
+  .spacing-loop((@lines - 1));
+
+  @default-lh: 1.5;
+  @default-hr-margin: 0.5em;
+  @spacing: @lines * @default-lh;
+
+  .spacing-@{lines} {
+    p& {
+      margin-top: @spacing * 1em;
+      margin-bottom: @spacing * 1em;
+    }
+
+    hr& {
+      margin-top: @spacing + @default-hr-margin;
+      margin-bottom: @spacing + @default-hr-margin;
+    }
+
+    br& {
+      line-height: @spacing;
+    }
+  }
+}
+.spacing-loop(30);
