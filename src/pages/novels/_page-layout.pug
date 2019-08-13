@@ -33,9 +33,9 @@ mixin pagination-next
 prepend vars
   -
     {
-      const titleSuffix = ` - ${parentPage().title}`;
-      if (!title.endsWith(titleSuffix)) {
-        title += titleSuffix;
+      const titlePrefix = `${parentPage().title} / `;
+      if (!title.startsWith(titlePrefix)) {
+        title = titlePrefix + title;
       }
 
       let getPagination$retVal;
