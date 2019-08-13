@@ -1,27 +1,28 @@
-meta(property="og:title" content=(ogpTitle ? ogpTitle : titleText))
-meta(property="og:description" content=(ogpDescription ? ogpDescription : descriptionText))
-meta(property="og:type" content=ogpType)
-meta(property="og:url" content=canonicalURL(rootURL, path))
-each imageData in ogpImageList
-  if imageData
-    -
-      const imageURL = canonicalURL(
-        rootURL,
-        typeof imageData === 'object' ? imageData.url : imageData
-      );
-    meta(property="og:image" content=imageURL)
-    if imageData.type
-      meta(property="og:image:type" content=imageData.type)
-    if imageData.width
-      meta(property="og:image:width" content=imageData.width)
-    if imageData.height
-      meta(property="og:image:height" content=imageData.height)
-    if imageData.alt
-      meta(property="og:image:alt" content=imageData.alt)
-if ogpLocale
-  meta(property="og:locale" content=ogpLocale)
-if ogpSiteName && ogpSiteName !== (ogpTitle ? ogpTitle : titleText)
-  meta(property="og:site_name" content=ogpSiteName)
+if ogpType && Array.isArray(ogpImageList) && 1 <= ogpImageList.length
+  meta(property="og:title" content=(ogpTitle ? ogpTitle : title))
+  meta(property="og:description" content=(ogpDescription ? ogpDescription : description))
+  meta(property="og:type" content=ogpType)
+  meta(property="og:url" content=canonicalURL(rootURL, path))
+  each imageData in ogpImageList
+    if imageData
+      -
+        const imageURL = canonicalURL(
+          rootURL,
+          typeof imageData === 'object' ? imageData.url : imageData
+        );
+      meta(property="og:image" content=imageURL)
+      if imageData.type
+        meta(property="og:image:type" content=imageData.type)
+      if imageData.width
+        meta(property="og:image:width" content=imageData.width)
+      if imageData.height
+        meta(property="og:image:height" content=imageData.height)
+      if imageData.alt
+        meta(property="og:image:alt" content=imageData.alt)
+  if ogpLocale
+    meta(property="og:locale" content=ogpLocale)
+  if (ogpSiteName || siteName) !== (ogpTitle ? ogpTitle : title)
+    meta(property="og:site_name" content=(ogpSiteName || siteName))
 if twitterCardType && twitterCardType !== 'summary'
   meta(name="twitter:card" content=twitterCardType)
 if twitterCardServiceProviderList

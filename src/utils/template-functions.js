@@ -11,6 +11,37 @@ if (typeof URL === 'undefined') {
 
 Object.assign(exports, hashFuncs);
 
+function unique(...args) {
+  return [...new Set(args)];
+}
+Object.assign(exports, { unique });
+
+function findPropValue(objList, propName) {
+  const obj = objList.find(obj => obj.hasOwnProperty(propName));
+  return obj ? obj[propName] : undefined;
+}
+Object.assign(exports, { findPropValue });
+
+function compareUnicode(a, b) {
+  const aChars = [...a];
+  const bChars = [...b];
+  const aLen = aChars.length;
+  const bLen = bChars.length;
+
+  const minLen = Math.min(aLen, bLen);
+  for (let index = 0; index < minLen; index++) {
+    const aCode = aChars[index].codePointAt(0);
+    const bCode = bChars[index].codePointAt(0);
+
+    if (aCode !== bCode) {
+      return aCode - bCode;
+    }
+  }
+
+  return aLen - bLen;
+}
+Object.assign(exports, { compareUnicode });
+
 function path2url(pathstr) {
   return pathstr
     .split(path.sep === '\\' ? /[\\/]/ : path.sep)
@@ -18,6 +49,15 @@ function path2url(pathstr) {
     .join('/');
 }
 exports.path2url = path2url;
+
+function rootRrelativeURL(...paths) {
+  return path
+    .join('/', ...paths.map(pathstr => path.normalize(pathstr)))
+    .split(path.sep)
+    .map(strictUriEncode)
+    .join('/');
+}
+Object.assign(exports, { rootRrelativeURL });
 
 function canonicalURL(rootURL, pathOrURL) {
   if (/^(?:https?:)?[/]{2}/.test(pathOrURL)) {

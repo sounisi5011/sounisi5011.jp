@@ -1,14 +1,9 @@
 ---
+title: sounisi5011.jp
+description: sounisi5011の創作とソーシャルサービスの集約サイト
 localPageStyles:
   - /root.css
-ogpType: website
-ogpImageList:
-  - url: /images/ogp.png
-    width: 400
-    height: 400
 preloadDependencies:
-  - /default.css
-  - /root.css
   - /images/my-symbol.svg
 socialLinkList:
   - type: twitter
@@ -56,8 +51,8 @@ extends _layout
 
 block content
   div.main-icon
-    img(src="/images/my-symbol.svg" alt="")
-  h1= titleText
+    img(src=rootRrelativeURL("images", "my-symbol.svg") alt="")
+  h1= title
   p.about-text
     span.bunsetsu いろいろやってます。
     wbr
@@ -69,7 +64,7 @@ block content
     li.novels
       a(href="/novels" title="創作小説") Novel
     li.characters
-      a(href="/characters" title="創作キャラ一覧") Characters
+      a(href=rootRrelativeURL("characters") title="創作キャラ一覧") Characters
   h2 外部サイト
   ul.social-links
     each socialLink in socialLinkList
@@ -77,7 +72,9 @@ block content
         when 'twitter'
           li
             a(href=`https://twitter.com/intent/user?user_id=${socialLink.id}` target="_blank" title=`Twitter @${socialLink.screenName}`)
-              span.service-name Twitter: 
+              span.service-name
+                | Twitter:
+                |
               = `@${socialLink.screenName}`
         default
           li
