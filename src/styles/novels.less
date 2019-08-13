@@ -21,7 +21,8 @@ h1 {
     margin-left: @pagination-gap / 2;
     margin-right: @pagination-gap / 2;
 
-    &[rel="prev"] {
+    &[rel="prev"],
+    &.prev {
       order: 1;
     }
 
@@ -29,7 +30,8 @@ h1 {
       order: 2;
     }
 
-    &[rel="next"] {
+    &[rel="next"],
+    &.next {
       order: 3;
     }
   }

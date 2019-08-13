@@ -1,5 +1,35 @@
 extends _layout
 
+mixin pagination-prev
+  - const prevPage = getPagination().previous;
+  if prevPage
+    a(href=rootRrelativeURL(prevPage.path) rel="prev")&attributes(attributes)
+      if block
+        block
+      else
+        | 前へ
+  else
+    a.prev&attributes(attributes)
+      if block
+        block
+      else
+        | 前へ
+
+mixin pagination-next
+  - const nextPage = getPagination().next;
+  if nextPage
+    a(href=rootRrelativeURL(nextPage.path) rel="next")&attributes(attributes)
+      if block
+        block
+      else
+        | 次へ
+  else
+    a.next&attributes(attributes)
+      if block
+        block
+      else
+        | 次へ
+
 prepend vars
   -
     {
@@ -48,33 +78,29 @@ block content
   block novel-header
     p.pagination
       block head-pagination
-        if getPagination().previous
-          a(href=rootRrelativeURL(getPagination().previous.path) rel="prev") 前へ
-          span(role="presentation")
-            |
-            | /
-            |
-        if getPagination().next
-          a(href=rootRrelativeURL(getPagination().next.path) rel="next") 次へ
-          span(role="presentation")
-            |
-            | /
-            |
+        +pagination-prev
+        span(role="presentation")
+          |
+          | /
+          |
+        +pagination-next
+        span(role="presentation")
+          |
+          | /
+          |
         a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
   block novel-body
   block novel-footer
     p.pagination
       block pagination
-        if getPagination().next
-          a(href=rootRrelativeURL(getPagination().next.path) rel="next") 次へ
-          span(role="presentation")
-            |
-            | /
-            |
-        if getPagination().previous
-          a(href=rootRrelativeURL(getPagination().previous.path) rel="prev") 前へ
-          span(role="presentation")
-            |
-            | /
-            |
+        +pagination-next
+        span(role="presentation")
+          |
+          | /
+          |
+        +pagination-prev
+        span(role="presentation")
+          |
+          | /
+          |
         a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
