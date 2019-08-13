@@ -1,0 +1,10 @@
+extends _layout
+
+prepend vars
+  -
+    {
+      const titleSuffix = ` - ${parentPage().title}`;
+      if (!title.endsWith(titleSuffix)) {
+        title += titleSuffix;
+      }
+    }
