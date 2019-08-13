@@ -11,13 +11,6 @@ block content
   h1= title
 
   -
-    function getProp(objList, propName) {
-      const obj = objList.find(data => data.hasOwnProperty(propName));
-      return obj ? obj[propName] : undefined;
-    }
-    function compareDefaultSort(a, b) {
-      return [a, b].sort()[0] === a ? -1 : 1;
-    }
     function sortSeries([seriesA, characterListA], [seriesB, characterListB]) {
       const aFirst = -1;
       const bFirst = 1;
@@ -26,8 +19,8 @@ block content
       if (!seriesA && seriesB) return aFirst;
       if (seriesA && !seriesB) return bFirst;
 
-      const sortSeriesOrderA = getProp(characterListA, 'sortSeriesOrder');
-      const sortSeriesOrderB = getProp(characterListB, 'sortSeriesOrder');
+      const sortSeriesOrderA = findPropValue(characterListA, 'sortSeriesOrder');
+      const sortSeriesOrderB = findPropValue(characterListB, 'sortSeriesOrder');
 
       // sortSeriesOrderプロパティを持たない作品シリーズは後ろにソート
       if (sortSeriesOrderA && !sortSeriesOrderB) return aFirst;
@@ -39,7 +32,7 @@ block content
       }
 
       // sortSeriesOrderプロパティを持たない作品シリーズ同士は、シリーズ名の比較でソート
-      return compareDefaultSort(seriesA, seriesB);
+      return compareUnicode(seriesA, seriesB);
     }
     const characterRecord = collections.characters
       .reduce((obj, fileData) => {
