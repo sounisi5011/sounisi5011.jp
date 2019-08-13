@@ -10,3 +10,40 @@ html {
 h1 {
   text-align: center;
 }
+
+.pagination {
+  @pagination-gap: 1em;
+
+  display: flex;
+  justify-content: center;
+
+  & > a {
+    &:not(:first-child):not([rel="prev"]) {
+      margin-left: @pagination-gap;
+    }
+
+    &[rel="prev"] {
+      order: 1;
+    }
+
+    &[rel="contents"] {
+      order: 2;
+
+      &:first-child {
+        margin-left: @pagination-gap;
+      }
+    }
+
+    &[rel="next"] {
+      order: 3;
+
+      &:first-child {
+        margin-left: @pagination-gap;
+      }
+    }
+  }
+
+  & > [role="presentation"] {
+    display: none;
+  }
+}
