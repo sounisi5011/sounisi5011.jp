@@ -4,18 +4,13 @@ description: 異なる歴史を歩んだ世界。終身刑を言い渡された�
 sortOrder: 1
 reprintNovel:
   source: http://green.ribbon.to/~keiru/mts/mts.cgi?mode=view&no=2&id=5011
-  published: 2012-03-25 09:44 +09:00
-  modified: 2012-03-27 18:10 +09:00
+  published: 2012-03-25 09:44:00 +09:00
+  modified: 2012-03-27 18:10:00 +09:00
 localPageStyles:
   - /novels.css
 ---
 
 extends ../../_layout
-
-block vars
-  -
-    reprintNovel.published = new Date(reprintNovel.published)
-    reprintNovel.modified = new Date(reprintNovel.modified)
 
 block content
   h1= title

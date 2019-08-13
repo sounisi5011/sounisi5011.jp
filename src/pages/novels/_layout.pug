@@ -1,10 +1,4 @@
 extends ../_layout
 
 prepend vars
-  - console.log(reprintNovel)
-  if reprintNovel
-    if reprintNovel.published && !Number.isNaN(Date.parse(reprintNovel.published))
-      - reprintNovel.published = new Date(reprintNovel.published)
-    if reprintNovel.modified && !Number.isNaN(Date.parse(reprintNovel.modified))
-      - reprintNovel.modified = new Date(reprintNovel.modified)
   - const getPageDataList = () => collections.novelsPages.filter(pageData => pageData.parentPage().path === path)

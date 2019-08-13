@@ -4,18 +4,13 @@ description: 竜の腹の中で溶かされ、男の命は尽きた。だが彼�
 sortOrder: 4
 reprintNovel:
   source: http://green.ribbon.to/~keiru/mts/mts.cgi?mode=view&no=5&id=5011
-  published: 2012-03-28 01:02 +09:00
-  modified: 2012-03-28 11:22 +09:00
+  published: 2012-03-28 01:02:00 +09:00
+  modified: 2012-03-28 11:22:00 +09:00
 localPageStyles:
   - /novels.css
 ---
 
 extends ../../_layout
-
-block vars
-  -
-    reprintNovel.published = new Date(reprintNovel.published)
-    reprintNovel.modified = new Date(reprintNovel.modified)
 
 block content
   h1= title
