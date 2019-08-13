@@ -7,4 +7,52 @@ prepend vars
       if (!title.endsWith(titleSuffix)) {
         title += titleSuffix;
       }
+
+      let getPagination$retVal;
+      function getPagination() {
+        if (!getPagination$retVal) {
+          const parentPageData = parentPage();
+          const pageDataList = collections.novelsPages
+            .filter(pageData => pageData.parentPage().path === parentPageData.path);
+          const currentPageDataIndex = pageDataList
+            .findIndex(pageData => pageData.path === path);
+
+          getPagination$retVal = {
+            pageList: pageDataList,
+            currentPageIndex: currentPageDataIndex,
+            first: pageDataList[0],
+            previous: pageDataList[currentPageDataIndex - 1],
+            current: pageDataList[currentPageDataIndex],
+            next: pageDataList[currentPageDataIndex + 1],
+            last: pageDataList[pageDataList.length - 1],
+          };
+        }
+
+        return getPagination$retVal;
+      }
     }
+
+prepend preload
+  //- ページネーション関係のURLには絶対URLを使ったほうが良い
+  //- see https://www.contentkingapp.com/academy/pagination/#use-absolute-urls
+  if getPagination().previous
+    link(rel="prev" href=canonicalURL(rootURL, getPagination().previous.path))
+  if getPagination().next
+    link(rel="next" href=canonicalURL(rootURL, getPagination().next.path))
+
+block content
+  block novel-title
+    h1= title
+  block novel-header
+  block novel-body
+  block novel-footer
+    p.pagination
+      block pagination
+        if getPagination().previous
+          a(href=rootRrelativeURL(getPagination().previous.path) rel="prev") 前へ
+        if getPagination().previous && getPagination().next
+          |
+          | /
+          |
+        if getPagination().next
+          a(href=rootRrelativeURL(getPagination().next.path) rel="next") 次へ
