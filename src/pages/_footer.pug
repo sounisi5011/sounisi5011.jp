@@ -29,9 +29,9 @@ footer.page
             .filter(Number.isFinite)
             .reduce((a, b) => Math.max(a, b));
           const srcsetValue = creativecommonsImageList
-            .map(({ src, width }) => `${src} ${Math.min(width, maxWidth + 1)}w`)
+            .map(({ src, width }) => `${rootRrelativeURL(src)} ${Math.min(width, maxWidth + 1)}w`)
             .join(',');
-        img(src=creativecommonsImageList.find(({ width }) => width === 88).src
+        img(src=rootRrelativeURL(creativecommonsImageList.find(({ width }) => width === 88).src)
             srcset=srcsetValue
             alt="クリエイティブ・コモンズ 表示 - 継承 4.0 国際ライセンス"
             width="88" height="31" sizes="88px")

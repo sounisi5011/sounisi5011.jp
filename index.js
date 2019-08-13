@@ -32,19 +32,63 @@ const templateFuncs = require('./src/utils/template-functions');
 
 Metalsmith(__dirname)
   .metadata({
-    description: 'sounisi5011の創作とソーシャルサービスの集約サイト',
+    /* eslint-disable sort-keys */
+    siteName: 'sounisi5011.jp',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css', '/header.css', '/footer.css'],
     rootURL:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
         : process.env.DEPLOY_URL) || '',
+    visibleRootURL: process.env.URL,
     timezone: 9 * 60,
-    title: 'sounisi5011.jp',
+    ogpType: 'website',
+    ogpImageList: [
+      {
+        url: '/images/ogp.png',
+        width: 400,
+        height: 400,
+      },
+    ],
+    ogpLocale: 'ja_JP',
+    /* eslint-enable */
   })
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use((files, metalsmith, done) => {
+    const metadata = metalsmith.metadata();
+    if (!metadata.hasOwnProperty('preloadDependencies')) {
+      metadata.preloadDependencies = [];
+    }
+    if (Array.isArray(metadata.preloadDependencies)) {
+      const preloadDependenciesSet = new Set(metadata.preloadDependencies);
+      if (Array.isArray(metadata.globalPageStyles)) {
+        metadata.globalPageStyles.forEach(url =>
+          preloadDependenciesSet.add(url),
+        );
+      }
+      metadata.preloadDependencies = [...preloadDependenciesSet];
+    }
+    Object.values(files).forEach(filedata => {
+      if (!filedata.hasOwnProperty('preloadDependencies')) {
+        filedata.preloadDependencies = [];
+      }
+      if (Array.isArray(filedata.preloadDependencies)) {
+        const preloadDependenciesSet = new Set();
+        if (Array.isArray(filedata.localPageStyles)) {
+          filedata.localPageStyles.forEach(url =>
+            preloadDependenciesSet.add(url),
+          );
+        }
+        filedata.preloadDependencies.forEach(url =>
+          preloadDependenciesSet.add(url),
+        );
+        filedata.preloadDependencies = [...preloadDependenciesSet];
+      }
+    });
+    done();
+  })
   .use(
     pugCompile({
       copyFileData: true,
@@ -107,7 +151,7 @@ Metalsmith(__dirname)
           ...file,
         };
         return templateFuncs.canonicalURL(
-          data.rootURL,
+          data.visibleRootURL,
           data.hasOwnProperty('path') ? data.path : filename,
         );
       },

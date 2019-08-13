@@ -1,20 +1,28 @@
 block vars
--
-  titleText = titleText || title
-  descriptionText = descriptionText || description
 doctype html
 html(lang="ja")
   head(prefix="og: http://ogp.me/ns#")
-    meta(charset="utf-8")
-    meta(name="viewport" content="width=device-width,initial-scale=1")
-    meta(name="format-detection" content="telephone=no,email=no,address=no")
-    title= titleText
-    meta(name="description" content=descriptionText)
-    link(rel="canonical" href=canonicalURL(rootURL, path))
-    include _head/preload
-    include _head/ogp
-    include _head/stylesheets
+    block head
+      meta(charset="utf-8")
+      meta(name="viewport" content="width=device-width,initial-scale=1")
+      meta(name="format-detection" content="telephone=no,email=no,address=no")
+      title
+        = title
+        if title !== siteName
+          = ` - ${siteName}`
+      meta(name="description" content=description)
+      link(rel="canonical" href=canonicalURL(rootURL, path))
+      block preload
+        include _head/preload
+      block ogp
+        include _head/ogp
+      block stylesheets
+        include _head/stylesheets
+      block head-script
   body(itemscope itemtype="http://schema.org/WebPage")
-    include _header
+    block header
+      include _header
     block content
-    include _footer
+    block footer
+      include _footer
+    block body-script

@@ -2,7 +2,7 @@ if preloadList
   each resourceData in preloadList
     if resourceData
       link(rel="preload"
-           href=resourceData.href
+           href=rootRrelativeURL(resourceData.href)
            as=resourceData.as
            type=resourceData.type
            crossorigin=resourceData.crossorigin)
