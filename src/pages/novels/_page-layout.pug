@@ -20,6 +20,7 @@ prepend vars
           getPagination$retVal = {
             pageList: pageDataList,
             currentPageIndex: currentPageDataIndex,
+            contents: parentPageData,
             first: pageDataList[0],
             previous: pageDataList[currentPageDataIndex - 1],
             current: pageDataList[currentPageDataIndex],
@@ -35,6 +36,7 @@ prepend vars
 prepend preload
   //- ページネーション関係のURLには絶対URLを使ったほうが良い
   //- see https://www.contentkingapp.com/academy/pagination/#use-absolute-urls
+  link(rel="contents" href=canonicalURL(rootURL, getPagination().contents.path))
   if getPagination().previous
     link(rel="prev" href=canonicalURL(rootURL, getPagination().previous.path))
   if getPagination().next
@@ -50,9 +52,12 @@ block content
       block pagination
         if getPagination().previous
           a(href=rootRrelativeURL(getPagination().previous.path) rel="prev") 前へ
-        if getPagination().previous && getPagination().next
           |
           | /
           |
+        a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
         if getPagination().next
+          |
+          | /
+          |
           a(href=rootRrelativeURL(getPagination().next.path) rel="next") 次へ
