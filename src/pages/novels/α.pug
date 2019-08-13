@@ -1,26 +1,14 @@
 ---
-titleText: α
-descriptionText: 昔書いたもの。公開は初。
+title: α
+description: 昔書いたもの。公開は初。
 sortOrder: 2
 localPageStyles:
-  - /novels.css
-ogpType: website
-ogpImageList:
-  - url: /images/ogp.png
-    width: 400
-    height: 400
-preloadDependencies:
-  - /default.css
   - /novels.css
 ---
 
 extends ../_layout
 
-block vars
-  -
-    const ogpSiteName = title;
-
 block content
-  h1= titleText
+  h1= title
 
   p 世界が驚く内容。

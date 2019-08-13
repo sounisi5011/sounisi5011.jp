@@ -1,6 +1,6 @@
 ---
-titleText: 完 - Time Out
-descriptionText: 竜の腹の中で溶かされ、男の命は尽きた。だが彼の人生は、そこで終わりはしなかった。
+title: 完 - Time Out
+description: 竜の腹の中で溶かされ、男の命は尽きた。だが彼の人生は、そこで終わりはしなかった。
 sortOrder: 4
 reprintNovel:
   source: http://green.ribbon.to/~keiru/mts/mts.cgi?mode=view&no=5&id=5011
@@ -8,26 +8,17 @@ reprintNovel:
   modified: 2012-03-28 11:22 +09:00
 localPageStyles:
   - /novels.css
-ogpType: website
-ogpImageList:
-  - url: /images/ogp.png
-    width: 400
-    height: 400
-preloadDependencies:
-  - /default.css
-  - /novels.css
 ---
 
 extends ../../_layout
 
 block vars
   -
-    const ogpSiteName = title;
     reprintNovel.published = new Date(reprintNovel.published)
     reprintNovel.modified = new Date(reprintNovel.modified)
 
 block content
-  h1= titleText
+  h1= title
 
   p.
     ※ここからは主人公が居ないため、第三者目線でいきます。#[br]
