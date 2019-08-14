@@ -18,6 +18,14 @@ em:lang(ja) {
   }
 }
 
+abbr[title] {
+  text-decoration: none;
+
+  &:after {
+    content: "（" attr(title) "）";
+  }
+}
+
 .small {
   font-size: smaller;
 }
