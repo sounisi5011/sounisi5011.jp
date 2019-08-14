@@ -15,7 +15,7 @@ block content
       a(href=rootRrelativeURL(novelData.path))= novelData.title
     - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
     if pages.length
-      ul
+      ol
         each pageData in pages
           li
             a(href=rootRrelativeURL(pageData.path))= pageData.title
