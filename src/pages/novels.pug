@@ -20,7 +20,18 @@ block content
         if novelData.description
           p.novel-description(itemprop="description")= novelData.description
 
-        p
+        - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
+        if pages.length
+          ol.novel-pages(itemprop="hasPart" itemscope itemtype="http://schema.org/Collection")
+            each pageData in pages
+              li(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
+                span(itemprop="headline")
+                  a(href=rootRrelativeURL(pageData.path))= pageData.title
+                meta(itemprop="datePublished" content=formatDate(pageData.published, '%<time>', 0))
+                unless dateEquals(pageData.published, pageData.modified)
+                  meta(itemprop="dateModified" content=formatDate(pageData.modified, '%<time>', 0))
+
+        p.novel-date
           span.novel-published
             time(itemprop="datePublished" datetime=formatDate(novelData.published, '%<time>', 0))
               = formatDate(novelData.published, '%Y年%-m月%-d日', timezone*60)
@@ -33,16 +44,5 @@ block content
               time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
                 = formatDate(novelData.modified, '%Y年%-m月%-d日', timezone*60)
               | 更新
-
-        - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
-        if pages.length
-          ol.novel-pages(itemprop="hasPart" itemscope itemtype="http://schema.org/Collection")
-            each pageData in pages
-              li(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
-                span(itemprop="headline")
-                  a(href=rootRrelativeURL(pageData.path))= pageData.title
-                meta(itemprop="datePublished" content=formatDate(pageData.published, '%<time>', 0))
-                unless dateEquals(pageData.published, pageData.modified)
-                  meta(itemprop="dateModified" content=formatDate(pageData.modified, '%<time>', 0))
     else
       p まだ無いよ
