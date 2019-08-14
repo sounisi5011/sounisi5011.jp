@@ -12,6 +12,15 @@ localPageStyles:
 
 extends ../_page-layout
 
+append novel-header
+  p.head-message
+    time(datetime=formatDate(reprintNovel.published, '%<time>', timezone*60))
+      <ruby>古<rp>（</rp><rt>いにしえ</rt><rp>）</rp></ruby>
+      | の時代
+    | に書かれた作品。
+    a(href=reprintNovel.source target="_blank") 某所
+    | から転載しました。
+
 block novel-body
   p.
     ※ここからは主人公が居ないため、第三者目線でいきます。
@@ -168,3 +177,14 @@ block novel-body
     それだけは分かった。#[br]
     そう、自分の名前も子供の名前も、生まれた場所も、親が誰なのかも・・・#[br]
     そもそも自分は何者なのかも覚えていないが、これだけは覚えている。”この子供は自分の子”だと。
+
+  aside.message
+    h2 作者メッセージ
+    p.
+      やっぱり最後はグダグダにぃ～！#[br]
+      この話はオマケの様なものです。#[br]
+      夢にもこんなシーンは全くありませんでした。#[br]
+      しかし、書いていくうちに、この様などんでん返しを・・・最後はただ蘇生されたのではなく、#[br]
+      人生を変えてもらったという結末を書かせていただきました。#[br]
+      反省点としては、やはり・・・”蘇生注文”の説明が長ったらしく要点をちゃんと解説出来なかったことと、#[br]
+      描写を上手く説明出来なかったことですかね・・・

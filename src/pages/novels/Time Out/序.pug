@@ -12,6 +12,15 @@ localPageStyles:
 
 extends ../_page-layout
 
+append novel-header
+  p.head-message
+    time(datetime=formatDate(reprintNovel.published, '%<time>', timezone*60))
+      <ruby>古<rp>（</rp><rt>いにしえ</rt><rp>）</rp></ruby>
+      | の時代
+    | に書かれた作品。
+    a(href=reprintNovel.source target="_blank") 某所
+    | から転載しました。
+
 block novel-body
   p.
     ここは、現在よりも少し先の未来。#[br]

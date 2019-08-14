@@ -12,6 +12,15 @@ localPageStyles:
 
 extends ../_page-layout
 
+append novel-header
+  p.head-message
+    time(datetime=formatDate(reprintNovel.published, '%<time>', timezone*60))
+      <ruby>古<rp>（</rp><rt>いにしえ</rt><rp>）</rp></ruby>
+      | の時代
+    | に書かれた作品。
+    a(href=reprintNovel.source target="_blank") 某所
+    | から転載しました。
+
 block novel-body
   p.
     ギーゼル「くそっ時間が・・・」
@@ -144,3 +153,22 @@ block novel-body
     さぁて、睡眠邪魔されたからもう一回寝よっと。」
   p.
     ギーゼル「アア・・・ァ・・・ァ・・・・」
+
+  aside.message
+    h2 作者メッセージ
+    p.
+      ああ・・・捕食描写が下手すぎるぅぅ！！#[br]
+      最初に書いていた、「夢の内容」はここでおしまいです。#[br]
+      つまり、
+
+    ol
+      li 主人公、竜を討伐しに来る。
+      li ボロ負け。
+      li 弟子入りする。
+      li 時間が無い。
+      li もう一度戦う。
+      li 負ける。
+      li 食われる。
+
+    p.
+      これが夢の内容だった訳です。
