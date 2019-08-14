@@ -35,14 +35,10 @@ if twitterCardDescription
   meta(name="twitter:description" content=twitterCardDescription)
 if twitterCardTitle
   meta(name="twitter:title" content=twitterCardTitle)
-if twitterCardImageList
-  each imageData in twitterCardImageList
-    if imageData
-      -
-        const imageURL = canonicalURL(
-          rootURL,
-          typeof imageData === 'object' ? imageData.url : imageData
-        );
-      meta(name="twitter:image" content=imageURL)
-      if imageData.alt
-        meta(name="twitter:image:alt" content=imageData.alt)
+each imageData in twitterCardImageList || [null]
+  -
+    const imagePath = (typeof imageData === 'object' && imageData) ? imageData.url : imageData;
+    const imageURL = imagePath ? canonicalURL(rootURL, imagePath) : '';
+  meta(name="twitter:image" content=imageURL)
+  if typeof imageData === 'object' && imageData && imageData.alt
+    meta(name="twitter:image:alt" content=imageData.alt)
