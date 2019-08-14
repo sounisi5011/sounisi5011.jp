@@ -11,6 +11,17 @@ h1 {
   text-align: center;
 }
 
+em:lang(ja) {
+  @supports (text-emphasis-style: dot filled) {
+    text-emphasis-style: dot filled;
+    font-style: normal;
+  }
+}
+
+.small {
+  font-size: smaller;
+}
+
 .pagination {
   @pagination-gap: 1em;
 
