@@ -11,11 +11,11 @@ block content
   h1= title
 
   each novelData in [...collections.novels].reverse()
-    h2
+    h2.novel-title
       a(href=rootRrelativeURL(novelData.path))= novelData.title
     - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
     if pages.length
-      ol
+      ol.novel-pages
         each pageData in pages
           li
             a(href=rootRrelativeURL(pageData.path))= pageData.title
