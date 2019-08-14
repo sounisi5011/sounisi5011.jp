@@ -12,9 +12,7 @@ localPageStyles:
 
 extends ../_layout
 
-block content
-  h1= title
-
+block novel-content
   p
     time(datetime=formatDate(reprintNovel.published, '%<time>', timezone*60))
       <ruby>古<rp>（</rp><rt>いにしえ</rt><rp>）</rp></ruby>

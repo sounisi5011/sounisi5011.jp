@@ -72,35 +72,32 @@ prepend preload
   if getPagination().next
     link(rel="next" href=canonicalURL(rootURL, getPagination().next.path))
 
-block content
-  block novel-title
-    h1= title
-  block novel-header
-    p.pagination
-      block head-pagination
-        +pagination-prev
-        span(role="presentation")
-          |
-          | /
-          |
-        +pagination-next
-        span(role="presentation")
-          |
-          | /
-          |
-        a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
-  block novel-body
-  block novel-footer
-    p.pagination
-      block pagination
-        +pagination-next
-        span(role="presentation")
-          |
-          | /
-          |
-        +pagination-prev
-        span(role="presentation")
-          |
-          | /
-          |
-        a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
+block novel-header
+  p.pagination
+    block head-pagination
+      +pagination-prev
+      span(role="presentation")
+        |
+        | /
+        |
+      +pagination-next
+      span(role="presentation")
+        |
+        | /
+        |
+      a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
+
+block novel-footer
+  p.pagination
+    block pagination
+      +pagination-next
+      span(role="presentation")
+        |
+        | /
+        |
+      +pagination-prev
+      span(role="presentation")
+        |
+        | /
+        |
+      a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次

@@ -2,3 +2,12 @@ extends ../_layout
 
 prepend vars
   - const getPageDataList = () => collections.novelsPages.filter(pageData => pageData.parentPage().path === path)
+
+block content
+  block novel-title
+    h1.novel-title= title
+  block novel-content
+    block novel-header
+    main.novel-body
+      block novel-body
+    block novel-footer
