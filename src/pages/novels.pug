@@ -3,6 +3,7 @@ title: 創作小説一覧
 description: sounisi5011が創作した文章作品の掲載ページ
 localPageStyles:
   - /novels.css
+  - /novel-list.css
 ---
 
 extends _layout
@@ -10,7 +11,7 @@ extends _layout
 block content
   h1= title
 
-  main(itemprop="mainEntity" itemscope itemtype="http://schema.org/Collection")
+  main.novels(itemprop="mainEntity" itemscope itemtype="http://schema.org/Collection")
     each novelData in [...collections.novels].reverse()
       article.novel(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
         h2.novel-title(itemprop="headline")
