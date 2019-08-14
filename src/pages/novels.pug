@@ -10,15 +10,38 @@ extends _layout
 block content
   h1= title
 
-  each novelData in [...collections.novels].reverse()
-    article.novel
-      h2.novel-title
-        a(href=rootRrelativeURL(novelData.path))= novelData.title
-      - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
-      if pages.length
-        ol.novel-pages
-          each pageData in pages
-            li
-              a(href=rootRrelativeURL(pageData.path))= pageData.title
-  else
-    p まだ無いよ
+  main(itemprop="mainEntity" itemscope itemtype="http://schema.org/Collection")
+    each novelData in [...collections.novels].reverse()
+      article.novel(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
+        h2.novel-title(itemprop="headline")
+          a(href=rootRrelativeURL(novelData.path))= novelData.title
+
+        if novelData.description
+          p.novel-description(itemprop="description")= novelData.description
+
+        p
+          span.novel-published
+            time(itemprop="datePublished" datetime=formatDate(novelData.published, '%<time>', 0))
+              = formatDate(novelData.published, '%Y年%-m月%-d日', timezone*60)
+            | 公開
+          unless dateEquals(novelData.published, novelData.modified)
+            |
+            | /
+            |
+            span.novel-modified
+              time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
+                = formatDate(novelData.modified, '%Y年%-m月%-d日', timezone*60)
+              | 更新
+
+        - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
+        if pages.length
+          ol.novel-pages(itemprop="hasPart" itemscope itemtype="http://schema.org/Collection")
+            each pageData in pages
+              li(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
+                span(itemprop="headline")
+                  a(href=rootRrelativeURL(pageData.path))= pageData.title
+                meta(itemprop="datePublished" content=formatDate(pageData.published, '%<time>', 0))
+                unless dateEquals(pageData.published, pageData.modified)
+                  meta(itemprop="dateModified" content=formatDate(pageData.modified, '%<time>', 0))
+    else
+      p まだ無いよ

@@ -11,6 +11,26 @@ if (typeof URL === 'undefined') {
 
 Object.assign(exports, hashFuncs);
 
+function dateEquals(a, b) {
+  if (!(a && a instanceof Date)) {
+    throw new TypeError(
+      'dateEquals(a, b):\n' +
+        `  "a" parameter must be Date object.\n` +
+        `  buy it's value: ${JSON.stringify(a)}.`,
+    );
+  }
+  if (!(b && b instanceof Date)) {
+    throw new TypeError(
+      'dateEquals(a, b):\n' +
+        `  "b" parameter must be Date object.\n` +
+        `  buy it's value: ${JSON.stringify(b)}.`,
+    );
+  }
+
+  return a.getTime() === b.getTime();
+}
+Object.assign(exports, { dateEquals });
+
 function unique(...args) {
   return [...new Set(args)];
 }

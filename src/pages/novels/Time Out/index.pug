@@ -21,7 +21,11 @@ block novel-content
     a(href=reprintNovel.source target="_blank") 某所
     | から転載しました。
 
-  ol.novel-pages
+  ol.novel-pages(itemprop="hasPart" itemscope itemtype="http://schema.org/Collection")
     each pageData in getPageDataList()
-      li
-        a(href=rootRrelativeURL(pageData.path))= pageData.title
+      li(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
+        span(itemprop="headline")
+          a(href=rootRrelativeURL(pageData.path))= pageData.title
+        meta(itemprop="datePublished" content=formatDate(pageData.published, '%<time>', 0))
+        unless dateEquals(pageData.published, pageData.modified)
+          meta(itemprop="dateModified" content=formatDate(pageData.modified, '%<time>', 0))
