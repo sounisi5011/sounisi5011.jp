@@ -1,3 +1,5 @@
+@import "_mixins";
+
 html {
   // see https://github.com/sounisi5011/original-characters/blob/v1.4/assets/default.css#L12-L23
   -webkit-font-smoothing: antialiased;
@@ -24,6 +26,13 @@ abbr[title] {
   &:after {
     content: "（" attr(title) "）";
   }
+}
+
+// TODO: ruby要素に対応している環境だけで適用する
+ruby rp {
+  display: inline;
+  position: absolute;
+  .invisible-text;
 }
 
 .small {
