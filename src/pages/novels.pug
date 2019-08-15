@@ -25,8 +25,8 @@ block content
           ol.novel-pages(itemprop="hasPart" itemscope itemtype="http://schema.org/Collection")
             each pageData in pages
               li(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
-                span(itemprop="headline")
-                  a(href=rootRrelativeURL(pageData.path))= pageData.title
+                a(href=rootRrelativeURL(pageData.path))
+                  span(itemprop="headline")= pageData.title
                 meta(itemprop="datePublished" content=formatDate(pageData.published, '%<time>', 0))
                 unless dateEquals(pageData.published, pageData.modified)
                   meta(itemprop="dateModified" content=formatDate(pageData.modified, '%<time>', 0))
