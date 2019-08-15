@@ -35,17 +35,31 @@
 
     & > .novel-date {
       flex: 1;
-      display: grid;
-      grid-template:
+
+      // prettier-ignore
+      @grid-template:
         "date-line pub-date" max-content
         "date-line mod-date" max-content
         / auto max-content;
+
+      .supports-grid-layout(@rules) {
+        @supports (
+          (display: grid) and (grid-template: @grid-template) and
+            (grid-area: date-line)
+        ) {
+          @rules();
+        }
+      }
+
+      display: flex;
       align-items: center;
+      .supports-grid-layout({display: grid; grid-template: @grid-template;});
 
       font-size: smaller;
 
       &:before {
-        grid-area: date-line;
+        flex: 1;
+        .supports-grid-layout({grid-area: date-line; flex: unset;});
 
         content: "";
         margin-left: 0.2em;
@@ -53,12 +67,18 @@
         border-top: dotted 1px;
       }
 
+      & > .novel-published,
+      & > .novel-modified {
+        white-space: nowrap;
+        .supports-grid-layout({white-space: unset;});
+      }
+
       & > .novel-published {
-        grid-area: pub-date;
+        .supports-grid-layout({grid-area: pub-date;});
       }
 
       & > .novel-modified {
-        grid-area: mod-date;
+        .supports-grid-layout({grid-area: mod-date;});
       }
 
       & > .short-date {
@@ -66,7 +86,9 @@
       }
 
       & > .split-text {
-        display: none;
+        padding-left: 0.5ch;
+        padding-right: 0.5ch;
+        .supports-grid-layout({display: none;});
       }
     }
   }
