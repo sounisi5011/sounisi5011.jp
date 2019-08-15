@@ -201,6 +201,81 @@ function yahooStyleURLBreaker(url) {
 
 Object.assign(exports, { yahooStyleURLBreaker });
 
+function dateDiff(date1, date2, timezone = 0) {
+  const minTZ = -(24 * 60);
+  const maxTZ = 24 * 60;
+
+  if (!(date1 && date1 instanceof Date)) {
+    throw new TypeError(
+      'dateDiff(date1, date2, timezone):\n' +
+        `  date1 parameter must be Date object.\n` +
+        `  buy it's value: ${JSON.stringify(date1)}.`,
+    );
+  }
+  if (!(date2 && date2 instanceof Date)) {
+    throw new TypeError(
+      'dateDiff(date1, date2, timezone):\n' +
+        `  date2 parameter must be Date object.\n` +
+        `  buy it's value: ${JSON.stringify(date2)}.`,
+    );
+  }
+  if (!Number.isFinite(timezone)) {
+    throw new TypeError(
+      'dateDiff(date1, date2, timezone):\n' +
+        `  timezone parameter must be finite number.\n` +
+        `  buy it's value: ${JSON.stringify(timezone)}.`,
+    );
+  }
+  if (!(minTZ < timezone)) {
+    throw new TypeError(
+      'dateDiff(date1, date2, timezone):\n' +
+        `  timezone parameter must be greater than ${minTZ} ` +
+        `( ${minTZ} < timezone ).\n` +
+        `  buy it's value: ${timezone}.`,
+    );
+  } else if (!(timezone < maxTZ)) {
+    throw new TypeError(
+      'dateDiff(date1, date2, timezone):\n' +
+        `  timezone parameter must be less than ${maxTZ} ` +
+        `( timezone < ${maxTZ} ).\n` +
+        `  buy it's value: ${timezone}.`,
+    );
+  }
+
+  if (timezone !== 0) {
+    const timezoneMSec = timezone * 60 * 1000;
+    date1 = new Date(date1.getTime() + timezoneMSec);
+    date2 = new Date(date2.getTime() + timezoneMSec);
+  }
+
+  return {
+    /* eslint-disable sort-keys */
+    get year() {
+      return date1.getUTCFullYear() - date2.getUTCFullYear();
+    },
+    get month() {
+      return date1.getUTCMonth() - date2.getUTCMonth();
+    },
+    get day() {
+      return date1.getUTCDate() - date2.getUTCDate();
+    },
+    get hour() {
+      return date1.getUTCHours() - date2.getUTCHours();
+    },
+    get min() {
+      return date1.getUTCMinutes() - date2.getUTCMinutes();
+    },
+    get sec() {
+      return date1.getUTCSeconds() - date2.getUTCSeconds();
+    },
+    get msec() {
+      return date1.getUTCMilliseconds() - date2.getUTCMilliseconds();
+    },
+    /* eslint-enable */
+  };
+}
+Object.assign(exports, { dateDiff });
+
 /**
  * Dateオブジェクトを見やすい表示に変換する
  * @param {!Date} date 変換元のDateオブジェクト

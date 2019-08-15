@@ -30,12 +30,15 @@ block content
               = formatDate(novelData.published, '%Y年%-m月%-d日', timezone*60)
             | 公開
           unless dateEquals(novelData.published, novelData.modified)
+            -
+              const modifiedDiff = dateDiff(novelData.published, novelData.modified, timezone);
+              const showModifiedYear = modifiedDiff.year !== 0;
             |
             | /
             |
-            span.novel-modified
+            span.novel-modified(class={ 'short-date': !showModifiedYear })
               time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
-                = formatDate(novelData.modified, '%Y年%-m月%-d日', timezone*60)
+                = formatDate(novelData.modified, `${showModifiedYear ? '%Y年' : ''}%-m月%-d日`, timezone*60)
               | 更新
     else
       p まだ無いよ

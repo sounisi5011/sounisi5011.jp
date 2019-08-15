@@ -22,11 +22,14 @@ mixin pageLink(pageData)
           = formatDate(pageData.published, '%Y年%-m月%-d日', timezone*60)
         | 公開
       unless dateEquals(pageData.published, pageData.modified)
+        -
+          const modifiedDiff = dateDiff(pageData.published, pageData.modified, timezone);
+          const showModifiedYear = modifiedDiff.year !== 0;
         span.split-text
           |
           | /
           |
-        span.novel-modified
+        span.novel-modified(class={ 'short-date': !showModifiedYear })
           time(itemprop="dateModified" datetime=formatDate(pageData.modified, '%<time>', 0))
-            = formatDate(pageData.modified, '%Y年%-m月%-d日', timezone*60)
+            = formatDate(pageData.modified, `${showModifiedYear ? '%Y年' : ''}%-m月%-d日`, timezone*60)
           | 更新
