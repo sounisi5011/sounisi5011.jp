@@ -16,3 +16,15 @@
     font-size: smaller;
   }
 }
+
+.novel-pages {
+  list-style-type: none;
+
+  & > li {
+    line-height: 2;
+
+    &:not(:first-child) {
+      border-top: solid 1px;
+    }
+  }
+}
