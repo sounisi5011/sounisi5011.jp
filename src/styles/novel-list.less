@@ -23,7 +23,8 @@
   & > li {
     display: flex;
     align-items: center;
-    line-height: 2;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 
     & > a {
       order: 1;
@@ -41,6 +42,15 @@
     & > .novel-date {
       order: 3;
       font-size: smaller;
+
+      & > .novel-published,
+      & > .novel-modified {
+        display: block;
+      }
+
+      & > .split-text {
+        display: none;
+      }
     }
   }
 }
