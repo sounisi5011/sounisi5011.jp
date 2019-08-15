@@ -30,26 +30,35 @@
     margin-bottom: 0.5em;
 
     & > a {
-      order: 1;
       max-width: 100%;
     }
 
-    &:after {
-      order: 2;
-      flex: 1;
-      content: "";
-      margin-left: 0.2em;
-      margin-right: 0.2em;
-      border-top: dotted 1px;
-    }
-
     & > .novel-date {
-      order: 3;
+      flex: 1;
+      display: grid;
+      grid-template:
+        "date-line pub-date" max-content
+        "date-line mod-date" max-content
+        / auto max-content;
+      align-items: center;
+
       font-size: smaller;
 
-      & > .novel-published,
+      &:before {
+        grid-area: date-line;
+
+        content: "";
+        margin-left: 0.2em;
+        margin-right: 0.2em;
+        border-top: dotted 1px;
+      }
+
+      & > .novel-published {
+        grid-area: pub-date;
+      }
+
       & > .novel-modified {
-        display: block;
+        grid-area: mod-date;
       }
 
       & > .short-date {
