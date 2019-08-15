@@ -1,0 +1,15 @@
+---
+title: ながぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁぁい作品
+description: 長い。とにかく長い。
+sortOrder: 4
+localPageStyles:
+  - /novels.css
+  - /novel-list.css
+---
+
+extends ../_layout
+include ../_mixin
+
+block novel-content
+  p= description
+  +pageLinkList(getPageDataList())(itemprop="hasPart")
