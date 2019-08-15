@@ -3,15 +3,15 @@
     border-top: solid 1px;
   }
 
-  :first-child {
+  & > :first-child {
     margin-top: 1rem;
   }
 
-  :last-child {
+  & > :last-child {
     margin-bottom: 1rem;
   }
 
-  .novel-date {
+  & > .novel-date {
     text-align: right;
     font-size: smaller;
   }
@@ -21,10 +21,26 @@
   list-style-type: none;
 
   & > li {
+    display: flex;
+    align-items: center;
     line-height: 2;
 
-    &:not(:first-child) {
-      border-top: solid 1px;
+    & > a {
+      order: 1;
+    }
+
+    &:after {
+      order: 2;
+      flex: 1;
+      content: "";
+      margin-left: 0.2em;
+      margin-right: 0.2em;
+      border-top: dotted 1px;
+    }
+
+    & > .novel-date {
+      order: 3;
+      font-size: smaller;
     }
   }
 }
