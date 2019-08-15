@@ -7,6 +7,7 @@ localPageStyles:
 ---
 
 extends _layout
+include novels/_mixin
 
 block content
   h1= title
@@ -21,15 +22,7 @@ block content
           p.novel-description(itemprop="description")= novelData.description
 
         - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
-        if pages.length
-          ol.novel-pages(itemprop="hasPart" itemscope itemtype="http://schema.org/Collection")
-            each pageData in pages
-              li(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
-                a(href=rootRrelativeURL(pageData.path))
-                  span(itemprop="headline")= pageData.title
-                meta(itemprop="datePublished" content=formatDate(pageData.published, '%<time>', 0))
-                unless dateEquals(pageData.published, pageData.modified)
-                  meta(itemprop="dateModified" content=formatDate(pageData.modified, '%<time>', 0))
+        +pageLinkList(pages)(itemprop="hasPart")
 
         p.novel-date
           span.novel-published

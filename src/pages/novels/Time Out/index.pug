@@ -12,6 +12,7 @@ localPageStyles:
 ---
 
 extends ../_layout
+include ../_mixin
 
 block novel-content
   p
@@ -22,11 +23,4 @@ block novel-content
     a(href=reprintNovel.source target="_blank") 某所
     | から転載しました。
 
-  ol.novel-pages(itemprop="hasPart" itemscope itemtype="http://schema.org/Collection")
-    each pageData in getPageDataList()
-      li(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
-        a(href=rootRrelativeURL(pageData.path))
-          span(itemprop="headline")= pageData.title
-        meta(itemprop="datePublished" content=formatDate(pageData.published, '%<time>', 0))
-        unless dateEquals(pageData.published, pageData.modified)
-          meta(itemprop="dateModified" content=formatDate(pageData.modified, '%<time>', 0))
+  +pageLinkList(getPageDataList())(itemprop="hasPart")
