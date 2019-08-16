@@ -9,7 +9,9 @@ extends ../_page-layout
 
 block novel-body
   p
-    each i in Array(100).keys()
+    each i in [...Array(100).keys()]
+      if i !== 0
+        wbr
       | カ
-      = 'ァ'.repeat(i++)
+      = 'ァ'.repeat(++i)
       | ！
