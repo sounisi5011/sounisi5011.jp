@@ -90,6 +90,73 @@ function canonicalURL(rootURL, pathOrURL) {
 }
 exports.canonicalURL = canonicalURL;
 
+function urlSplitter(url) {
+  const match = /^([a-z][a-z0-9+.-]*:\/\/)([^/?#]+)((?:\/[^?#]*)?)((?:\?[^#]*)?)((?:#.*)?)$/i.exec(
+    url,
+  );
+  if (!match) {
+    throw new TypeError(
+      `urlSplitter(url): invalid url: ${JSON.stringify(url)}.`,
+    );
+  }
+
+  const [, scheme, host, path, query, fragment] = match;
+  const origin = scheme + host;
+
+  return path
+    .split('/')
+    .map((segment, index, segmentList) => {
+      if (index === 0) {
+        return {
+          beforeSplit: scheme,
+          href: {
+            absolute: origin,
+            rootRelative: '/',
+          },
+          value: host,
+        };
+      } else {
+        const rootRelativeHref = segmentList.slice(0, index + 1).join('/');
+        return {
+          beforeSplit: '/',
+          href: {
+            absolute: origin + rootRelativeHref,
+            rootRelative: rootRelativeHref,
+          },
+          value: segment,
+        };
+      }
+    })
+    .concat(
+      query
+        ? {
+            beforeSplit: '?',
+            href: {
+              absolute: origin + path + query,
+              rootRelative: path + query,
+            },
+            value: query.substring(1),
+          }
+        : [],
+      fragment
+        ? {
+            beforeSplit: '#',
+            href: {
+              absolute: origin + path + query + fragment,
+              rootRelative: path + query + fragment,
+            },
+            value: fragment.substring(1),
+          }
+        : [],
+    )
+    .map((data, index, self) => ({
+      ...data,
+      afterSplit: self[index + 1] && self[index + 1].beforeSplit,
+      last: index === self.length - 1,
+    }));
+}
+Object.assign(exports, { urlSplitter });
+
 /**
  * @param {string} url
  * @return {string[]}
