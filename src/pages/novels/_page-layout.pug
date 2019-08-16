@@ -1,12 +1,5 @@
 extends _layout
 
-mixin ruby(rb, rt, rp=['（', '）'])
-  ruby
-    = rb
-    rp= Array.isArray(rp) ? rp[0] : rp
-    rt= rt
-    rp= Array.isArray(rp) ? rp[1] : ''
-
 mixin pagination-prev
   - const prevPage = getPagination().previous;
   if prevPage
