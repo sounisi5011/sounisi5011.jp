@@ -1,0 +1,31 @@
+---
+title: Time Out
+description: 異なる歴史を歩んだ世界。終身刑を言い渡された男は、竜の討伐を条件に減刑を求める。
+sortOrder: 1
+reprintNovel:
+  source: http://green.ribbon.to/~keiru/mts/mts.cgi?mode=view&no=1&id=5011
+  published: 2012-03-25 08:05:00 +09:00
+  modified: 2012-03-28 11:22:00 +09:00
+localPageStyles:
+  - /novels.css
+  - /novel-list.css
+---
+
+extends ../_layout
+
+prepend vars
+  include ../_mixin
+
+block novel-content
+  p
+    time(datetime=formatDate(reprintNovel.published, '%<time>', timezone*60))
+      +ruby('古', 'いにしえ')
+      | の時代
+    | に書かれた作品。
+    a(href=reprintNovel.source target="_blank") 某所
+    | から転載しました。
+  p
+    | オリジナルの#[+ruby('稚拙', 'ちせつ')]な文体を残すため、#[strong 句読点の誤りや表現の修正などは一切行っていません]。
+    | 黒歴史ですので、心して読んでください。
+
+  +pageLinkList(getPageDataList())(itemprop="hasPart")

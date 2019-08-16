@@ -1,3 +1,5 @@
+if microdataRootSchema === undefined
+  - microdataRootSchema = 'http://schema.org/WebPage';
 block vars
 doctype html
 html(lang="ja")
@@ -19,7 +21,7 @@ html(lang="ja")
       block stylesheets
         include _head/stylesheets
       block head-script
-  body(itemscope itemtype="http://schema.org/WebPage")
+  body(itemscope=Boolean(microdataRootSchema) itemtype=(microdataRootSchema || null))
     block header
       include _header
     block content

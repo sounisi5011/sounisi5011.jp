@@ -16,6 +16,7 @@ const {
 } = require('./src/plugin-options/netlify-published-date');
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
+const childPages = require('./src/plugins/child-pages');
 const commentFrontmatter = require('./src/plugins/comment-matters');
 const copyConvention = require('./src/plugins/copy-convention');
 const downloadConvention = require('./src/plugins/download-convention');
@@ -107,8 +108,19 @@ Metalsmith(__dirname)
         refer: false,
         sortBy: 'sortOrder',
       },
+      novels: {
+        pattern: ['novels/*.html', 'novels/*/index.html'],
+        refer: false,
+        sortBy: 'sortOrder',
+      },
+      novelsPages: {
+        pattern: ['novels/*/*.html', '!novels/*/index.html'],
+        refer: false,
+        sortBy: 'sortOrder',
+      },
     }),
   )
+  .use(childPages())
   .use(anotherSource('./src/assets'))
   .use(netlifyMetadata())
   .use(assetsConvention())

@@ -1,6 +1,17 @@
+const { URL } = require('url');
+
 const cheerio = require('cheerio');
 
 const netlifyDeployUrlRegExp = /^https?:\/\/[0-9a-f]+--[0-9a-z-]+\.netlify\.com(?=[/?#]|$)/i;
+
+function getCanonicalURLList($) {
+  return $('head link[rel=canonical]')
+    .map((index, element) => {
+      const $link = $(element);
+      return $link.attr('href');
+    })
+    .get();
+}
 
 /**
  * @see https://github.com/sounisi5011/metalsmith-netlify-published-date/blob/v0.1.0/example/remove-time-elem.js
@@ -11,8 +22,77 @@ exports.ignoreContentsEquals = contents => {
   try {
     const $ = cheerio.load(contents.toString());
 
-    // canonical URLを置換
-    $('head link[rel~=canonical][href^="http"]').each((index, element) => {
+    getCanonicalURLList($).forEach(canonicalURL => {
+      const canonicalURLPath = new URL(canonicalURL).pathname;
+
+      // 小説のページ一覧を処理
+      if (/^[/]novels(?:[/][^/]+)?[/]?$/.test(canonicalURLPath)) {
+        $('.novels > .novel .novel-date, .novel-pages .novel-date').each(
+          (index, element) => {
+            const $elem = $(element);
+
+            // 公開日時のtime要素を置換
+            $elem
+              .find('time[itemprop=datePublished]')
+              .each((index, element) => {
+                const $time = $(element);
+
+                $time.empty();
+                if ($time.is('[datetime]')) {
+                  $time.attr('datetime', '');
+                }
+
+                isUpdated = true;
+              });
+
+            // 修正日時の変動で追加される要素を削除
+            $elem
+              .find('.split-text, .novel-modified')
+              .add(
+                $elem
+                  .contents()
+                  .filter((index, element) => element.type === 'text'),
+              )
+              .each((index, element) => {
+                const $modified = $(element);
+                $modified.remove();
+                isUpdated = true;
+              });
+          },
+        );
+      }
+
+      // 小説の各ページを処理
+      if (/^[/]novels[/][^/]+[/][^/]+[/]?$/.test(canonicalURLPath)) {
+        $('.pagination a:matches([rel=prev], [rel=next], .prev, .next)').each(
+          (index, element) => {
+            const $a = $(element);
+
+            /**
+             * ページネーションのa要素を置換
+             * @example
+             * `<a href="/novels/:title/:page" rel="prev">前へ</a>` -> `<a>前へ</a>`
+             * `<a class="prev" aria-hidden="true">前へ</a>`        -> `<a>前へ</a>`
+             * `<a href="/novels/:title/:page" rel="next">次へ</a>` -> `<a>次へ</a>`
+             * `<a class="next" aria-hidden="true">次へ</a>`        -> `<a>次へ</a>`
+             */
+            $a.removeClass('prev next');
+            if (/^\s*$/.test($a.attr('class'))) {
+              // class属性値が空文字列になったら、属性を削除
+              $a.removeAttr('class');
+            }
+            $a.removeAttr('href');
+            $a.removeAttr('rel');
+            $a.removeAttr('aria-hidden');
+
+            isUpdated = true;
+          },
+        );
+      }
+    });
+
+    // link要素のURLを置換
+    $('link[href^="http"]').each((index, element) => {
       const $meta = $(element);
       const hrefAttr = $meta.attr('href');
       if (netlifyDeployUrlRegExp.test(hrefAttr)) {

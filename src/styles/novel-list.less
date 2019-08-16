@@ -1,0 +1,102 @@
+.novels > .novel {
+  &:not(:first-child) {
+    border-top: solid 1px;
+  }
+
+  & > :first-child {
+    margin-top: 1rem;
+  }
+
+  & > :last-child {
+    margin-bottom: 1rem;
+  }
+
+  & > footer {
+    text-align: right;
+    font-size: smaller;
+  }
+}
+
+.novel-pages {
+  list-style-type: none;
+  margin: 1em 2em;
+  padding: 0;
+
+  & > li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+
+    & > a {
+      max-width: 100%;
+    }
+
+    & > .novel-date {
+      flex: 1;
+
+      // prettier-ignore
+      @grid-template:
+        "date-line pub-date" max-content
+        "date-line mod-date" max-content
+        / auto max-content;
+
+      .supports-grid-layout(@rules) {
+        @supports (
+          (display: grid) and (grid-template: @grid-template) and
+            (grid-area: date-line)
+        ) {
+          @rules();
+        }
+      }
+
+      display: flex;
+      align-items: center;
+      .supports-grid-layout({display: grid; grid-template: @grid-template;});
+
+      font-size: smaller;
+
+      &:before {
+        flex: 1;
+        .supports-grid-layout({grid-area: date-line; flex: unset;});
+
+        content: "";
+        margin-left: 0.5ch;
+        margin-right: 0.5ch;
+        border-top: dotted 1px;
+      }
+
+      & > .novel-published,
+      & > .novel-modified {
+        white-space: nowrap;
+        // prettier-ignore
+        .supports-grid-layout({
+          white-space: unset;
+
+          & > time:after {
+            content: "\00A0";
+          }
+        });
+      }
+
+      & > .novel-published {
+        .supports-grid-layout({grid-area: pub-date;});
+      }
+
+      & > .novel-modified {
+        .supports-grid-layout({grid-area: mod-date;});
+      }
+
+      & > .short-date {
+        text-align: right;
+      }
+
+      & > .split-text {
+        padding-left: 0.5ch;
+        padding-right: 0.5ch;
+        .supports-grid-layout({display: none;});
+      }
+    }
+  }
+}

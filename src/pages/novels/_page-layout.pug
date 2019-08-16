@@ -1,0 +1,104 @@
+extends _layout
+
+mixin pagination-prev
+  - const prevPage = getPagination().previous;
+  if prevPage
+    a(href=rootRrelativeURL(prevPage.path) rel="prev")&attributes(attributes)
+      if block
+        block
+      else
+        | 前へ
+  else
+    a.prev(aria-hidden="true")&attributes(attributes)
+      if block
+        block
+      else
+        | 前へ
+
+mixin pagination-next
+  - const nextPage = getPagination().next;
+  if nextPage
+    a(href=rootRrelativeURL(nextPage.path) rel="next")&attributes(attributes)
+      if block
+        block
+      else
+        | 次へ
+  else
+    a.next(aria-hidden="true")&attributes(attributes)
+      if block
+        block
+      else
+        | 次へ
+
+prepend vars
+  -
+    {
+      const titlePrefix = `${parentPage().title} / `;
+      if (!title.startsWith(titlePrefix)) {
+        title = titlePrefix + title;
+      }
+
+      let getPagination$retVal;
+      function getPagination() {
+        if (!getPagination$retVal) {
+          const parentPageData = parentPage();
+          const pageDataList = collections.novelsPages
+            .filter(pageData => pageData.parentPage().path === parentPageData.path);
+          const currentPageDataIndex = pageDataList
+            .findIndex(pageData => pageData.path === path);
+
+          getPagination$retVal = {
+            pageList: pageDataList,
+            currentPageIndex: currentPageDataIndex,
+            contents: parentPageData,
+            first: pageDataList[0],
+            previous: pageDataList[currentPageDataIndex - 1],
+            current: pageDataList[currentPageDataIndex],
+            next: pageDataList[currentPageDataIndex + 1],
+            last: pageDataList[pageDataList.length - 1],
+          };
+        }
+
+        return getPagination$retVal;
+      }
+    }
+
+prepend preload
+  //- ページネーション関係のURLには絶対URLを使ったほうが良い
+  //- see https://www.contentkingapp.com/academy/pagination/#use-absolute-urls
+  link(rel="contents" href=canonicalURL(rootURL, getPagination().contents.path))
+  if getPagination().previous
+    link(rel="prev" href=canonicalURL(rootURL, getPagination().previous.path))
+  if getPagination().next
+    link(rel="next" href=canonicalURL(rootURL, getPagination().next.path))
+
+block novel-header
+  p.pagination
+    block head-pagination
+      +pagination-prev
+      span.split-text
+        |
+        | /
+        |
+      +pagination-next
+      span.split-text
+        |
+        | /
+        |
+      a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
+
+block novel-footer
+  nav
+    p.pagination
+      block pagination
+        +pagination-next
+        span.split-text
+          |
+          | /
+          |
+        +pagination-prev
+        span.split-text
+          |
+          | /
+          |
+        a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次

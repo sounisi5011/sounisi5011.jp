@@ -1,0 +1,72 @@
+-
+  function getDateFormat(publishedDate, modifiedDate, timezone) {
+    const dateFormat = '%-m月%-d日';
+    let publishedDateFormat = `%Y年${dateFormat}`;
+    let modifiedDateFormat = null;
+
+    if (!dateEquals(publishedDate, modifiedDate)) {
+      const modifiedDiff = dateDiff(publishedDate, modifiedDate, timezone);
+      const equalsModifiedYear = modifiedDiff.year === 0;
+      const equalsModifiedDate =
+        equalsModifiedYear &&
+        modifiedDiff.month === 0 &&
+        modifiedDiff.day === 0;
+
+      if (equalsModifiedDate) {
+        let timeFormat = '%-H時%M分';
+        if (modifiedDiff.hour === 0 && modifiedDiff.min === 0) {
+          timeFormat += '%S秒';
+        }
+
+        publishedDateFormat += `\u{00A0}${timeFormat}`;
+        modifiedDateFormat = timeFormat;
+      } else {
+        modifiedDateFormat = dateFormat;
+        if (!equalsModifiedYear) {
+          modifiedDateFormat = `%Y年${modifiedDateFormat}`;
+        }
+      }
+    }
+
+    return {
+      publishedDateFormat,
+      modifiedDateFormat,
+    };
+  }
+
+mixin pageLinkList(pageDataList)
+  if 1 <= pageDataList.length
+    //- Note: itemprop属性を先頭に置くため、初期値をnullで設定する。属性値はmixinの属性で上書き可能
+    //- Note: mixin内ではitemscope属性の値が"itemscope"で設定されてしまうため、空文字列で上書き
+    ol.novel-pages(itemprop=null itemscope="" itemtype="http://schema.org/Collection")&attributes(attributes)
+      each pageData in pageDataList
+        +pageLink(pageData)(itemprop="hasPart")
+  else
+    block
+
+mixin pageLink(pageData)
+  //- Note: itemprop属性を先頭に置くため、初期値をnullで設定する。属性値はmixinの属性で上書き可能
+  //- Note: mixin内ではitemscope属性の値が"itemscope"で設定されてしまうため、空文字列で上書き
+  li(itemprop=null itemscope="" itemtype="http://schema.org/CreativeWork")&attributes(attributes)
+    a(href=rootRrelativeURL(pageData.path))
+      span(itemprop="headline")= pageData.title
+    |
+    |
+    span.novel-date
+      -
+        const { publishedDateFormat, modifiedDateFormat } = (
+          getDateFormat(pageData.published, pageData.modified, timezone)
+        );
+      span.novel-published
+        time(itemprop="datePublished" datetime=formatDate(pageData.published, '%<time>', 0))
+          = formatDate(pageData.published, publishedDateFormat, timezone*60)
+        | 公開
+      if modifiedDateFormat
+        span.split-text
+          |
+          | /
+          |
+        span.novel-modified(class={ 'short-date': modifiedDateFormat !== publishedDateFormat })
+          time(itemprop="dateModified" datetime=formatDate(pageData.modified, '%<time>', 0))
+            = formatDate(pageData.modified, modifiedDateFormat, timezone*60)
+          | 更新

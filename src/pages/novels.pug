@@ -1,0 +1,52 @@
+---
+title: 創作小説一覧
+description: sounisi5011が創作した文章作品の掲載ページ
+localPageStyles:
+  - /novels.css
+  - /novel-list.css
+microdataRootSchema: http://schema.org/CollectionPage
+---
+
+extends _layout
+
+prepend vars
+  include novels/_mixin
+
+block content
+  h1= title
+
+  main.novels
+    each novelData in [...collections.novels].reverse()
+      article.novel(itemprop="hasPart" itemscope itemtype="http://schema.org/CreativeWork")
+        h2.novel-title(itemprop="headline")
+          a(href=rootRrelativeURL(novelData.path))= novelData.title
+
+        if novelData.description
+          p.novel-description(itemprop="description")= novelData.description
+
+        - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
+        if 1 <= pages.length
+          details.novel-toc
+            summary 目次
+            +pageLinkList(pages)(itemprop="hasPart")
+
+        footer
+          p.novel-date
+            -
+              const { publishedDateFormat, modifiedDateFormat } = (
+                getDateFormat(novelData.published, novelData.modified, timezone)
+              );
+            span.novel-published
+              time(itemprop="datePublished" datetime=formatDate(novelData.published, '%<time>', 0))
+                = formatDate(novelData.published, publishedDateFormat, timezone*60)
+              | 公開
+            if modifiedDateFormat
+              |
+              | /
+              |
+              span.novel-modified(class={ 'short-date': modifiedDateFormat !== publishedDateFormat })
+                time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
+                  = formatDate(novelData.modified, modifiedDateFormat, timezone*60)
+                | 更新
+    else
+      p まだ無いよ
