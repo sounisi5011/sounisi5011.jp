@@ -13,6 +13,21 @@ h1 {
   text-align: center;
 }
 
+hr,
+[role="separator"] {
+  margin-left: 1em;
+  margin-right: 1em;
+  border-top-style: inset;
+  border-bottom-style: inset;
+  border-width: 2px;
+  line-height: 2;
+  text-align: center;
+
+  &:empty {
+    border-width: 1px;
+  }
+}
+
 em:lang(ja) {
   @supports (text-emphasis-style: dot filled) {
     text-emphasis-style: dot filled;
