@@ -92,6 +92,26 @@ ruby rp {
   }
 }
 
+.head-message {
+  border-bottom: solid 1px;
+
+  p& {
+    padding-bottom: 1em;
+  }
+}
+
+aside.message {
+  border-top: solid 1px;
+
+  & > h2 {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-left: solid 5px;
+    padding-left: 1em;
+    font-size: 1em;
+  }
+}
+
 .spacing-loop (@lines) when (1 < @lines) {
   .spacing-loop((@lines - 1));
 
