@@ -24,7 +24,10 @@ block content
           p.novel-description(itemprop="description")= novelData.description
 
         - const pages = collections.novelsPages.filter(pageData => pageData.parentPage().path === novelData.path)
-        +pageLinkList(pages)(itemprop="hasPart")
+        if 1 <= pages.length
+          details.novel-toc
+            summary 目次
+            +pageLinkList(pages)(itemprop="hasPart")
 
         p.novel-date
           -
