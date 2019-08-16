@@ -70,7 +70,9 @@
       & > .novel-published,
       & > .novel-modified {
         white-space: nowrap;
-        .supports-grid-layout({white-space: unset;});
+        .supports-grid-layout(
+          {white-space: unset; & > time: after {content: "\00A0";}}
+        );
       }
 
       & > .novel-published {
