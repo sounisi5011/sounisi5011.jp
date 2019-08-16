@@ -1,3 +1,39 @@
+-
+  function getDateFormat(publishedDate, modifiedDate, timezone) {
+    const dateFormat = '%-m月%-d日';
+    let publishedDateFormat = `%Y年${dateFormat}`;
+    let modifiedDateFormat = null;
+
+    if (!dateEquals(publishedDate, modifiedDate)) {
+      const modifiedDiff = dateDiff(publishedDate, modifiedDate, timezone);
+      const equalsModifiedYear = modifiedDiff.year === 0;
+      const equalsModifiedDate =
+        equalsModifiedYear &&
+        modifiedDiff.month === 0 &&
+        modifiedDiff.day === 0;
+
+      if (equalsModifiedDate) {
+        let timeFormat = '%-H時%M分';
+        if (modifiedDiff.hour === 0 && modifiedDiff.min === 0) {
+          timeFormat += '%S秒';
+        }
+
+        publishedDateFormat += ` ${timeFormat}`;
+        modifiedDateFormat = timeFormat;
+      } else {
+        modifiedDateFormat = dateFormat;
+        if (!equalsModifiedYear) {
+          modifiedDateFormat = `%Y年${modifiedDateFormat}`;
+        }
+      }
+    }
+
+    return {
+      publishedDateFormat,
+      modifiedDateFormat,
+    };
+  }
+
 mixin pageLinkList(pageDataList)
   if 1 <= pageDataList.length
     //- Note: itemprop属性を先頭に置くため、初期値をnullで設定する。属性値はmixinの属性で上書き可能
@@ -17,19 +53,20 @@ mixin pageLink(pageData)
     |
     |
     span.novel-date
+      -
+        const { publishedDateFormat, modifiedDateFormat } = (
+          getDateFormat(pageData.published, pageData.modified, timezone)
+        );
       span.novel-published
         time(itemprop="datePublished" datetime=formatDate(pageData.published, '%<time>', 0))
-          = formatDate(pageData.published, '%Y年%-m月%-d日', timezone*60)
+          = formatDate(pageData.published, publishedDateFormat, timezone*60)
         | 公開
-      unless dateEquals(pageData.published, pageData.modified)
-        -
-          const modifiedDiff = dateDiff(pageData.published, pageData.modified, timezone);
-          const showModifiedYear = modifiedDiff.year !== 0;
+      if modifiedDateFormat
         span.split-text
           |
           | /
           |
-        span.novel-modified(class={ 'short-date': !showModifiedYear })
+        span.novel-modified(class={ 'short-date': modifiedDateFormat !== publishedDateFormat })
           time(itemprop="dateModified" datetime=formatDate(pageData.modified, '%<time>', 0))
-            = formatDate(pageData.modified, `${showModifiedYear ? '%Y年' : ''}%-m月%-d日`, timezone*60)
+            = formatDate(pageData.modified, modifiedDateFormat, timezone*60)
           | 更新

@@ -12,7 +12,9 @@ localPageStyles:
 ---
 
 extends ../_layout
-include ../_mixin
+
+prepend vars
+  include ../_mixin
 
 block novel-content
   p

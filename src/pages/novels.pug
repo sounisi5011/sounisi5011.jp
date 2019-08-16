@@ -7,7 +7,9 @@ localPageStyles:
 ---
 
 extends _layout
-include novels/_mixin
+
+prepend vars
+  include novels/_mixin
 
 block content
   h1= title
@@ -25,20 +27,21 @@ block content
         +pageLinkList(pages)(itemprop="hasPart")
 
         p.novel-date
+          -
+            const { publishedDateFormat, modifiedDateFormat } = (
+              getDateFormat(novelData.published, novelData.modified, timezone)
+            );
           span.novel-published
             time(itemprop="datePublished" datetime=formatDate(novelData.published, '%<time>', 0))
-              = formatDate(novelData.published, '%Y年%-m月%-d日', timezone*60)
+              = formatDate(novelData.published, publishedDateFormat, timezone*60)
             | 公開
-          unless dateEquals(novelData.published, novelData.modified)
-            -
-              const modifiedDiff = dateDiff(novelData.published, novelData.modified, timezone);
-              const showModifiedYear = modifiedDiff.year !== 0;
+          if modifiedDateFormat
             |
             | /
             |
-            span.novel-modified(class={ 'short-date': !showModifiedYear })
+            span.novel-modified(class={ 'short-date': modifiedDateFormat !== publishedDateFormat })
               time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
-                = formatDate(novelData.modified, `${showModifiedYear ? '%Y年' : ''}%-m月%-d日`, timezone*60)
+                = formatDate(novelData.modified, modifiedDateFormat, timezone*60)
               | 更新
     else
       p まだ無いよ
