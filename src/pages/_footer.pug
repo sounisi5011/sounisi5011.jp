@@ -39,15 +39,28 @@ footer.page
     small(lang="en")
       | Copyright ©
       |
-      time(datetime=formatDate(published || generated, '%<time>', 0)
-           itemprop=(published ? "datePublished" : null))
-        = formatDate(published || generated, '%Y', timezone*60)
       if published && modified
-        | -
-      if modified
-        time(datetime=formatDate(modified, '%<time>', 0)
-             itemprop=((!published ? "datePublished " : "") + "dateModified"))
+        if dateEquals(published, modified)
+          time(datetime=formatDate(published, '%<time>', 0) itemprop="datePublished dateModified")
+            = formatDate(published, '%Y', timezone*60)
+        else
+          time(datetime=formatDate(published, '%<time>', 0) itemprop="datePublished")
+            = formatDate(published, '%Y', timezone*60)
+          if dateDiff(published, modified, timezone).year !== 0
+            | -
+            time(datetime=formatDate(modified, '%<time>', 0) itemprop="dateModified")
+              = formatDate(modified, '%Y', timezone*60)
+          else
+            //- meta(content=formatDate(modified, '%<time>', 0) itemprop="dateModified")
+      else if published
+        time(datetime=formatDate(published, '%<time>', 0) itemprop="datePublished")
+          = formatDate(published, '%Y', timezone*60)
+      else if modified
+        time(datetime=formatDate(modified, '%<time>', 0) itemprop="datePublished dateModified")
           = formatDate(modified, '%Y', timezone*60)
+      else
+        time(datetime=formatDate(generated, '%<time>', 0))
+          = formatDate(generated, '%Y', timezone*60)
       |
       |
       span(itemprop="author") sounisi5011
