@@ -29,22 +29,23 @@ block content
             summary 目次
             +pageLinkList(pages)(itemprop="hasPart")
 
-        p.novel-date
-          -
-            const { publishedDateFormat, modifiedDateFormat } = (
-              getDateFormat(novelData.published, novelData.modified, timezone)
-            );
-          span.novel-published
-            time(itemprop="datePublished" datetime=formatDate(novelData.published, '%<time>', 0))
-              = formatDate(novelData.published, publishedDateFormat, timezone*60)
-            | 公開
-          if modifiedDateFormat
-            |
-            | /
-            |
-            span.novel-modified(class={ 'short-date': modifiedDateFormat !== publishedDateFormat })
-              time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
-                = formatDate(novelData.modified, modifiedDateFormat, timezone*60)
-              | 更新
+        footer
+          p.novel-date
+            -
+              const { publishedDateFormat, modifiedDateFormat } = (
+                getDateFormat(novelData.published, novelData.modified, timezone)
+              );
+            span.novel-published
+              time(itemprop="datePublished" datetime=formatDate(novelData.published, '%<time>', 0))
+                = formatDate(novelData.published, publishedDateFormat, timezone*60)
+              | 公開
+            if modifiedDateFormat
+              |
+              | /
+              |
+              span.novel-modified(class={ 'short-date': modifiedDateFormat !== publishedDateFormat })
+                time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
+                  = formatDate(novelData.modified, modifiedDateFormat, timezone*60)
+                | 更新
     else
       p まだ無いよ
