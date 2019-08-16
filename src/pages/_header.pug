@@ -17,8 +17,15 @@ header.page
                     width=image.width
                     height=image.height
                     alt="")
-    span.url
-      each urlItem, index in yahooStyleURLBreaker(canonicalURL(visibleRootURL, path))
-        if index !== 0
-          wbr
-        span.bunsetsu= urlItem
+    span.url(itemprop="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList")
+      each urlItem, index in urlSplitter(canonicalURL(visibleRootURL, path))
+        = urlItem.beforeSplit
+        if urlItem.value
+          span(itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem")
+            if !urlItem.last
+              a(href=urlItem.href.rootRelative itemprop="item" itemtype="https://schema.org/Thing")
+                span(itemprop="name")= urlItem.value
+            else
+              meta(itemprop="item" content=urlItem.href.absolute)
+              span(itemprop="name")= urlItem.value
+            meta(itemprop="position" content=(index + 1))
