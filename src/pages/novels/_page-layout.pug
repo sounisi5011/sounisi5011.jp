@@ -9,7 +9,7 @@ mixin pagination-prev
       else
         | 前へ
   else
-    a.prev&attributes(attributes)
+    a.prev(aria-hidden="true")&attributes(attributes)
       if block
         block
       else
@@ -24,7 +24,7 @@ mixin pagination-next
       else
         | 次へ
   else
-    a.next&attributes(attributes)
+    a.next(aria-hidden="true")&attributes(attributes)
       if block
         block
       else
@@ -76,28 +76,29 @@ block novel-header
   p.pagination
     block head-pagination
       +pagination-prev
-      span(role="presentation")
+      span.split-text
         |
         | /
         |
       +pagination-next
-      span(role="presentation")
+      span.split-text
         |
         | /
         |
       a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
 
 block novel-footer
-  p.pagination
-    block pagination
-      +pagination-next
-      span(role="presentation")
-        |
-        | /
-        |
-      +pagination-prev
-      span(role="presentation")
-        |
-        | /
-        |
-      a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
+  nav
+    p.pagination
+      block pagination
+        +pagination-next
+        span.split-text
+          |
+          | /
+          |
+        +pagination-prev
+        span.split-text
+          |
+          | /
+          |
+        a(href=rootRrelativeURL(getPagination().contents.path) rel="contents") 目次
