@@ -13,6 +13,23 @@ h1 {
   text-align: center;
 }
 
+a {
+  @focus-color: #fff;
+  @text-color: darken(@focus-color, 40%);
+
+  &:link,
+  &:visited {
+    color: @text-color;
+    text-decoration: underline;
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: @focus-color;
+    }
+  }
+}
+
 hr,
 [role="separator"] {
   margin-left: 1em;
