@@ -5,8 +5,10 @@
  * - ファイルパスを正しくURLエンコードする。
  * - hostnameオプションをコールバックに対応させる。
  * - Frontmatterのsitemapフィールドを読み、任意のオプションをsitemap.jsに渡す。
+ * - sitemap.jsのエラーをthrowする。
  */
 const path = require('path');
+const util = require('util');
 
 const get = require('lodash.get');
 const multimatch = require('multimatch');
@@ -22,6 +24,20 @@ const objFromEntries =
       (obj, [prop, value]) => ({ ...obj, [prop]: value }),
       {},
     ));
+
+function overwriteErrorMessage(error, message) {
+  const originalMsg = error.message;
+  const originalStack = error.stack;
+  const originalMsgStartPos = error.stack.indexOf(originalMsg);
+
+  error.message = message;
+  error.stack =
+    originalStack.slice(0, originalMsgStartPos) +
+    message +
+    originalStack.slice(originalMsgStartPos + originalMsg.length);
+
+  return error;
+}
 
 function check(filename, filedata, options) {
   if (get(filedata, options.privateProperty)) {
@@ -78,6 +94,7 @@ module.exports = opts => {
         typeof options.hostname === 'function'
           ? options.hostname(files, metalsmith)
           : options.hostname,
+      level: 'throw',
     });
 
     multimatch(Object.keys(files), options.pattern)
@@ -100,7 +117,16 @@ module.exports = opts => {
 
         entry.url = buildUrl(filename, filedata, options);
 
-        sitemap.add(entry);
+        try {
+          sitemap.add(entry, 'throw');
+        } catch (error) {
+          throw overwriteErrorMessage(
+            error,
+            `sitemap.js error at file ${util.inspect(filename)}: ${
+              error.message
+            }`,
+          );
+        }
       });
 
     files[options.output] = {
