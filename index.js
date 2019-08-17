@@ -10,7 +10,6 @@ const {
   compile: pugCompile,
   render: pugRender,
 } = require('metalsmith-pug-extra');
-const sitemap = require('metalsmith-sitemap');
 
 const {
   ignoreContentsEquals,
@@ -28,6 +27,7 @@ const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 const pageQrCodeGenerator = require('./src/plugins/page-qr-code-gen');
 const preloadList = require('./src/plugins/preload-list');
+const sitemap = require('./src/plugins/sitemap');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
@@ -200,10 +200,10 @@ Metalsmith(__dirname)
   )
   .use(
     sitemap({
-      hostname:
-        process.env.CONTEXT === 'production'
-          ? process.env.URL
-          : process.env.DEPLOY_URL,
+      hostname(files, metalsmith) {
+        const metadata = metalsmith.metadata();
+        return metadata.rootURL;
+      },
       modifiedProperty: 'modified',
     }),
   )
