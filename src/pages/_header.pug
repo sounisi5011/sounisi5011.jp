@@ -20,7 +20,7 @@ header.page
     span.url(itemprop="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList")
       each urlItem, index in urlSplitter(canonicalURL(visibleRootURL, path))
         if urlItem.value.raw
-          if index !== 0
+          if urlItem !== urlItem.first
             wbr
           span.segment(itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem")
             mixin name(valueData)
@@ -31,8 +31,14 @@ header.page
                 span(itemprop="name")= valueData.decoded || valueData.raw
 
             = urlItem.beforeSplit
-            if !urlItem.last
-              a(href=urlItem.href.rootRelative itemprop="item" itemtype="https://schema.org/Thing")
+            if urlItem !== urlItem.last
+              -
+                const relList = [];
+                if (urlItem.next.isLastPathSegment) {
+                  relList.push('parent');
+                }
+                const relValue = relList.join(' ');
+              a(href=urlItem.href.rootRelative rel=(relValue || null) itemprop="item" itemtype="https://schema.org/Thing")
                 +name(urlItem.value)
             else
               meta(itemprop="item" content=urlItem.href.absolute)

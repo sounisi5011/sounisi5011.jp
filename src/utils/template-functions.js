@@ -134,8 +134,13 @@ function urlSplitter(url) {
   return path
     .split('/')
     .map((segment, index, segmentList) => {
+      const data = {
+        isLastPathSegment: index === segmentList.length - 1,
+      };
+
       if (index === 0) {
         return {
+          ...data,
           beforeSplit: scheme,
           href: {
             absolute: origin,
@@ -149,6 +154,7 @@ function urlSplitter(url) {
       } else {
         const rootRelativeHref = segmentList.slice(0, index + 1).join('/');
         return {
+          ...data,
           beforeSplit: '/',
           href: {
             absolute: origin + rootRelativeHref,
@@ -191,11 +197,16 @@ function urlSplitter(url) {
           }
         : [],
     )
-    .map((data, index, self) => ({
-      ...data,
-      afterSplit: self[index + 1] && self[index + 1].beforeSplit,
-      last: index === self.length - 1,
-    }));
+    .map((data, index, self) => {
+      return Object.assign(data, {
+        afterSplit: self[index + 1] && self[index + 1].beforeSplit,
+        first: self[0],
+        isLastPathSegment: Boolean(data.isLastPathSegment),
+        last: self[self.length - 1],
+        next: self[index + 1],
+        prev: self[index - 1],
+      });
+    });
 }
 Object.assign(exports, { urlSplitter });
 
