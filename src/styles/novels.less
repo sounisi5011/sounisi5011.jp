@@ -145,6 +145,13 @@ ruby rp {
       display: block;
     }
 
+    span&[area-hidden="true"]:empty {
+      &:before {
+        .repeat-content("\a", @lines);
+        white-space: pre;
+      }
+    }
+
     hr& {
       margin-top: @spacing + @default-hr-margin;
       margin-bottom: @spacing + @default-hr-margin;
@@ -163,8 +170,18 @@ ruby rp {
     margin-bottom: @spacing;
   }
 
-  span&[role="presentation"] {
+  span&[role="presentation"],
+  span&[area-hidden="true"] {
     display: block;
+  }
+
+  span&[area-hidden="true"]:empty {
+    margin-top: @spacing;
+
+    &:before,
+    &:after {
+      content: "";
+    }
   }
 
   hr& {
