@@ -37,6 +37,21 @@ header.page {
       overflow-x: auto;
       margin-left: @margin-v;
       font-size: 0.8em;
+
+      & > .segment {
+        white-space: nowrap;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+
+        &:hover,
+        &:active,
+        &:focus {
+          text-decoration: underline;
+        }
+      }
     }
   }
 }

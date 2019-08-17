@@ -17,8 +17,33 @@ header.page
                     width=image.width
                     height=image.height
                     alt="")
-    span.url
-      each urlItem, index in yahooStyleURLBreaker(canonicalURL(visibleRootURL, path))
-        if index !== 0
-          wbr
-        span.bunsetsu= urlItem
+    span.url(itemprop="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList")
+      each urlItem, index in urlSplitter(canonicalURL(visibleRootURL, path))
+        if urlItem.value.raw
+          if urlItem !== urlItem.first
+            wbr
+          span.segment(itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem")
+            = urlItem.beforeSplit
+            -
+              const afterSplit = (function getNextSplit(urlItem) {
+                if (!urlItem || urlItem.value.raw) {
+                  return '';
+                }
+                return urlItem.beforeSplit + getNextSplit(urlItem.next);
+              })(urlItem.next);
+            if urlItem !== urlItem.last
+              -
+                const relList = [];
+                if (urlItem.next.isLastPathSegment) {
+                  relList.push('parent');
+                }
+                const relValue = relList.join(' ');
+              a(href=urlItem.href.rootRelative rel=(relValue || null) itemprop="item")
+                = urlItem.value.decoded || urlItem.value.raw
+              = afterSplit
+            else
+              = urlItem.value.decoded || urlItem.value.raw
+              = afterSplit
+              meta(itemprop="item" content=urlItem.href.absolute)
+            meta(itemprop="name" content=urlItem.value.dangerDecoded || urlItem.value.raw)
+            meta(itemprop="position" content=(index + 1))

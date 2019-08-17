@@ -90,6 +90,126 @@ function canonicalURL(rootURL, pathOrURL) {
 }
 exports.canonicalURL = canonicalURL;
 
+function urlSplitter(url) {
+  // TODO: もっと追加する
+  //       https://techracho.bpsinc.jp/hachi8833/2017_11_28/48435
+  const invisiblePatternList = [
+    // スペース文字
+    // 参考：https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions/Character_Classes
+    String.raw`\s`,
+    // General Punctuationブロックの不可視文字
+    // 参考：https://ja.wikipedia.org/wiki/%E4%B8%80%E8%88%AC%E5%8F%A5%E8%AA%AD%E7%82%B9_(Unicode%E3%81%AE%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF)#_%E6%96%87%E5%AD%97%E8%A1%A8
+    String.raw`\u{2000}-\u{200F}\u{2011}\u{2028}-\u{202F}\u{205F}-\u{206F}`,
+    // 双方向テキストの制御文字
+    // 参考：https://ja.wikipedia.org/wiki/%E5%8F%8C%E6%96%B9%E5%90%91%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88#Unicode
+    String.raw`\u{061C}\u{200E}\u{200F}\u{202A}-\u{202E}\u{2066}-\u{2069}`,
+  ];
+  const invisibleCharPattern = new RegExp(
+    String.raw`[${invisiblePatternList.join('')}]+`,
+    'gu',
+  );
+
+  function decodePercentEncoded(str) {
+    // TODO: 合成済み文字（合成済み文字以外の表記方法が存在しない絵文字やブラーフミー文字などは除外）、制御文字、
+    //       一般的な文字と字形が酷似している文字などをデコードしない
+    return (
+      decodeURIComponent(str)
+        // 視認できない文字は見分けがつかないのでパーセントエンコードしたままにする
+        .replace(invisibleCharPattern, sp => strictUriEncode(sp))
+    );
+  }
+
+  const match = /^([a-z][a-z0-9+.-]*:\/\/)([^/?#]+)((?:\/[^?#]*)?)((?:\?[^#]*)?)((?:#.*)?)$/i.exec(
+    url,
+  );
+  if (!match) {
+    throw new TypeError(
+      `urlSplitter(url): invalid url: ${JSON.stringify(url)}.`,
+    );
+  }
+
+  const [, scheme, host, path, query, fragment] = match;
+  const origin = scheme + host;
+
+  return path
+    .split('/')
+    .map((segment, index, segmentList) => {
+      const data = {
+        isLastPathSegment: index === segmentList.length - 1,
+      };
+
+      if (index === 0) {
+        return {
+          ...data,
+          beforeSplit: scheme,
+          href: {
+            absolute: origin,
+            rootRelative: '/',
+          },
+          value: {
+            // TODO: デコード済ドメイン名のプロパティを追加
+            raw: host,
+          },
+        };
+      } else {
+        const rootRelativeHref = segmentList.slice(0, index + 1).join('/');
+        return {
+          ...data,
+          beforeSplit: '/',
+          href: {
+            absolute: origin + rootRelativeHref,
+            rootRelative: rootRelativeHref,
+          },
+          value: {
+            dangerDecoded: decodeURIComponent(segment),
+            decoded: decodePercentEncoded(segment),
+            raw: segment,
+          },
+        };
+      }
+    })
+    .concat(
+      query
+        ? {
+            beforeSplit: '?',
+            href: {
+              absolute: origin + path + query,
+              rootRelative: path + query,
+            },
+            value: {
+              // TODO: デコード済クエリストリングのプロパティを追加
+              raw: query.substring(1),
+            },
+          }
+        : [],
+      fragment
+        ? {
+            beforeSplit: '#',
+            href: {
+              absolute: origin + path + query + fragment,
+              rootRelative: path + query + fragment,
+            },
+            value: {
+              // TODO: 安全なデコード済ハッシュフラグメントのプロパティを追加
+              dangerDecoded: decodeURIComponent(fragment.substring(1)),
+              raw: fragment.substring(1),
+            },
+          }
+        : [],
+    )
+    .map((data, index, self) => {
+      return Object.assign(data, {
+        afterSplit: self[index + 1] && self[index + 1].beforeSplit,
+        first: self[0],
+        isLastPathSegment: Boolean(data.isLastPathSegment),
+        last: self[self.length - 1],
+        next: self[index + 1],
+        prev: self[index - 1],
+      });
+    });
+}
+Object.assign(exports, { urlSplitter });
+
 /**
  * @param {string} url
  * @return {string[]}
