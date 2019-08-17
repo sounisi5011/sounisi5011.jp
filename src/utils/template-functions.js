@@ -100,7 +100,7 @@ function urlSplitter(url) {
     // General Punctuationブロックの不可視文字
     // 参考：https://ja.wikipedia.org/wiki/%E4%B8%80%E8%88%AC%E5%8F%A5%E8%AA%AD%E7%82%B9_(Unicode%E3%81%AE%E3%83%96%E3%83%AD%E3%83%83%E3%82%AF)#_%E6%96%87%E5%AD%97%E8%A1%A8
     String.raw`\u{2000}-\u{200F}\u{2011}\u{2028}-\u{202F}\u{205F}-\u{206F}`,
-    // 双方向テキストの制御文字：\u{061C}\u{200E}\u{200F}\u{202A}-\u{202E}\u{2066}-\u{2069}
+    // 双方向テキストの制御文字
     // 参考：https://ja.wikipedia.org/wiki/%E5%8F%8C%E6%96%B9%E5%90%91%E3%83%86%E3%82%AD%E3%82%B9%E3%83%88#Unicode
     String.raw`\u{061C}\u{200E}\u{200F}\u{202A}-\u{202E}\u{2066}-\u{2069}`,
   ];
