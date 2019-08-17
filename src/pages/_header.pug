@@ -24,6 +24,13 @@ header.page
             wbr
           span.segment(itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem")
             = urlItem.beforeSplit
+            -
+              const afterSplit = (function getNextSplit(urlItem) {
+                if (!urlItem || urlItem.value.raw) {
+                  return '';
+                }
+                return urlItem.beforeSplit + getNextSplit(urlItem.next);
+              })(urlItem.next);
             if urlItem !== urlItem.last
               -
                 const relList = [];
@@ -33,11 +40,10 @@ header.page
                 const relValue = relList.join(' ');
               a(href=urlItem.href.rootRelative rel=(relValue || null) itemprop="item")
                 = urlItem.value.decoded || urlItem.value.raw
+              = afterSplit
             else
               = urlItem.value.decoded || urlItem.value.raw
+              = afterSplit
               meta(itemprop="item" content=urlItem.href.absolute)
             meta(itemprop="name" content=urlItem.value.dangerDecoded || urlItem.value.raw)
             meta(itemprop="position" content=(index + 1))
-        else
-          span.segment
-            = urlItem.beforeSplit
