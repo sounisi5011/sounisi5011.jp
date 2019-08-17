@@ -199,11 +199,13 @@ Metalsmith(__dirname)
     }),
   )
   .use(
-    sitemap(
-      process.env.CONTEXT === 'production'
-        ? process.env.URL
-        : process.env.DEPLOY_URL,
-    ),
+    sitemap({
+      hostname:
+        process.env.CONTEXT === 'production'
+          ? process.env.URL
+          : process.env.DEPLOY_URL,
+      modifiedProperty: 'modified',
+    }),
   )
   .build(err => {
     if (err) {
