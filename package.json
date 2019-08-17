@@ -64,7 +64,6 @@
     "metalsmith-plugin-kit": "^1.0.1",
     "metalsmith-postcss": "^4.2.0",
     "metalsmith-pug-extra": "^1.0.1",
-    "metalsmith-sitemap": "^1.2.2",
     "mime": "^2.4.3",
     "mustache": "^3.0.1",
     "npm-run-all": "^4.1.5",
