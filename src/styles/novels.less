@@ -135,9 +135,14 @@ ruby rp {
   @spacing: @lines * @default-lh;
 
   .spacing-@{lines} {
-    p& {
+    p&,
+    span&[role="presentation"] {
       margin-top: @spacing * 1em;
       margin-bottom: @spacing * 1em;
+    }
+
+    span&[role="presentation"] {
+      display: block;
     }
 
     hr& {
@@ -152,9 +157,14 @@ ruby rp {
   @default-hr-margin: 0.5em;
   @spacing: 100vh;
 
-  p& {
+  p&,
+  span&[role="presentation"] {
     margin-top: @spacing;
     margin-bottom: @spacing;
+  }
+
+  span&[role="presentation"] {
+    display: block;
   }
 
   hr& {
