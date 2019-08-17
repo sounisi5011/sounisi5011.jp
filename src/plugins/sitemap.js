@@ -90,11 +90,14 @@ module.exports = opts => {
 
   return (files, metalsmith, done) => {
     const sitemap = createSitemap({
+      cacheTime: options.cacheTime,
       hostname:
         typeof options.hostname === 'function'
           ? options.hostname(files, metalsmith)
           : options.hostname,
       level: 'throw',
+      xmlNs: options.xmlNs,
+      xslUrl: options.xslUrl,
     });
 
     multimatch(Object.keys(files), options.pattern)
