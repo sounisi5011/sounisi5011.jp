@@ -119,30 +119,6 @@ exports.ignoreContentsEquals = contents => {
       }
     });
 
-    // ヘッダ内のQRコードのサイズ属性と絶対URLを置換
-    $('header.page > .page-location').each((index, element) => {
-      const $elem = $(element);
-
-      $elem
-        .find('picture.qr-code > img, img.qr-code')
-        .each((index, element) => {
-          const $img = $(element);
-          if ($img.is('[width]')) {
-            $img.attr('width', '0');
-          }
-          if ($img.is('[height]')) {
-            $img.attr('height', '0');
-          }
-          isUpdated = true;
-        });
-
-      $elem.find('.url').each((index, element) => {
-        const $url = $(element);
-        $url.empty();
-        isUpdated = true;
-      });
-    });
-
     // itemprop属性を持つtime要素を置換
     const $timeListMap = new Map();
     $('time[itemprop~=datePublished],time[itemprop~=dateModified]').each(
