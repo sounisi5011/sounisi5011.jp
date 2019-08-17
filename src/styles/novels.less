@@ -139,6 +139,11 @@ ruby rp {
     span&[role="presentation"] {
       margin-top: @spacing * 1em;
       margin-bottom: @spacing * 1em;
+
+      @supports (margin-top: 3lh) {
+        margin-top: ~"@{lines}lh";
+        margin-bottom: ~"@{lines}lh";
+      }
     }
 
     span&[role="presentation"] {
@@ -155,6 +160,11 @@ ruby rp {
     hr& {
       margin-top: @spacing + @default-hr-margin;
       margin-bottom: @spacing + @default-hr-margin;
+
+      @supports (margin-top: 3lh) {
+        margin-top: calc(~"@{lines}lh" + @default-hr-margin);
+        margin-bottom: calc(~"@{lines}lh" + @default-hr-margin);
+      }
     }
   }
 }
