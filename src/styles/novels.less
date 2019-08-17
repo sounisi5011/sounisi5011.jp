@@ -135,18 +135,36 @@ ruby rp {
   @spacing: @lines * @default-lh;
 
   .spacing-@{lines} {
-    p& {
+    p&,
+    span&[role="presentation"] {
       margin-top: @spacing * 1em;
       margin-bottom: @spacing * 1em;
+
+      @supports (margin-top: 3lh) {
+        margin-top: ~"@{lines}lh";
+        margin-bottom: ~"@{lines}lh";
+      }
+    }
+
+    span&[role="presentation"] {
+      display: block;
+    }
+
+    span&[area-hidden="true"]:empty {
+      &:before {
+        .repeat-content("\a", @lines);
+        white-space: pre;
+      }
     }
 
     hr& {
       margin-top: @spacing + @default-hr-margin;
       margin-bottom: @spacing + @default-hr-margin;
-    }
 
-    br& {
-      line-height: @spacing;
+      @supports (margin-top: 3lh) {
+        margin-top: calc(~"@{lines}lh" + @default-hr-margin);
+        margin-bottom: calc(~"@{lines}lh" + @default-hr-margin);
+      }
     }
   }
 }
@@ -156,17 +174,28 @@ ruby rp {
   @default-hr-margin: 0.5em;
   @spacing: 100vh;
 
-  p& {
+  p&,
+  span&[role="presentation"] {
     margin-top: @spacing;
     margin-bottom: @spacing;
+  }
+
+  span&[role="presentation"],
+  span&[area-hidden="true"] {
+    display: block;
+  }
+
+  span&[area-hidden="true"]:empty {
+    margin-top: @spacing;
+
+    &:before,
+    &:after {
+      content: "";
+    }
   }
 
   hr& {
     margin-top: calc(@spacing + @default-hr-margin);
     margin-bottom: calc(@spacing + @default-hr-margin);
-  }
-
-  br& {
-    line-height: @spacing;
   }
 }
