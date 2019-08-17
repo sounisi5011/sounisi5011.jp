@@ -136,48 +136,58 @@ function urlSplitter(url) {
     .map((segment, index, segmentList) => {
       if (index === 0) {
         return {
-          // TODO: デコードしたドメイン名のプロパティを追加
           beforeSplit: scheme,
           href: {
             absolute: origin,
             rootRelative: '/',
           },
-          value: host,
+          value: {
+            // TODO: デコード済ドメイン名のプロパティを追加
+            raw: host,
+          },
         };
       } else {
         const rootRelativeHref = segmentList.slice(0, index + 1).join('/');
         return {
           beforeSplit: '/',
-          decodedValue: decodePercentEncoded(segment),
           href: {
             absolute: origin + rootRelativeHref,
             rootRelative: rootRelativeHref,
           },
-          value: segment,
+          value: {
+            dangerDecoded: decodeURIComponent(segment),
+            decoded: decodePercentEncoded(segment),
+            raw: segment,
+          },
         };
       }
     })
     .concat(
       query
         ? {
-            // TODO: デコードしたクエリストリングのプロパティを追加
             beforeSplit: '?',
             href: {
               absolute: origin + path + query,
               rootRelative: path + query,
             },
-            value: query.substring(1),
+            value: {
+              // TODO: デコード済クエリストリングのプロパティを追加
+              raw: query.substring(1),
+            },
           }
         : [],
       fragment
         ? {
-            // TODO: デコードしたハッシュフラグメントのプロパティを追加
             beforeSplit: '#',
             href: {
               absolute: origin + path + query + fragment,
               rootRelative: path + query + fragment,
             },
-            value: fragment.substring(1),
+            value: {
+              // TODO: 安全なデコード済ハッシュフラグメントのプロパティを追加
+              dangerDecoded: decodeURIComponent(fragment.substring(1)),
+              raw: fragment.substring(1),
+            },
           }
         : [],
     )

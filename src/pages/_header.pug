@@ -19,17 +19,24 @@ header.page
                     alt="")
     span.url(itemprop="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList")
       each urlItem, index in urlSplitter(canonicalURL(visibleRootURL, path))
-        if urlItem.value
+        if urlItem.value.raw
           if index !== 0
             wbr
           span.segment(itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem")
+            mixin name(valueData)
+              if valueData.decoded && valueData.dangerDecoded && valueData.decoded !== valueData.dangerDecoded
+                span= valueData.decoded
+                meta(itemprop="name" content=valueData.dangerDecoded)
+              else
+                span(itemprop="name")= valueData.decoded || valueData.raw
+
             = urlItem.beforeSplit
             if !urlItem.last
               a(href=urlItem.href.rootRelative itemprop="item" itemtype="https://schema.org/Thing")
-                span(itemprop="name")= urlItem.decodedValue || urlItem.value
+                +name(urlItem.value)
             else
               meta(itemprop="item" content=urlItem.href.absolute)
-              span(itemprop="name")= urlItem.decodedValue || urlItem.value
+              +name(urlItem.value)
             meta(itemprop="position" content=(index + 1))
         else
           span.segment
