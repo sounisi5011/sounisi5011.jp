@@ -15,6 +15,7 @@ const sitemap = require('metalsmith-sitemap');
 const {
   ignoreContentsEquals,
 } = require('./src/plugin-options/netlify-published-date');
+const addFileMeta = require('./src/plugins/add-file-metadata');
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
 const childPages = require('./src/plugins/child-pages');
@@ -157,16 +158,23 @@ Metalsmith(__dirname)
     }),
   )
   .use(
+    addFileMeta((filename, filedata, files, metalsmith) => {
+      const data = {
+        ...metalsmith.metadata(),
+        ...filedata,
+      };
+      const path = data.hasOwnProperty('path') ? data.path : filename;
+
+      return {
+        canonical: templateFuncs.canonicalURL(data.rootURL, path),
+        visibleCanonical: templateFuncs.canonicalURL(data.visibleRootURL, path),
+      };
+    }),
+  )
+  .use(
     pageQrCodeGenerator({
       pageURL(filename, file, files, metalsmith) {
-        const data = {
-          ...metalsmith.metadata(),
-          ...file,
-        };
-        return templateFuncs.canonicalURL(
-          data.visibleRootURL,
-          data.hasOwnProperty('path') ? data.path : filename,
-        );
+        return file.visibleCanonical;
       },
     }),
   )
