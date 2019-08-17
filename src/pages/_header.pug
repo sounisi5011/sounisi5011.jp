@@ -19,9 +19,11 @@ header.page
                     alt="")
     span.url(itemprop="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList")
       each urlItem, index in urlSplitter(canonicalURL(visibleRootURL, path))
-        = urlItem.beforeSplit
         if urlItem.value
-          span(itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem")
+          if index !== 0
+            wbr
+          span.segment(itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem")
+            = urlItem.beforeSplit
             if !urlItem.last
               a(href=urlItem.href.rootRelative itemprop="item" itemtype="https://schema.org/Thing")
                 span(itemprop="name")= urlItem.value
@@ -29,3 +31,6 @@ header.page
               meta(itemprop="item" content=urlItem.href.absolute)
               span(itemprop="name")= urlItem.value
             meta(itemprop="position" content=(index + 1))
+        else
+          span.segment
+            = urlItem.beforeSplit
