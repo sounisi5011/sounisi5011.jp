@@ -10,6 +10,7 @@ const {
   compile: pugCompile,
   render: pugRender,
 } = require('metalsmith-pug-extra');
+const sitemap = require('metalsmith-sitemap');
 
 const {
   ignoreContentsEquals,
@@ -188,6 +189,13 @@ Metalsmith(__dirname)
         blankshield({ insertNoreferrer: true }),
       ],
     }),
+  )
+  .use(
+    sitemap(
+      process.env.CONTEXT === 'production'
+        ? process.env.URL
+        : process.env.DEPLOY_URL,
+    ),
   )
   .build(err => {
     if (err) {
