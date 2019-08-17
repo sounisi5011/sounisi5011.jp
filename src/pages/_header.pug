@@ -26,10 +26,10 @@ header.page
             = urlItem.beforeSplit
             if !urlItem.last
               a(href=urlItem.href.rootRelative itemprop="item" itemtype="https://schema.org/Thing")
-                span(itemprop="name")= urlItem.value
+                span(itemprop="name")= urlItem.decodedValue || urlItem.value
             else
               meta(itemprop="item" content=urlItem.href.absolute)
-              span(itemprop="name")= urlItem.value
+              span(itemprop="name")= urlItem.decodedValue || urlItem.value
             meta(itemprop="position" content=(index + 1))
         else
           span.segment
