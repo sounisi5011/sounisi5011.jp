@@ -43,6 +43,7 @@
     "> 0.1% in JP"
   ],
   "dependencies": {
+    "@babel/preset-env": "^7.5.5",
     "@fortawesome/fontawesome-free": "^5.9.0",
     "@sounisi5011/metalsmith-netlify-published-date": "0.1.0",
     "autoprefixer": "^9.6.1",
