@@ -10,9 +10,9 @@ if qrCodeImageFiles
     const urlSegmentCount = urlSplitter(canonicalURL(visibleRootURL, path)).length;
 
     if ((16*0.8 * 1.5 * urlSegmentCount) <= qrImageHeight) {
-      rootInlineStyle += `--header-height:calc(${headerPadding} + ${qrImageHeight}px)`;
+      rootInlineStyle += `--header-qr-height:${qrImageHeight}px`;
     } else {
-      rootInlineStyle += `--header-height:calc(${headerPadding} + .8em*1.5*${urlSegmentCount})`;
+      rootInlineStyle += `--header-url-max-lines:${urlSegmentCount}`;
     }
 doctype html
 html(lang="ja" style=(rootInlineStyle || null))
