@@ -1,6 +1,7 @@
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
+const babel = require('metalsmith-babel');
 const collections = require('metalsmith-collections');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
@@ -156,7 +157,13 @@ Metalsmith(__dirname)
       .use(mergePreloadDependencies())
       .use(ignore('**/*.less')),
   )
-  .use(anotherSource('./src/scripts'))
+  .use(
+    anotherSource('./src/scripts').use(
+      babel({
+        presets: ['env'],
+      }),
+    ),
+  )
   .use(mergePreloadDependencies())
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
   .use(mustache())
