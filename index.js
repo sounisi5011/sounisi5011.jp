@@ -14,6 +14,7 @@ const {
 const {
   ignoreContentsEquals,
 } = require('./src/plugin-options/netlify-published-date');
+const addFileMeta = require('./src/plugins/add-file-metadata');
 const anotherSource = require('./src/plugins/another-source');
 const blankshield = require('./src/plugins/blankshield');
 const childPages = require('./src/plugins/child-pages');
@@ -26,6 +27,7 @@ const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 const pageQrCodeGenerator = require('./src/plugins/page-qr-code-gen');
 const preloadList = require('./src/plugins/preload-list');
+const sitemap = require('./src/plugins/sitemap');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
@@ -156,16 +158,23 @@ Metalsmith(__dirname)
     }),
   )
   .use(
+    addFileMeta((filename, filedata, files, metalsmith) => {
+      const data = {
+        ...metalsmith.metadata(),
+        ...filedata,
+      };
+      const path = data.hasOwnProperty('path') ? data.path : filename;
+
+      return {
+        canonical: templateFuncs.canonicalURL(data.rootURL, path),
+        visibleCanonical: templateFuncs.canonicalURL(data.visibleRootURL, path),
+      };
+    }),
+  )
+  .use(
     pageQrCodeGenerator({
       pageURL(filename, file, files, metalsmith) {
-        const data = {
-          ...metalsmith.metadata(),
-          ...file,
-        };
-        return templateFuncs.canonicalURL(
-          data.visibleRootURL,
-          data.hasOwnProperty('path') ? data.path : filename,
-        );
+        return file.visibleCanonical;
       },
     }),
   )
@@ -187,6 +196,15 @@ Metalsmith(__dirname)
         }),
         blankshield({ insertNoreferrer: true }),
       ],
+    }),
+  )
+  .use(
+    sitemap({
+      hostname(files, metalsmith) {
+        const metadata = metalsmith.metadata();
+        return metadata.rootURL;
+      },
+      modifiedProperty: 'modified',
     }),
   )
   .build(err => {
