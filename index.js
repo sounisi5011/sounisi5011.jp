@@ -159,7 +159,7 @@ Metalsmith(__dirname)
   )
   .use(
     anotherSource('./src/scripts')
-      .ignore('.eslintrc*')
+      .ignore('.eslintrc.*')
       .use(
         babel({
           presets: [
