@@ -41,6 +41,8 @@ html(lang="ja" style=rootInlineStyle)
       block stylesheets
         include _head/stylesheets
       block head-script
+        each scriptData in unique(...globalPageHeadScripts, ...localPageHeadScripts)
+          script(src=scriptData)
   body(itemscope=Boolean(microdataRootSchema) itemtype=(microdataRootSchema || null))
     block header
       include _header
@@ -48,3 +50,5 @@ html(lang="ja" style=rootInlineStyle)
     block footer
       include _footer
     block body-script
+      each scriptData in unique(...globalPageScripts, ...localPageScripts)
+        script(src=scriptData async defer)

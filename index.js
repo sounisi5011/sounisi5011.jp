@@ -39,6 +39,7 @@ Metalsmith(__dirname)
     siteName: 'sounisi5011.jp',
     generator: 'Metalsmith',
     globalPageStyles: ['/default.css', '/header.css', '/footer.css'],
+    globalPageScripts: ['/add-header-height.js'],
     rootURL:
       (process.env.CONTEXT === 'production'
         ? process.env.URL
@@ -66,11 +67,15 @@ Metalsmith(__dirname)
     }
     if (Array.isArray(metadata.preloadDependencies)) {
       const preloadDependenciesSet = new Set(metadata.preloadDependencies);
-      if (Array.isArray(metadata.globalPageStyles)) {
-        metadata.globalPageStyles.forEach(url =>
-          preloadDependenciesSet.add(url),
-        );
-      }
+      [
+        metadata.globalPageStyles,
+        metadata.globalPageHeadScripts,
+        metadata.globalPageScripts,
+      ].forEach(pathList => {
+        if (Array.isArray(pathList)) {
+          pathList.forEach(url => preloadDependenciesSet.add(url));
+        }
+      });
       metadata.preloadDependencies = [...preloadDependenciesSet];
     }
     Object.values(files).forEach(filedata => {
@@ -79,11 +84,15 @@ Metalsmith(__dirname)
       }
       if (Array.isArray(filedata.preloadDependencies)) {
         const preloadDependenciesSet = new Set();
-        if (Array.isArray(filedata.localPageStyles)) {
-          filedata.localPageStyles.forEach(url =>
-            preloadDependenciesSet.add(url),
-          );
-        }
+        [
+          filedata.localPageStyles,
+          filedata.localPageHeadScripts,
+          filedata.localPageScripts,
+        ].forEach(pathList => {
+          if (Array.isArray(pathList)) {
+            pathList.forEach(url => preloadDependenciesSet.add(url));
+          }
+        });
         filedata.preloadDependencies.forEach(url =>
           preloadDependenciesSet.add(url),
         );
@@ -147,6 +156,7 @@ Metalsmith(__dirname)
       .use(mergePreloadDependencies())
       .use(ignore('**/*.less')),
   )
+  .use(anotherSource('./src/scripts'))
   .use(mergePreloadDependencies())
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
   .use(mustache())
