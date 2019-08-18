@@ -160,7 +160,15 @@ Metalsmith(__dirname)
   .use(
     anotherSource('./src/scripts').use(
       babel({
-        presets: [['@babel/preset-env', {}]],
+        presets: [
+          [
+            '@babel/preset-env',
+            {
+              corejs: 3,
+              useBuiltIns: 'usage',
+            },
+          ],
+        ],
       }),
     ),
   )
