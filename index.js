@@ -168,6 +168,7 @@ Metalsmith(__dirname)
               useBuiltIns: 'usage',
             },
           ],
+          'minify',
         ],
       }),
     ),
