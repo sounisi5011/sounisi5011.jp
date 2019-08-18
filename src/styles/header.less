@@ -72,7 +72,7 @@ header.page {
   );
 
   @supports (height: @header-height) {
-    @supports (scroll-padding-top: 4px) {
+    @supports ((scroll-margin-top: 4px) and (scroll-padding-top: 4px)) {
       /*
        * Chrome v73+ only works with <body>.
        * ULTIMATELY this needs to go on <html>, not <body>.
@@ -84,7 +84,7 @@ header.page {
       }
     }
 
-    @supports not (scroll-padding-top: 4px) {
+    @supports not ((scroll-margin-top: 4px) and (scroll-padding-top: 4px)) {
       /* see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css */
       /* see https://dxr.mozilla.org/mozilla-central/source/layout/style/res/html.css */
       /* see http://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css */
