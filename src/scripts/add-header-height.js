@@ -1,6 +1,5 @@
 (window => {
   const { document } = window;
-  let requestAnimationFrame = window.requestAnimationFrame;
   const CSS = window.CSS || {};
   const rootStyle = document.documentElement.style;
   const isFunc = value => typeof value === 'function';
@@ -22,12 +21,6 @@
     return;
   }
 
-  if (!isFunc(requestAnimationFrame)) {
-    requestAnimationFrame = callback => {
-      window.setTimeout(callback, 0);
-    };
-  }
-
   const headerElem = document.querySelector('header.page');
   const updateProp = () => {
     const headerHeight = headerElem.getBoundingClientRect().height;
@@ -38,7 +31,10 @@
   const resizeListener = () => {
     if (!updating) {
       updating = true;
-      requestAnimationFrame(() => {
+      // Note: CSS.supports()とposition:stickyに対応しているブラウザは、
+      //       全てrequestAnimationFrame()に対応している。
+      //       polyfillは不要
+      window.requestAnimationFrame(() => {
         updateProp();
         updating = false;
       });
