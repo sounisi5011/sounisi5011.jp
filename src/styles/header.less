@@ -1,8 +1,10 @@
-header.page {
-  @margin-v: 0.5em;
+@header-bottom-border: 1px;
+@margin-v: 0.5em;
+@url-font-size: 0.8em;
 
+header.page {
   margin: 0 -0.5em;
-  border-bottom: solid 1px;
+  border-bottom: solid @header-bottom-border;
   padding: inherit;
 
   @supports (position: sticky) {
@@ -36,7 +38,7 @@ header.page {
     & > .url {
       overflow-x: auto;
       margin-left: @margin-v;
-      font-size: 0.8em;
+      font-size: @url-font-size;
 
       & > .segment {
         white-space: nowrap;
@@ -50,6 +52,56 @@ header.page {
         &:active,
         &:focus {
           text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+@supports (position: sticky) {
+  @default-lh: 1.5;
+  @header-height: var(
+    --header-height,
+    calc(
+      @margin-v * 2 + @header-bottom-border +
+        var(
+          --header-qr-height,
+          calc(@url-font-size * @default-lh * var(--header-url-max-lines))
+        )
+    )
+  );
+
+  @supports (height: @header-height) {
+    @supports ((scroll-margin-top: 4px) and (scroll-padding-top: 4px)) {
+      /*
+       * Chrome v73+ only works with <body>.
+       * ULTIMATELY this needs to go on <html>, not <body>.
+       * see https://css-tricks.com/fixed-headers-on-page-links-and-overlapping-content-oh-my/
+       */
+      html,
+      body {
+        scroll-padding-top: @header-height;
+      }
+    }
+
+    @supports not ((scroll-margin-top: 4px) and (scroll-padding-top: 4px)) {
+      /* see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css */
+      /* see https://dxr.mozilla.org/mozilla-central/source/layout/style/res/html.css */
+      /* see http://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css */
+      @block-level-elems: address, article, aside, blockquote, dd, details, div,
+        dl, dt, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5,
+        h6, header, hgroup, legend, main, nav, ol, p, pre, section, summary, ul;
+
+      @{block-level-elems} {
+        &[id]:before {
+          /* see https://css-tricks.com/hash-tag-links-padding/#article-header-id-1 */
+          /* see http://nicolasgallagher.com/jump-links-and-viewport-positioning/demo/#method-B */
+          display: block;
+          content: " ";
+          margin-top: calc(@header-height * -1);
+          height: @header-height;
+          visibility: hidden;
+          pointer-events: none;
         }
       }
     }

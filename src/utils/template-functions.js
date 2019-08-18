@@ -32,7 +32,7 @@ function dateEquals(a, b) {
 Object.assign(exports, { dateEquals });
 
 function unique(...args) {
-  return [...new Set(args)];
+  return [...new Set([].concat(...args))];
 }
 Object.assign(exports, { unique });
 
