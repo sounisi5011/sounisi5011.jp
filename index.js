@@ -158,20 +158,22 @@ Metalsmith(__dirname)
       .use(ignore('**/*.less')),
   )
   .use(
-    anotherSource('./src/scripts').use(
-      babel({
-        presets: [
-          [
-            '@babel/preset-env',
-            {
-              corejs: 3,
-              useBuiltIns: 'usage',
-            },
+    anotherSource('./src/scripts')
+      .ignore('.eslintrc*')
+      .use(
+        babel({
+          presets: [
+            [
+              '@babel/preset-env',
+              {
+                corejs: 3,
+                useBuiltIns: 'usage',
+              },
+            ],
+            'minify',
           ],
-          'minify',
-        ],
-      }),
-    ),
+        }),
+      ),
   )
   .use(mergePreloadDependencies())
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
