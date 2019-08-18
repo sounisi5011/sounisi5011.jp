@@ -1,8 +1,28 @@
 if microdataRootSchema === undefined
   - microdataRootSchema = 'http://schema.org/WebPage';
+unless typeof rootInlineStyle === 'object' && rootInlineStyle
+  -
+    rootInlineStyle = !rootInlineStyle ? {} : (
+      String(rootInlineStyle)
+        .split(/\s*;\s*/)
+        .map(declaration => /^\s*([a-z-]+)\s*:\s*(\S(?:[\s\S]*\S)?)\s*$/.exec(declaration))
+        .filter(Boolean)
+        .reduce((style, [, p, v]) => Object.assign(style, { [p]: v }), {})
+    );
 block vars
+if qrCodeImageFiles
+  -
+    const headerPadding = '.5em*2 + 1px';
+    const qrImageHeight = (qrCodeImageFiles.png || qrCodeImageFiles.svg || { height: 0 }).height;
+    const urlSegmentCount = urlSplitter(canonicalURL(visibleRootURL, path)).length;
+
+    if ((16*0.8 * 1.5 * urlSegmentCount) <= qrImageHeight) {
+      rootInlineStyle['--header-qr-height'] = `${qrImageHeight}px`;
+    } else {
+      rootInlineStyle['--header-url-max-lines'] = urlSegmentCount;
+    }
 doctype html
-html(lang="ja")
+html(lang="ja" style=rootInlineStyle)
   head(prefix="og: http://ogp.me/ns#")
     block head
       meta(charset="utf-8")
@@ -21,6 +41,8 @@ html(lang="ja")
       block stylesheets
         include _head/stylesheets
       block head-script
+        each scriptData in unique(globalPageHeadScripts, localPageHeadScripts).filter(Boolean)
+          script(src=scriptData)
   body(itemscope=Boolean(microdataRootSchema) itemtype=(microdataRootSchema || null))
     block header
       include _header
@@ -28,3 +50,5 @@ html(lang="ja")
     block footer
       include _footer
     block body-script
+      each scriptData in unique(globalPageScripts, localPageScripts).filter(Boolean)
+        script(src=scriptData async defer)
