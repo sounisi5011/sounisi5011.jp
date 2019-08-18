@@ -1,7 +1,14 @@
 if microdataRootSchema === undefined
   - microdataRootSchema = 'http://schema.org/WebPage';
-if rootInlineStyle === undefined
-  - rootInlineStyle = '';
+unless typeof rootInlineStyle === 'object' && rootInlineStyle
+  -
+    rootInlineStyle = !rootInlineStyle ? {} : (
+      String(rootInlineStyle)
+        .split(/\s*;\s*/)
+        .map(declaration => /^\s*([a-z-]+)\s*:\s*(\S(?:[\s\S]*\S)?)\s*$/.exec(declaration))
+        .filter(Boolean)
+        .reduce((style, [, p, v]) => Object.assign(style, { [p]: v }), {})
+    );
 block vars
 if qrCodeImageFiles
   -
@@ -10,12 +17,12 @@ if qrCodeImageFiles
     const urlSegmentCount = urlSplitter(canonicalURL(visibleRootURL, path)).length;
 
     if ((16*0.8 * 1.5 * urlSegmentCount) <= qrImageHeight) {
-      rootInlineStyle += `--header-qr-height:${qrImageHeight}px`;
+      rootInlineStyle['--header-qr-height'] = `${qrImageHeight}px`;
     } else {
-      rootInlineStyle += `--header-url-max-lines:${urlSegmentCount}`;
+      rootInlineStyle['--header-url-max-lines'] = urlSegmentCount;
     }
 doctype html
-html(lang="ja" style=(rootInlineStyle || null))
+html(lang="ja" style=rootInlineStyle)
   head(prefix="og: http://ogp.me/ns#")
     block head
       meta(charset="utf-8")
