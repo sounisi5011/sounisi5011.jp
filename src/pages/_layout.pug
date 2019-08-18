@@ -1,8 +1,10 @@
 if microdataRootSchema === undefined
   - microdataRootSchema = 'http://schema.org/WebPage';
+if rootInlineStyle === undefined
+  - rootInlineStyle = '';
 block vars
 doctype html
-html(lang="ja")
+html(lang="ja" style=(rootInlineStyle || null))
   head(prefix="og: http://ogp.me/ns#")
     block head
       meta(charset="utf-8")
