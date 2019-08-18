@@ -1,42 +1,50 @@
-((window, document, CSS) => {
-  const requestAnimationFrame =
-    typeof window.requestAnimationFrame === 'function'
-      ? window.requestAnimationFrame
-      : callback => {
-          setTimeout(callback, 0);
-        };
+(window => {
+  const { document } = window;
+  let requestAnimationFrame = window.requestAnimationFrame;
+  const CSS = window.CSS || {};
+  const rootStyle = document.documentElement.style;
+  const isFunc = value => typeof value === 'function';
 
-  if (typeof CSS.supports !== 'function') {
+  if (!isFunc(CSS.supports)) {
     return;
   }
 
-  const rootStyle = document.documentElement.style;
-  if (typeof rootStyle.setProperty !== 'function') {
+  if (!isFunc(rootStyle.setProperty)) {
     return;
   }
 
   if (
-    CSS.supports('position', 'sticky') ||
-    CSS.supports('position', '-webkit-sticky')
+    !(
+      CSS.supports('position', 'sticky') ||
+      CSS.supports('position', '-webkit-sticky')
+    )
   ) {
-    const headerElem = document.querySelector('header.page');
-    const updateProp = () => {
-      const headerHeight = headerElem.getBoundingClientRect().height;
-      rootStyle.setProperty('--header-height', `${headerHeight}px`);
-    };
-
-    let updating = false;
-    const resizeListener = () => {
-      if (!updating) {
-        updating = true;
-        requestAnimationFrame(() => {
-          updateProp();
-          updating = false;
-        });
-      }
-    };
-
-    window.addEventListener('resize', resizeListener, false);
-    updateProp();
+    return;
   }
-})(window, document, window.CSS || {});
+
+  if (!isFunc(requestAnimationFrame)) {
+    requestAnimationFrame = callback => {
+      window.setTimeout(callback, 0);
+    };
+  }
+
+  const headerElem = document.querySelector('header.page');
+  const updateProp = () => {
+    const headerHeight = headerElem.getBoundingClientRect().height;
+    rootStyle.setProperty('--header-height', headerHeight + 'px');
+  };
+
+  let updating = false;
+  const resizeListener = () => {
+    if (!updating) {
+      updating = true;
+      requestAnimationFrame(() => {
+        updateProp();
+        updating = false;
+      });
+    }
+  };
+
+  window.addEventListener('resize', resizeListener, false);
+  updateProp();
+})(window);
