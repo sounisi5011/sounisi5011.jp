@@ -73,7 +73,8 @@
     "sitemap": "^4.0.2",
     "strict-uri-encode": "^2.0.0",
     "svgo": "^1.2.2",
-    "to-ico": "^1.1.5"
+    "to-ico": "^1.1.5",
+    "twitter-text": "^3.0.0"
   },
   "devDependencies": {
     "cross-spawn": "^6.0.5",
