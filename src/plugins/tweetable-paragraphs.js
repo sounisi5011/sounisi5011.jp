@@ -152,6 +152,7 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
 
 module.exports = opts => {
   const options = {
+    filter: (filename, filedata, metalsmith, files) => true,
     ignoreElems: ['style', 'script', 'template'],
     pattern: '**/*.html',
     rootSelector: 'body',
@@ -163,8 +164,12 @@ module.exports = opts => {
     const errorList = [];
 
     multimatch(Object.keys(files), options.pattern).forEach(filename => {
-      debug(`processing file: ${util.inspect(filename)}`);
       const filedata = files[filename];
+      if (!options.filter(filename, filedata, metalsmith, files)) {
+        return;
+      }
+
+      debug(`processing file: ${util.inspect(filename)}`);
 
       let $;
       try {

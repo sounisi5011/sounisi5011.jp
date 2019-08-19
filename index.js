@@ -224,6 +224,9 @@ Metalsmith(__dirname)
           reuse: true,
         }),
         tweetableParagraphs({
+          filter(filename, filedata) {
+            return filedata.tweetable;
+          },
           rootSelector: '.novel-body',
           textContentsReplacer($elem, childTextDataList) {
             const textData = childTextDataList[0];
