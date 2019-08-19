@@ -6,6 +6,7 @@ const debug = require('debug')(
 );
 const cheerio = require('cheerio');
 const multimatch = require('multimatch');
+const twitter = require('twitter-text');
 
 /**
  * @see https://infra.spec.whatwg.org/#ascii-whitespace
@@ -152,35 +153,77 @@ module.exports = opts => {
   };
 
   return (files, metalsmith, done) => {
+    const errorList = [];
+
     multimatch(Object.keys(files), options.pattern).forEach(filename => {
+      debug(`processing file: ${util.inspect(filename)}`);
       const filedata = files[filename];
+
+      let $;
       try {
-        let isUpdated = false;
-        const $ = cheerio.load(filedata.contents.toString());
+        $ = cheerio.load(filedata.contents.toString());
+      } catch (err) {
+        return;
+      }
 
-        $(options.rootSelector).each((i, elem) => {
-          const $root = $(elem);
-          const dataList = readTextContents($, $root, {
-            ignoreElems: options.ignoreElems,
-            replacer: options.textContentsReplacer,
-          });
+      const newErrorList = [];
+      let isUpdated = false;
 
-          dataList.forEach(({ idNode, text }) => {
-            if (idNode) {
-              $(idNode).attr('data-share-text', text);
-              isUpdated = true;
-            }
-          });
+      $(options.rootSelector).each((i, elem) => {
+        const $root = $(elem);
+        const dataList = readTextContents($, $root, {
+          ignoreElems: options.ignoreElems,
+          replacer: options.textContentsReplacer,
         });
 
+        dataList.forEach(({ id, idNode, text }) => {
+          if (idNode) {
+            const tweet = twitter.parseTweet(text);
+
+            if (!tweet.valid) {
+              const lengthOutText = text.substring(tweet.validRangeEnd);
+              newErrorList.push({
+                filepath: `${filename}#${id}`,
+                message: `テキストが長すぎます。以下のテキストを削除し、あと${
+                  lengthOutText.length
+                }文字減らしてください:\n\n${lengthOutText.replace(
+                  /^/gm,
+                  '  > ',
+                )}`,
+              });
+              return;
+            }
+
+            $(idNode).attr('data-share-text', text);
+            isUpdated = true;
+          }
+        });
+      });
+
+      if (newErrorList.length >= 1) {
+        errorList.push(...newErrorList);
+      } else {
         if (isUpdated) {
           filedata.contents = Buffer.from($.html());
           debug(`contents updated: ${util.inspect(filename)}`);
         }
-      } catch (err) {
-        //
       }
     });
-    done();
+
+    if (errorList.length >= 1) {
+      done(
+        new Error(
+          [
+            '以下のファイルでエラーが発生しました：',
+            '',
+            ...errorList.map(({ filepath, message }) =>
+              `${filepath}: ${message}\n`.replace(/^(?=[^\r\n])/gm, '  '),
+            ),
+          ].join('\n'),
+        ),
+      );
+    } else {
+      done();
+    }
   };
 };
