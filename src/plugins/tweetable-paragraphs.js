@@ -14,11 +14,18 @@ const twitter = require('twitter-text');
  */
 const HTML_WS_REGEXP = /[\t\n\f\r ]+/g;
 
+function first(list, defaultValue) {
+  if (list.length < 1 && arguments.length >= 2) {
+    list.push(defaultValue);
+  }
+  return list[0];
+}
+
 function last(list) {
   return list[list.length - 1];
 }
 
-function createData($, idNode, text) {
+function createData($, idNode, text = '') {
   const id = idNode && $(idNode).attr('id');
   return {
     id: id !== undefined ? id : null,
@@ -110,7 +117,7 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
 
             return [...list, ...data];
           },
-          currentIdNode !== null ? [createData($, currentIdNode, '')] : [],
+          currentIdNode !== null ? [createData($, currentIdNode)] : [],
         );
 
       /*
@@ -130,7 +137,7 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
        */
       if (isPElem) {
         const margin = 1;
-        const firstData = newDataList[0];
+        const firstData = first(newDataList, createData($, currentIdNode));
         const lastData = last(newDataList);
         firstData.margin.top = Math.max(margin, firstData.margin.top);
         lastData.margin.bottom = Math.max(margin, lastData.margin.bottom);
