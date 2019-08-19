@@ -184,6 +184,15 @@ module.exports = opts => {
         });
 
         dataList.forEach(({ id, idNode, text }) => {
+          if (!idNode) {
+            newErrorList.push({
+              filepath: filename,
+              message:
+                'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
+            });
+            return;
+          }
+
           if (idNode) {
             const tweet = twitter.parseTweet(text);
 
