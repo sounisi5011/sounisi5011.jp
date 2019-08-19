@@ -6,6 +6,7 @@ const debug = require('debug')(
 );
 const cheerio = require('cheerio');
 const multimatch = require('multimatch');
+const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
 /**
@@ -23,6 +24,58 @@ function first(list, defaultValue) {
 
 function last(list) {
   return list[list.length - 1];
+}
+
+function unicodeLength(str) {
+  return [...str].length;
+}
+
+function getURL($) {
+  const metaElemDefs = [
+    {
+      attr: 'content',
+      query: 'meta[property="og:url"]',
+    },
+    {
+      attr: 'href',
+      query: 'link[rel=canonical]',
+    },
+    {
+      attr: 'href',
+      query: 'base',
+    },
+  ];
+
+  const $head = $('head');
+  for (const { query, attr } of metaElemDefs) {
+    const value = $head.find(query).attr(attr);
+    if (typeof value === 'string' && /^https?:\/\//.test(value)) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function getValidTweetLength(tweetText, suffixText = '') {
+  const tweet = twitter.parseTweet(tweetText);
+
+  if (tweet.valid) {
+    return null;
+  }
+
+  let validTweetLength = tweet.validRangeEnd;
+  while (validTweetLength >= 0) {
+    if (
+      twitter.parseTweet(tweetText.substring(0, validTweetLength) + suffixText)
+        .valid
+    ) {
+      break;
+    }
+    validTweetLength--;
+  }
+
+  return validTweetLength;
 }
 
 function createData($, idNode, text = '') {
@@ -181,45 +234,51 @@ module.exports = opts => {
       const newErrorList = [];
       let isUpdated = false;
 
-      $(options.rootSelector).each((i, elem) => {
-        const $root = $(elem);
-        const dataList = readTextContents($, $root, {
-          ignoreElems: options.ignoreElems,
-          replacer: options.textContentsReplacer,
+      const pageURL = getURL($);
+      if (!pageURL) {
+        newErrorList.push({
+          filepath: filename,
+          message:
+            'ページの絶対URLを取得できませんでした。OGPのmeta要素、正規URLを指定するlink要素、または、絶対URLが記述されたbase要素が必要です',
         });
+      } else {
+        $(options.rootSelector).each((i, elem) => {
+          const $root = $(elem);
+          const dataList = readTextContents($, $root, {
+            ignoreElems: options.ignoreElems,
+            replacer: options.textContentsReplacer,
+          });
 
-        dataList.forEach(({ id, idNode, text }) => {
-          if (!idNode) {
-            newErrorList.push({
-              filepath: filename,
-              message:
-                'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
-            });
-            return;
-          }
+          dataList.forEach(({ id, idNode, text }) => {
+            if (!idNode) {
+              newErrorList.push({
+                filepath: filename,
+                message:
+                  'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
+              });
+              return;
+            }
 
-          if (idNode) {
-            const tweet = twitter.parseTweet(text);
+            const fragmentPageURL = pageURL + '#' + strictUriEncode(id);
+            const validTweetLength = getValidTweetLength(text, fragmentPageURL);
 
-            if (!tweet.valid) {
-              const lengthOutText = text.substring(tweet.validRangeEnd);
+            if (validTweetLength) {
+              const lengthOutText = text.substring(validTweetLength);
+              const outLen = unicodeLength(lengthOutText);
               newErrorList.push({
                 filepath: `${filename}#${id}`,
-                message: `テキストが長すぎます。以下のテキストを削除し、あと${
-                  lengthOutText.length
-                }文字減らしてください:\n\n${lengthOutText.replace(
-                  /^/gm,
-                  '  > ',
-                )}`,
+                message:
+                  `テキストが長すぎます。以下のテキストを削除し、あと${outLen}文字減らしてください:\n\n` +
+                  lengthOutText.replace(/^/gm, '  > '),
               });
               return;
             }
 
             $(idNode).attr('data-share-text', text);
             isUpdated = true;
-          }
+          });
         });
-      });
+      }
 
       if (newErrorList.length >= 1) {
         errorList.push(...newErrorList);
