@@ -113,6 +113,18 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
         );
 
       /*
+       * br要素の内容は改行にする
+       */
+      if ($node.is('br')) {
+        const firstData = newDataList[0];
+        if (firstData) {
+          firstData.text = firstData.rawText = '\n';
+        } else {
+          newDataList.push(createData($, currentIdNode, '\n'));
+        }
+      }
+
+      /*
        * p要素の前後には、一行のマージンを追加する
        */
       if (isPElem) {
