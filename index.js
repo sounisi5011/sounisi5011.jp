@@ -32,6 +32,7 @@ const sitemap = require('./src/plugins/sitemap');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
+const tweetableParagraphs = require('./src/plugins/tweetable-paragraphs');
 const templateFuncs = require('./src/utils/template-functions');
 
 Metalsmith(__dirname)
@@ -221,6 +222,9 @@ Metalsmith(__dirname)
         pugRender({
           pattern: pugRender.defaultOptions.pattern,
           reuse: true,
+        }),
+        tweetableParagraphs({
+          rootSelector: '.novel-body',
         }),
         blankshield({ insertNoreferrer: true }),
       ],
