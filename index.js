@@ -225,6 +225,24 @@ Metalsmith(__dirname)
         }),
         tweetableParagraphs({
           rootSelector: '.novel-body',
+          textContentsReplacer($elem, childTextDataList) {
+            const textData = childTextDataList[0];
+            if (textData) {
+              const isEmpty =
+                $elem.is('[area-hidden=true]') ||
+                /^[\t\n\f\r ]+$/.test($elem.text());
+
+              for (let lines = 30; lines; lines--) {
+                if ($elem.is(`.spacing-${lines}`)) {
+                  textData.margin.top = lines;
+                  if (!isEmpty) {
+                    textData.margin.bottom = lines;
+                  }
+                }
+              }
+            }
+            return childTextDataList;
+          },
         }),
         blankshield({ insertNoreferrer: true }),
       ],

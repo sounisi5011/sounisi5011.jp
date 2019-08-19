@@ -132,8 +132,10 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
 
 module.exports = opts => {
   const options = {
+    ignoreElems: ['style', 'script', 'template'],
     pattern: '**/*.html',
     rootSelector: 'body',
+    textContentsReplacer: ($elem, childTextDataList) => childTextDataList,
     ...opts,
   };
 
@@ -146,7 +148,10 @@ module.exports = opts => {
 
         $(options.rootSelector).each((i, elem) => {
           const $root = $(elem);
-          const dataList = readTextContents($, $root);
+          const dataList = readTextContents($, $root, {
+            ignoreElems: options.ignoreElems,
+            replacer: options.textContentsReplacer,
+          });
 
           dataList.forEach(({ idNode, text }) => {
             if (idNode) {
