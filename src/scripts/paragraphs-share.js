@@ -90,6 +90,7 @@
         : '';
       const url = canonicalURL + fragment;
       share({
+        text: currentParagraphIDElem.dataset.shareText,
         url,
       });
     },
