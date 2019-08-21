@@ -2,34 +2,34 @@
 
 footer.page {
   margin-top: 5em;
-}
 
-.share-area {
-  position: absolute;
-  right: 0;
-  top: -3.5em;
-  margin: 0 !important;
-  font-size: larger;
+  & > .share-area {
+    position: absolute;
+    right: 0;
+    top: -3.5em;
+    margin: 0;
+    font-size: larger;
 
-  & > button {
-    font-size: medium;
-  }
+    & > button {
+      font-size: medium;
+    }
 
-  .share-button {
-    @bg-color: #000;
-    @text-color: #fff;
+    .share-button {
+      @bg-color: #000;
+      @text-color: #fff;
 
-    cursor: pointer;
-    border: solid 1px @text-color;
-    padding: 0.5em;
-    background-color: @bg-color;
-    color: @text-color;
+      cursor: pointer;
+      border: solid 1px @text-color;
+      padding: 0.5em;
+      background-color: @bg-color;
+      color: @text-color;
 
-    &:before {
-      .fa-icon;
-      .fas;
-      content: @fa-var-share-alt;
-      margin-right: 0.5em;
+      &:before {
+        .fa-icon;
+        .fas;
+        content: @fa-var-share-alt;
+        margin-right: 0.5em;
+      }
     }
   }
 }
