@@ -84,6 +84,14 @@ Metalsmith(__dirname)
       if (!filedata.hasOwnProperty('preloadDependencies')) {
         filedata.preloadDependencies = [];
       }
+
+      if (!Array.isArray(filedata.localPageScripts)) {
+        filedata.localPageScripts = [];
+      }
+      if (filedata.tweetable) {
+        filedata.localPageScripts.push('/paragraphs-share.js');
+      }
+
       if (Array.isArray(filedata.preloadDependencies)) {
         const preloadDependenciesSet = new Set();
         [
