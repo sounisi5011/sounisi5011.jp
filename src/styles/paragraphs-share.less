@@ -4,25 +4,32 @@ footer.page {
   margin-top: 5em;
 }
 
-.share-button {
-  @bg-color: #000;
-  @text-color: #fff;
-
+.share-area {
   position: absolute;
   right: 0;
   top: -3.5em;
-  cursor: pointer;
   margin: 0 !important;
-  border: solid 1px @text-color;
-  padding: 0.5em;
-  background-color: @bg-color;
-  color: @text-color;
   font-size: larger;
 
-  &:before {
-    .fa-icon;
-    .fas;
-    content: @fa-var-share-alt;
-    margin-right: 0.5em;
+  & > button {
+    font-size: medium;
+  }
+
+  .share-button {
+    @bg-color: #000;
+    @text-color: #fff;
+
+    cursor: pointer;
+    border: solid 1px @text-color;
+    padding: 0.5em;
+    background-color: @bg-color;
+    color: @text-color;
+
+    &:before {
+      .fa-icon;
+      .fas;
+      content: @fa-var-share-alt;
+      margin-right: 0.5em;
+    }
   }
 }

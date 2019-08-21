@@ -65,9 +65,12 @@
   const headerElem = document.querySelector('header.page');
   const footerElem = document.querySelector('footer.page');
 
+  const shareAreaElem = document.createElement('div');
+  shareAreaElem.className = 'share-area';
+
   const shareButtonElem = document.createElement('button');
   shareButtonElem.className = 'share-button';
-  shareButtonElem.textContent = '現在の段落を共有';
+  shareButtonElem.textContent = '共有';
   shareButtonElem.addEventListener(
     'click',
     () => {
@@ -96,6 +99,7 @@
     },
     false,
   );
+  shareAreaElem.appendChild(shareButtonElem);
 
-  footerElem.insertBefore(shareButtonElem, footerElem.firstChild);
+  footerElem.insertBefore(shareAreaElem, footerElem.firstChild);
 }
