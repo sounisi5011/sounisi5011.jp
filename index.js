@@ -85,10 +85,14 @@ Metalsmith(__dirname)
         filedata.preloadDependencies = [];
       }
 
+      if (!Array.isArray(filedata.localPageStyles)) {
+        filedata.localPageStyles = [];
+      }
       if (!Array.isArray(filedata.localPageScripts)) {
         filedata.localPageScripts = [];
       }
       if (filedata.tweetable) {
+        filedata.localPageStyles.push('/paragraphs-share.css');
         filedata.localPageScripts.push('/paragraphs-share.js');
       }
 
