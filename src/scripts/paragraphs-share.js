@@ -15,6 +15,21 @@
   }
 
   /**
+   * @param {NodeList} nodeList
+   * @param {function(Node): boolean} callback
+   * @returns {Node|undefined}
+   */
+  function findElem(nodeList, callback) {
+    const len = nodeList.length;
+    for (let i = 0; i < len; i++) {
+      const node = nodeList[i];
+      if (callback(node)) {
+        return node;
+      }
+    }
+  }
+
+  /**
    * @param {Node|null} node
    * @returns {Node|null}
    */
@@ -49,17 +64,18 @@
   shareButtonElem.addEventListener(
     'click',
     () => {
-      const currentParagraphElem = [
-        ...document.querySelectorAll('main.novel-body>*'),
-      ].find(elem => {
-        // see https://blog.jxck.io/entries/2016-06-25/intersection-observer.html#表示判定
-        return isIntersection(elem, {
-          padding: {
-            bottom: footerElem.getBoundingClientRect().height,
-            top: headerElem.getBoundingClientRect().height,
-          },
-        });
-      });
+      const currentParagraphElem = findElem(
+        document.querySelectorAll('main.novel-body>*'),
+        elem => {
+          // see https://blog.jxck.io/entries/2016-06-25/intersection-observer.html#表示判定
+          return isIntersection(elem, {
+            padding: {
+              bottom: footerElem.getBoundingClientRect().height,
+              top: headerElem.getBoundingClientRect().height,
+            },
+          });
+        },
+      );
       const currentParagraphIDElem = getPrevIDElem(currentParagraphElem);
 
       const url = location.href.replace(
