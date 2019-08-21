@@ -2,6 +2,11 @@ const { URL } = require('url');
 
 const cheerio = require('cheerio');
 
+/**
+ * @see https://infra.spec.whatwg.org/#ascii-whitespace
+ * @see https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions/Character_Classes
+ */
+const HTML_WS_REGEXP = /[\t\n\f\r ]+/g;
 const netlifyDeployUrlRegExp = /^https?:\/\/[0-9a-f]+--[0-9a-z-]+\.netlify\.com(?=[/?#]|$)/i;
 
 function getCanonicalURLList($) {
@@ -11,6 +16,28 @@ function getCanonicalURLList($) {
       return $link.attr('href');
     })
     .get();
+}
+
+function removeDateModifiedProp($elem) {
+  if ($elem.is('[itemprop]')) {
+    // itemprop属性にdatePublishedとdateModifiedの両方が存在する場合、dateModifiedを削除する。
+    const itempropList = $elem
+      .attr('itemprop')
+      .split(HTML_WS_REGEXP)
+      .filter(token => token !== '');
+    if (
+      itempropList.includes('datePublished') &&
+      itempropList.includes('dateModified')
+    ) {
+      $elem.attr(
+        'itemprop',
+        itempropList.filter(token => token !== 'dateModified').join(' '),
+      );
+    } else {
+      // 区切り文字による副作用を防ぐため、itemprop属性値は常に書き換える。
+      $elem.attr('itemprop', itempropList.join(' '));
+    }
+  }
 }
 
 /**
@@ -41,6 +68,9 @@ exports.ignoreContentsEquals = contents => {
                 if ($time.is('[datetime]')) {
                   $time.attr('datetime', '');
                 }
+
+                // itemprop属性にdatePublishedとdateModifiedの両方が存在する場合、dateModifiedを削除する。
+                removeDateModifiedProp($time);
 
                 isUpdated = true;
               });
@@ -139,6 +169,10 @@ exports.ignoreContentsEquals = contents => {
       if ($time.is('[datetime]')) {
         $time.attr('datetime', '');
       }
+
+      // itemprop属性にdatePublishedとdateModifiedの両方が存在する場合、dateModifiedを削除する。
+      removeDateModifiedProp($time);
+
       isUpdated = true;
     });
 

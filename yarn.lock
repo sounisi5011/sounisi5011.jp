@@ -914,17 +914,14 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"
   integrity sha512-ONhaKPIufzzrlNbqtWFFd+jlnemX6lJAgq9ZeiZtS7I1PIf/la7CW4m83rTXRnVnsMbW2k56pGYu7AUFJD9Pow==
 
-"@sounisi5011/metalsmith-netlify-published-date@0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@sounisi5011/metalsmith-netlify-published-date/-/metalsmith-netlify-published-date-0.1.0.tgz#66e6ba2c68710a397ea297ae9c288cf10c0cbe38"
-  integrity sha512-BTVIXK7WKB1W+V9xAEsHDH+ScSjfTz0Mvw7IH+rhGLUSK3obm6wbk2afICCk9hXq0O+ILZQpBrjnHdUYSOIZsg==
+"@sounisi5011/metalsmith-netlify-published-date@0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@sounisi5011/metalsmith-netlify-published-date/-/metalsmith-netlify-published-date-0.1.1.tgz#088e81cef41d8022c916177d962a7415ba5f97e9"
+  integrity sha512-hglXZqvC4h4q3VxYdAeldqHf9Kgl/0j9HhVe7KRLKY3HnQTIFr9ziIpVe1jI9CkxaJ0mHl4MP+JGRkwlVVw5Jw==
   dependencies:
-    "@types/debug" "4.1.4"
-    "@types/deep-freeze-strict" "1.1.0"
-    "@types/flat-cache" "2.0.0"
-    "@types/got" "9.6.5"
+    "@types/debug" "4.1.5"
+    "@types/got" "9.6.7"
     "@types/metalsmith" "2.3.0"
-    "@types/parse-link-header" "1.0.0"
     debug "4.1.1"
     deep-freeze-strict "1.1.1"
     flat-cache "2.0.1"
@@ -973,6 +970,11 @@
   resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.4.tgz#56eec47706f0fd0b7c694eae2f3172e6b0b769da"
   integrity sha512-D9MyoQFI7iP5VdpEyPZyjjqIJ8Y8EDNQFIFVLOmeg1rI1xiHOChyUPMPRUVfqFCerxfE+yS3vMyj37F6IdtOoQ==
 
+"@types/debug@4.1.5":
+  version "4.1.5"
+  resolved "https://registry.yarnpkg.com/@types/debug/-/debug-4.1.5.tgz#b14efa8852b7768d898906613c23f688713e02cd"
+  integrity sha512-Q1y515GcOdTHgagaVFhHnIFQ38ygs/kmxdNpvpou+raI9UO3YZcHDngBSYKQklcKlvA7iuQlmIKbzvmxcOE9CQ==
+
 "@types/decompress@*":
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/@types/decompress/-/decompress-4.2.3.tgz#98eed48af80001038aa05690b2094915f296fe65"
@@ -999,11 +1001,6 @@
   resolved "https://registry.yarnpkg.com/@types/events/-/events-3.0.0.tgz#2862f3f58a9a7f7c3e78d79f130dd4d71c25c2a7"
   integrity sha512-EaObqwIvayI5a8dCzhFrjKzVwKLxjoG9T6Ppd5CEo07LRKfQ8Yokw54r5+Wq7FaBQ+yXRvQAYPrHwya1/UFt9g==
 
-"@types/flat-cache@2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@types/flat-cache/-/flat-cache-2.0.0.tgz#64e5d3b426c392b603a208a55bdcc7d920ce6e57"
-  integrity sha512-fHeEsm9hvmZ+QHpw6Fkvf19KIhuqnYLU6vtWLjd5BsMd/qVi7iTkMioDZl0mQmfNRA1A6NwvhrSRNr9hGYZGww==
-
 "@types/glob@^7.1.1":
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.1.1.tgz#aa59a1c6e3fbc421e07ccd31a944c30eba521575"
@@ -1013,10 +1010,10 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
-"@types/got@9.6.5":
-  version "9.6.5"
-  resolved "https://registry.yarnpkg.com/@types/got/-/got-9.6.5.tgz#b951331420dec5161c10a1a91e6390990398b302"
-  integrity sha512-2A8Yxbi092KD6JM/WMA8tzcS79U94EXLP4wg9ry0brgZF7fQRIe69vwnA9cW6wsmkAx15a8SJ9bOxRyyeDtbmQ==
+"@types/got@9.6.7":
+  version "9.6.7"
+  resolved "https://registry.yarnpkg.com/@types/got/-/got-9.6.7.tgz#33d84c60cba83e3c904634a1ea7ea81d1549bea6"
+  integrity sha512-LMc2ja42bQorKpBxf38ZBPdT3FhYL0lyAqnZBo5vAPCtobYa8AiHwSLH5zDvR19r2Pr5Ojar3hT/QLLb2SoPYA==
   dependencies:
     "@types/node" "*"
     "@types/tough-cookie" "*"
@@ -1081,11 +1078,6 @@
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
   integrity sha512-f5j5b/Gf71L+dbqxIpQ4Z2WlmI/mPJ0fOkGGmFgtb6sAu97EPczzbS3/tJKxmcYDj55OX6ssqwDAWOHIYDRDGA==
-
-"@types/parse-link-header@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@types/parse-link-header/-/parse-link-header-1.0.0.tgz#69f059e40a0fa93dc2e095d4142395ae6adc5d7a"
-  integrity sha512-fCA3btjE7QFeRLfcD0Sjg+6/CnmC66HpMBoRfRzd2raTaWMJV21CCZ0LO8MOqf8onl5n0EPfjq4zDhbyX8SVwA==
 
 "@types/pug@2.0.4":
   version "2.0.4"
