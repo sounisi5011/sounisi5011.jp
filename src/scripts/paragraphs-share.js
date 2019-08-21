@@ -85,9 +85,10 @@
       );
       const currentParagraphIDElem = getPrevIDElem(currentParagraphElem);
 
-      const url = `${canonicalURL}#${encodeURIComponent(
-        currentParagraphIDElem.id,
-      )}`;
+      const fragment = currentParagraphIDElem
+        ? '#' + encodeURIComponent(currentParagraphIDElem.id)
+        : '';
+      const url = canonicalURL + fragment;
       share({
         url,
       });
