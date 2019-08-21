@@ -176,6 +176,22 @@ Metalsmith(__dirname)
               '@babel/preset-env',
               {
                 corejs: 3,
+                exclude: [
+                  /**
+                   * Symbolsは使用しないので、Symbol関係のpolyfillを除外する
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/README.md#ecmascript-string-and-regexp
+                   */
+                  'es.string.match',
+                  'es.string.replace',
+                  'es.string.search',
+                  'es.string.split',
+                  /**
+                   * RegExp.lastIndexの値と、マッチしなかったグループの値がundefinedではない値になる、IE8のexecメソッドに関するバグ修正。
+                   * こんな絶妙な使い方をすることはおそらく無く、またIE8など眼中に無いため、無効化。
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/internals/regexp-exec.js
+                   */
+                  'es.regexp.exec',
+                ],
                 useBuiltIns: 'usage',
               },
             ],
