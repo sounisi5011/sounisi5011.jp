@@ -47,6 +47,12 @@
     return node;
   }
 
+  function getCanonicalURL(doc = document) {
+    const linkElem = doc.querySelector('link[rel=canonical]');
+    // TODO: hrefプロパティが古いブラウザでも使用できるなら、getAttribute()メソッドを削除する
+    return linkElem.href || linkElem.getAttribute('href');
+  }
+
   function share({ title = document.title, text, url }) {
     if (typeof navigator.share === 'function') {
       navigator.share({ text, title, url });
@@ -55,6 +61,7 @@
     }
   }
 
+  const canonicalURL = getCanonicalURL() || location.href.replace(/#.*$/, '');
   const headerElem = document.querySelector('header.page');
   const footerElem = document.querySelector('footer.page');
 
@@ -78,12 +85,9 @@
       );
       const currentParagraphIDElem = getPrevIDElem(currentParagraphElem);
 
-      const url = location.href.replace(
-        /(?:#.*)?$/,
-        currentParagraphIDElem
-          ? `#${encodeURIComponent(currentParagraphIDElem.id)}`
-          : '',
-      );
+      const url = `${canonicalURL}#${encodeURIComponent(
+        currentParagraphIDElem.id,
+      )}`;
       share({
         url,
       });
