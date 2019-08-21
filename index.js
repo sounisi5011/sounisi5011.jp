@@ -175,6 +175,7 @@ Metalsmith(__dirname)
       .ignore('.eslintrc.*')
       .use(
         babel({
+          comments: false,
           presets: [
             [
               '@babel/preset-env',
