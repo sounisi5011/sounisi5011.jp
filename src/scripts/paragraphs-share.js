@@ -66,7 +66,7 @@
   const footerElem = document.querySelector('footer.page');
 
   const shareButtonElem = document.createElement('button');
-  shareButtonElem.classList.add('share-button');
+  shareButtonElem.className = 'share-button';
   shareButtonElem.textContent = '現在の段落を共有';
   shareButtonElem.addEventListener(
     'click',
@@ -90,7 +90,7 @@
         : '';
       const url = canonicalURL + fragment;
       share({
-        text: currentParagraphIDElem.dataset.shareText,
+        text: currentParagraphIDElem.getAttribute('data-share-text'),
         url,
       });
     },
