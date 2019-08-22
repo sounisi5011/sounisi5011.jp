@@ -8,9 +8,25 @@
 
   & > .bottom-fixed-box.inner {
     position: absolute;
-    left: 0;
     right: 0;
     bottom: 0;
+  }
+}
+
+.novel-body {
+  .share-open.paragraph-share & {
+    [data-fragment-id] {
+      cursor: pointer;
+
+      &:not([data-fragment-id=""]) {
+        color: fadeout(#eee, 50%);
+      }
+    }
+
+    [data-fragment-id=""] {
+      text-decoration: underline;
+      text-decoration-style: dotted;
+    }
   }
 }
 
@@ -31,6 +47,7 @@ footer.page {
         cursor: pointer;
         border: solid 1px @text-color;
         padding: 0.5em;
+        white-space: nowrap;
         background-color: @bg-color;
         color: @text-color;
         font-size: medium;
