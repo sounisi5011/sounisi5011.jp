@@ -1,14 +1,13 @@
 @import "_fontawesome/solid";
 
-.bottom-fixed-box.outer {
+.bottom-fixed-box {
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
 
-  & > .bottom-fixed-box.inner {
+  & > * {
     position: absolute;
-    right: 0;
     bottom: 0;
   }
 }
@@ -34,43 +33,56 @@ footer.page {
   margin-top: 5em;
 
   & > .share-area {
+    @button-bg-color: #000;
+    @button-text-color: #fff;
+
     margin: 0;
     font-size: larger;
 
+    .share-button {
+      cursor: pointer;
+      border: solid 1px currentColor;
+      padding: 0.5em;
+      white-space: nowrap;
+      background-color: @button-bg-color;
+      color: @button-text-color;
+      font-size: medium;
+
+      &:before {
+        .fa-icon;
+        .fas;
+        margin-right: 0.3em;
+      }
+    }
+
     & > * {
       margin-bottom: 1em;
+    }
 
-      .share-button {
-        @bg-color: #000;
-        @text-color: #fff;
+    & > .left-menu {
+      left: 0;
+      display: none;
 
-        cursor: pointer;
-        border: solid 1px currentColor;
-        padding: 0.5em;
-        white-space: nowrap;
-        background-color: @bg-color;
-        color: @text-color;
-        font-size: medium;
+      .share-open & {
+        display: block;
+      }
+    }
 
+    & > .right-menu {
+      right: 0;
+
+      .share-button.toggle-menu {
         &:before {
-          .fa-icon;
-          .fas;
-          margin-right: 0.3em;
+          content: @fa-var-share-alt;
         }
 
-        &.toggle-menu {
+        .share-open & {
+          border-color: @button-bg-color;
+          background-color: @button-text-color;
+          color: @button-bg-color;
+
           &:before {
-            content: @fa-var-share-alt;
-          }
-
-          .share-open & {
-            border-color: @bg-color;
-            background-color: @text-color;
-            color: @bg-color;
-
-            &:before {
-              content: @fa-var-times;
-            }
+            content: @fa-var-times;
           }
         }
       }
@@ -83,6 +95,7 @@ footer.page {
         }
 
         & > * {
+          right: 0;
           margin-bottom: 1em;
 
           .share-button {

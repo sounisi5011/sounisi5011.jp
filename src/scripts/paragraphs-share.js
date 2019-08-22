@@ -140,17 +140,18 @@
     elem.setAttribute('aria-hidden', !show);
   }
 
-  function createBottomFixedBoxElem(childrenCallback) {
+  function createBottomFixedBoxElem(...childrenCallbackList) {
     const outerElem = document.createElement('div');
-    outerElem.className = 'bottom-fixed-box outer';
+    outerElem.className = 'bottom-fixed-box';
 
-    const innerElem = document.createElement('div');
-    innerElem.className = 'bottom-fixed-box inner';
-    outerElem.appendChild(innerElem);
+    each(childrenCallbackList, childrenCallback => {
+      const innerElem = document.createElement('div');
+      outerElem.appendChild(innerElem);
 
-    const childrenList = childrenCallback(innerElem);
-    each(childrenList, childNode => {
-      innerElem.appendChild(childNode);
+      const childrenList = childrenCallback(innerElem);
+      each(childrenList, childNode => {
+        innerElem.appendChild(childNode);
+      });
     });
 
     return outerElem;
@@ -226,158 +227,184 @@
 
   addDataAttr(mainNovelElem);
 
-  const shareAreaElem = createBottomFixedBoxElem(shareInnerAreaElem => {
-    const shareButtonElem = document.createElement('button');
-    shareButtonElem.className = 'share-button toggle-menu';
-    shareButtonElem.textContent = '共有';
-    shareButtonElem.addEventListener(
-      'click',
-      () => {
-        if (rootClassList.contains('share-open')) {
-          rootClassList.remove('share-open');
-          shareButtonElem.textContent = '共有';
-          return;
-        } else {
-          rootClassList.add('share-open');
-          shareButtonElem.textContent = '閉じる';
-        }
+  const shareAreaElem = createBottomFixedBoxElem(
+    shareInnerAreaElem => {
+      shareInnerAreaElem.classList.add('left-menu');
 
-        const currentParagraphElem = findElem(
-          mainNovelElem.querySelectorAll('[' + cssEscape(fragmentIdAttr) + ']'),
-          elem => {
-            return isIntersection(elem, {
-              padding: {
-                bottom: footerElem.getBoundingClientRect().height,
-                top: headerElem.getBoundingClientRect().height,
-              },
-            });
-          },
-        );
-        const currentParagraphID = currentParagraphElem.getAttribute(
-          fragmentIdAttr,
-        );
-
-        const fragment = '#' + encodeURIComponent(currentParagraphID);
-        const url = canonicalURL + fragment;
-        share({
-          text: document
-            .getElementById(currentParagraphID)
-            .getAttribute('data-share-text'),
-          url,
-        });
-      },
-      false,
-    );
-
-    const paragraphShareAreaElem = createBottomFixedBoxElem(
-      paragraphShareInnerAreaElem => {
-        function replaceFragmentIdSelector(fragmentID) {
-          const replaceSelector =
-            '[' +
-            cssEscape(fragmentIdAttr) +
-            '="' +
-            cssEscape(fragmentID) +
-            '"]';
-          eachStyleSheet(rule => {
-            if (
-              rule.selectorText &&
-              fragmentIdAttrSelectorRegExp.test(rule.selectorText)
-            ) {
-              rule.selectorText = rule.selectorText.replace(
-                fragmentIdAttrSelectorRegExp,
-                replaceSelector,
-              );
-            }
+      const otherShareButtonElem = document.createElement('button');
+      otherShareButtonElem.className = 'share-button other-share';
+      otherShareButtonElem.textContent = 'その他';
+      otherShareButtonElem.addEventListener(
+        'click',
+        () => {
+          share({
+            url: canonicalURL,
           });
-        }
+        },
+        false,
+      );
 
-        const paragraphSelectListener = event => {
-          if (
-            rootClassList.contains('share-open') &&
-            rootClassList.contains('paragraph-share')
-          ) {
-            const targetParagraphElem = findParentNode(
-              event.target,
-              node =>
-                typeof node.hasAttribute === 'function' &&
-                node.hasAttribute(fragmentIdAttr),
-              true,
-            );
-            const fragmentID = targetParagraphElem.getAttribute(fragmentIdAttr);
-            replaceFragmentIdSelector(fragmentID);
+      return [otherShareButtonElem];
+    },
+    shareInnerAreaElem => {
+      shareInnerAreaElem.classList.add('right-menu');
+
+      const shareButtonElem = document.createElement('button');
+      shareButtonElem.className = 'share-button toggle-menu';
+      shareButtonElem.textContent = '共有';
+      shareButtonElem.addEventListener(
+        'click',
+        () => {
+          if (rootClassList.contains('share-open')) {
+            rootClassList.remove('share-open');
+            shareButtonElem.textContent = '共有';
+            // return;
+          } else {
+            rootClassList.add('share-open');
+            shareButtonElem.textContent = '閉じる';
           }
-        };
 
-        const paragraphShareButtonElem = document.createElement('button');
-        paragraphShareButtonElem.className = 'share-button paragraph-share';
-        paragraphShareButtonElem.textContent = '一部を共有';
-        paragraphShareButtonElem.addEventListener(
-          'click',
-          () => {
-            rootClassList.add('paragraph-share');
+          // const currentParagraphElem = findElem(
+          //   mainNovelElem.querySelectorAll(
+          //     '[' + cssEscape(fragmentIdAttr) + ']',
+          //   ),
+          //   elem => {
+          //     return isIntersection(elem, {
+          //       padding: {
+          //         bottom: footerElem.getBoundingClientRect().height,
+          //         top: headerElem.getBoundingClientRect().height,
+          //       },
+          //     });
+          //   },
+          // );
+          // const currentParagraphID = currentParagraphElem.getAttribute(
+          //   fragmentIdAttr,
+          // );
 
-            showUIElem(paragraphShareButtonElem, false);
-            showUIElem(allShareButtonElem);
-            allShareButtonElem.focus();
+          // const fragment = '#' + encodeURIComponent(currentParagraphID);
+          // const url = canonicalURL + fragment;
+          // share({
+          //   text: document
+          //     .getElementById(currentParagraphID)
+          //     .getAttribute('data-share-text'),
+          //   url,
+          // });
+        },
+        false,
+      );
 
-            mainNovelElem.addEventListener(
-              'click',
-              paragraphSelectListener,
-              false,
-            );
+      const paragraphShareAreaElem = createBottomFixedBoxElem(
+        paragraphShareInnerAreaElem => {
+          function replaceFragmentIdSelector(fragmentID) {
+            const replaceSelector =
+              '[' +
+              cssEscape(fragmentIdAttr) +
+              '="' +
+              cssEscape(fragmentID) +
+              '"]';
+            eachStyleSheet(rule => {
+              if (
+                rule.selectorText &&
+                fragmentIdAttrSelectorRegExp.test(rule.selectorText)
+              ) {
+                rule.selectorText = rule.selectorText.replace(
+                  fragmentIdAttrSelectorRegExp,
+                  replaceSelector,
+                );
+              }
+            });
+          }
 
-            addDataAttr(mainNovelElem);
-            const currentParagraphElem = findElem(
-              mainNovelElem.querySelectorAll(
-                '[' + cssEscape(fragmentIdAttr) + ']',
-              ),
-              elem => {
-                return isIntersection(elem, {
-                  padding: {
-                    bottom: footerElem.getBoundingClientRect().height,
-                    top: headerElem.getBoundingClientRect().height,
-                  },
-                });
-              },
-            );
-            const currentParagraphID = currentParagraphElem.getAttribute(
-              fragmentIdAttr,
-            );
+          const paragraphSelectListener = event => {
+            if (
+              rootClassList.contains('share-open') &&
+              rootClassList.contains('paragraph-share')
+            ) {
+              const targetParagraphElem = findParentNode(
+                event.target,
+                node =>
+                  typeof node.hasAttribute === 'function' &&
+                  node.hasAttribute(fragmentIdAttr),
+                true,
+              );
+              const fragmentID = targetParagraphElem.getAttribute(
+                fragmentIdAttr,
+              );
+              replaceFragmentIdSelector(fragmentID);
+            }
+          };
 
-            replaceFragmentIdSelector(currentParagraphID);
-          },
-          false,
-        );
+          const paragraphShareButtonElem = document.createElement('button');
+          paragraphShareButtonElem.className = 'share-button paragraph-share';
+          paragraphShareButtonElem.textContent = '一部を共有';
+          paragraphShareButtonElem.addEventListener(
+            'click',
+            () => {
+              rootClassList.add('paragraph-share');
 
-        const allShareButtonElem = document.createElement('button');
-        allShareButtonElem.className = 'share-button all-share';
-        allShareButtonElem.textContent = '全体を共有';
-        showUIElem(allShareButtonElem, false);
-        allShareButtonElem.addEventListener(
-          'click',
-          () => {
-            rootClassList.remove('paragraph-share');
+              showUIElem(paragraphShareButtonElem, false);
+              showUIElem(allShareButtonElem);
+              allShareButtonElem.focus();
 
-            showUIElem(allShareButtonElem, false);
-            showUIElem(paragraphShareButtonElem);
-            paragraphShareButtonElem.focus();
+              mainNovelElem.addEventListener(
+                'click',
+                paragraphSelectListener,
+                false,
+              );
 
-            mainNovelElem.removeEventListener(
-              'click',
-              paragraphSelectListener,
-              false,
-            );
-          },
-          false,
-        );
+              addDataAttr(mainNovelElem);
+              const currentParagraphElem = findElem(
+                mainNovelElem.querySelectorAll(
+                  '[' + cssEscape(fragmentIdAttr) + ']',
+                ),
+                elem => {
+                  return isIntersection(elem, {
+                    padding: {
+                      bottom: footerElem.getBoundingClientRect().height,
+                      top: headerElem.getBoundingClientRect().height,
+                    },
+                  });
+                },
+              );
+              const currentParagraphID = currentParagraphElem.getAttribute(
+                fragmentIdAttr,
+              );
 
-        return [paragraphShareButtonElem, allShareButtonElem];
-      },
-    );
-    prependClass(paragraphShareAreaElem, 'paragraph-share-area');
+              replaceFragmentIdSelector(currentParagraphID);
+            },
+            false,
+          );
 
-    return [shareButtonElem, paragraphShareAreaElem];
-  });
+          const allShareButtonElem = document.createElement('button');
+          allShareButtonElem.className = 'share-button all-share';
+          allShareButtonElem.textContent = '全体を共有';
+          showUIElem(allShareButtonElem, false);
+          allShareButtonElem.addEventListener(
+            'click',
+            () => {
+              rootClassList.remove('paragraph-share');
+
+              showUIElem(allShareButtonElem, false);
+              showUIElem(paragraphShareButtonElem);
+              paragraphShareButtonElem.focus();
+
+              mainNovelElem.removeEventListener(
+                'click',
+                paragraphSelectListener,
+                false,
+              );
+            },
+            false,
+          );
+
+          return [paragraphShareButtonElem, allShareButtonElem];
+        },
+      );
+      prependClass(paragraphShareAreaElem, 'paragraph-share-area');
+
+      return [shareButtonElem, paragraphShareAreaElem];
+    },
+  );
   prependClass(shareAreaElem, 'share-area');
   footerElem.insertBefore(shareAreaElem, footerElem.firstChild);
 }
