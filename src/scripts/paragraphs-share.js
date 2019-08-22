@@ -135,6 +135,11 @@
     return elem;
   }
 
+  function showUIElem(elem, show = true) {
+    elem.tabIndex = show ? 0 : -1;
+    elem.setAttribute('aria-hidden', !show);
+  }
+
   function createBottomFixedBoxElem(childrenCallback) {
     const outerElem = document.createElement('div');
     outerElem.className = 'bottom-fixed-box outer';
@@ -214,7 +219,7 @@
   }
 
   const canonicalURL = getCanonicalURL() || location.href.replace(/#.*$/, '');
-  const htmlElem = document.documentElement;
+  const rootClassList = document.documentElement.classList;
   const headerElem = document.querySelector('header.page');
   const mainNovelElem = document.querySelector('.novel-body');
   const footerElem = document.querySelector('footer.page');
@@ -228,11 +233,12 @@
     shareButtonElem.addEventListener(
       'click',
       () => {
-        if (htmlElem.classList.contains('share-open')) {
-          htmlElem.classList.remove('share-open');
+        if (rootClassList.contains('share-open')) {
+          rootClassList.remove('share-open');
           shareButtonElem.textContent = '共有';
+          return;
         } else {
-          htmlElem.classList.add('share-open');
+          rootClassList.add('share-open');
           shareButtonElem.textContent = '閉じる';
         }
 
@@ -286,15 +292,20 @@
         }
 
         const paragraphSelectListener = event => {
-          const targetParagraphElem = findParentNode(
-            event.target,
-            node =>
-              typeof node.hasAttribute === 'function' &&
-              node.hasAttribute(fragmentIdAttr),
-            true,
-          );
-          const fragmentID = targetParagraphElem.getAttribute(fragmentIdAttr);
-          replaceFragmentIdSelector(fragmentID);
+          if (
+            rootClassList.contains('share-open') &&
+            rootClassList.contains('paragraph-share')
+          ) {
+            const targetParagraphElem = findParentNode(
+              event.target,
+              node =>
+                typeof node.hasAttribute === 'function' &&
+                node.hasAttribute(fragmentIdAttr),
+              true,
+            );
+            const fragmentID = targetParagraphElem.getAttribute(fragmentIdAttr);
+            replaceFragmentIdSelector(fragmentID);
+          }
         };
 
         const paragraphShareButtonElem = document.createElement('button');
@@ -303,7 +314,10 @@
         paragraphShareButtonElem.addEventListener(
           'click',
           () => {
-            htmlElem.classList.add('paragraph-share');
+            rootClassList.add('paragraph-share');
+
+            showUIElem(paragraphShareButtonElem, false);
+            showUIElem(allShareButtonElem);
             allShareButtonElem.focus();
 
             mainNovelElem.addEventListener(
@@ -338,11 +352,16 @@
         const allShareButtonElem = document.createElement('button');
         allShareButtonElem.className = 'share-button all-share';
         allShareButtonElem.textContent = '全体を共有';
+        showUIElem(allShareButtonElem, false);
         allShareButtonElem.addEventListener(
           'click',
           () => {
-            htmlElem.classList.remove('paragraph-share');
+            rootClassList.remove('paragraph-share');
+
+            showUIElem(allShareButtonElem, false);
+            showUIElem(paragraphShareButtonElem);
             paragraphShareButtonElem.focus();
+
             mainNovelElem.removeEventListener(
               'click',
               paragraphSelectListener,
