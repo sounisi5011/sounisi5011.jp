@@ -327,10 +327,12 @@
                   node.hasAttribute(fragmentIdAttr),
                 true,
               );
-              const fragmentID = targetParagraphElem.getAttribute(
-                fragmentIdAttr,
-              );
-              replaceFragmentIdSelector(fragmentID);
+              if (targetParagraphElem) {
+                const fragmentID = targetParagraphElem.getAttribute(
+                  fragmentIdAttr,
+                );
+                replaceFragmentIdSelector(fragmentID);
+              }
             }
           };
 
