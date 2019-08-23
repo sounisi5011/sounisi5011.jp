@@ -404,7 +404,7 @@
       );
       prependClass(paragraphShareAreaElem, 'paragraph-share-area');
 
-      return [shareButtonElem, paragraphShareAreaElem];
+      return [paragraphShareAreaElem, shareButtonElem];
     },
   );
   prependClass(shareAreaElem, 'share-area');
