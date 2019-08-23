@@ -71,6 +71,12 @@ footer.page {
       }
 
       .share-button {
+        font-size: x-small;
+
+        &:before {
+          font-size: x-large;
+        }
+
         &.twitter-share {
           /* see https://about.twitter.com/ja/company/brand-resources.html */
           @bg-color: $background-color;
@@ -85,6 +91,7 @@ footer.page {
 
           &:before:extend(.fab) {
             content: @fa-var-twitter;
+            display: block;
           }
         }
 
@@ -100,12 +107,14 @@ footer.page {
 
           &:before:extend(.fab) {
             content: @fa-var-line;
+            display: block;
           }
         }
 
         &.other-share {
           &:before:extend(.fas) {
             content: @fa-var-share-alt;
+            display: block;
           }
         }
       }
