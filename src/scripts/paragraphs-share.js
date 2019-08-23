@@ -86,6 +86,21 @@
     });
   }
 
+  function getViewOutSize(
+    elem,
+    { padding: { top = 0, bottom = 0 } = {} } = {},
+  ) {
+    const clientHeight = getWindowHeight(elem.ownerDocument || document);
+    const rect = elem.getBoundingClientRect();
+    const winTop = top;
+    const winBottom = clientHeight - bottom;
+
+    return {
+      bottom: rect.bottom - winBottom,
+      top: winTop - rect.top,
+    };
+  }
+
   function isIntersection(
     elem,
     { padding: { top = 0, bottom = 0 }, full = false } = {},
@@ -243,7 +258,7 @@
     const footerRect = footerElem.getBoundingClientRect();
 
     return {
-      bottom: Math.min(0, getWindowHeight(document) - footerRect.top),
+      bottom: Math.max(0, getWindowHeight(document) - footerRect.top),
       top: Math.max(0, headerRect.bottom),
     };
   };
@@ -352,33 +367,30 @@
                   fragmentIdAttr,
                 );
                 const paragraphElem = document.getElementById(fragmentID);
+                const paragraphLastElem = last(
+                  mainNovelElem.querySelectorAll(
+                    '[' +
+                      cssEscape(fragmentIdAttr) +
+                      '="' +
+                      cssEscape(fragmentID) +
+                      '"]',
+                  ),
+                );
 
                 replaceFragmentIdSelector(fragmentID);
 
-                const isFullIntersect =
-                  isIntersection(paragraphElem, {
-                    full: true,
-                    padding: getWindowPaddingSize(),
-                  }) &&
-                  isIntersection(
-                    last(
-                      mainNovelElem.querySelectorAll(
-                        '[' +
-                          cssEscape(fragmentIdAttr) +
-                          '="' +
-                          cssEscape(fragmentID) +
-                          '"]',
-                      ),
-                    ),
-                    {
-                      full: true,
-                      padding: getWindowPaddingSize(),
-                    },
-                  );
-                if (!isFullIntersect) {
-                  paragraphElem.scrollIntoView({
-                    behavior: 'smooth',
-                  });
+                const padding = getWindowPaddingSize();
+                const topViewOut = getViewOutSize(paragraphElem, { padding })
+                  .top;
+                const bottomViewOut = getViewOutSize(paragraphLastElem, {
+                  padding,
+                }).bottom;
+                if (Math.sign(topViewOut) !== Math.sign(bottomViewOut)) {
+                  if (Math.abs(bottomViewOut) < Math.abs(topViewOut)) {
+                    window.scrollBy(0, bottomViewOut);
+                  } else {
+                    window.scrollBy(0, -topViewOut);
+                  }
                 }
               }
             }
