@@ -163,29 +163,36 @@
     return linkElem.href || linkElem.getAttribute('href');
   }
 
-  function prependClass(elem, className) {
-    elem.className = className + ' ' + elem.className;
-    return elem;
-  }
-
   function showUIElem(elem, show = true) {
     elem.tabIndex = show ? 0 : -1;
     elem.setAttribute('aria-hidden', !show);
   }
 
+  function createElem(tagName, childrenCallback) {
+    const elem = document.createElement(tagName);
+
+    const childrenList = childrenCallback(elem) || [];
+    each(childrenList, childNode => {
+      elem.appendChild(childNode);
+    });
+
+    return elem;
+  }
+
   function createBottomFixedBoxElem(...childrenCallbackList) {
     const outerElem = document.createElement('div');
-    outerElem.className = 'bottom-fixed-box';
 
     each(childrenCallbackList, childrenCallback => {
       const innerElem = document.createElement('div');
       outerElem.appendChild(innerElem);
 
-      const childrenList = childrenCallback(innerElem);
+      const childrenList = childrenCallback(innerElem, outerElem);
       each(childrenList, childNode => {
         innerElem.appendChild(childNode);
       });
     });
+
+    outerElem.classList.add('bottom-fixed-box');
 
     return outerElem;
   }
@@ -278,280 +285,287 @@
   addDataAttr(mainNovelElem);
 
   const shareAreaElem = createBottomFixedBoxElem(
-    shareInnerAreaElem => {
-      shareInnerAreaElem.classList.add('left-menu');
-
-      const twitterShareButtonElem = document.createElement('button');
-      twitterShareButtonElem.className = 'share-button twitter-share';
-      twitterShareButtonElem.textContent = 'ツイート';
-      twitterShareButtonElem.addEventListener(
-        'click',
-        () => {
-          const url = buildShareURL();
-          let text = document.title;
-          if (selectedParagraphID) {
-            text = document
-              .getElementById(selectedParagraphID)
-              .getAttribute('data-share-text');
-          }
-
-          /**
-           * @see https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent.html
-           */
-          let shareURLQuery = '';
-          each(
-            [
-              'url=' + encodeURIComponent(url),
-              'text=' + encodeURIComponent(text),
-            ],
-            param => {
-              if (param) {
-                if (shareURLQuery) {
-                  shareURLQuery += '&';
-                }
-                shareURLQuery += param;
-              }
-            },
-          );
-          const shareURL = 'https://twitter.com/intent/tweet?' + shareURLQuery;
-
-          window.open(shareURL, '_blank');
-        },
-        false,
-      );
-
-      const lineShareButtonElem = document.createElement('button');
-      lineShareButtonElem.className = 'share-button line-share';
-      lineShareButtonElem.textContent = 'LINEで送る';
-      lineShareButtonElem.addEventListener(
-        'click',
-        () => {
-          const url = buildShareURL();
-
-          let shareURL;
-
-          /**
-           * @see https://kojole.hatenablog.com/entry/2018/09/19/113840
-           */
-          if (selectedParagraphID) {
-            const text = document
-              .getElementById(selectedParagraphID)
-              .getAttribute('data-share-text');
-
-            /**
-             * @see https://developers.line.biz/ja/docs/messaging-api/using-line-url-scheme/#sending-text-messages
-             */
-            shareURL =
-              'https://line.me/R/msg/text/?' +
-              encodeURIComponent(text + '\n' + url);
-          } else {
-            /**
-             * @see https://org-media.line.me/ja/how_to_install#lineitbutton
-             */
-            shareURL =
-              'https://social-plugins.line.me/lineit/share?url=' +
-              encodeURIComponent(url);
-          }
-
-          window.open(shareURL, '_blank');
-        },
-        false,
-      );
-
-      const otherShareButtonElem = document.createElement('button');
-      otherShareButtonElem.className = 'share-button other-share';
-      otherShareButtonElem.textContent = 'その他';
-      otherShareButtonElem.addEventListener(
-        'click',
-        () => {
-          const url = buildShareURL();
-          if (selectedParagraphID) {
-            const text = document
-              .getElementById(selectedParagraphID)
-              .getAttribute('data-share-text');
-
-            share({
-              text,
-              url,
-            });
-          } else {
-            share({
-              url,
-            });
-          }
-        },
-        false,
-      );
+    (leftMenuElem, shareAreaElem) => {
+      shareAreaElem.classList.add('share-area');
+      leftMenuElem.classList.add('left-menu');
 
       return [
-        twitterShareButtonElem,
-        lineShareButtonElem,
-        otherShareButtonElem,
-      ];
-    },
-    shareInnerAreaElem => {
-      shareInnerAreaElem.classList.add('right-menu');
-
-      const shareButtonElem = document.createElement('button');
-      shareButtonElem.className = 'share-button toggle-menu';
-      shareButtonElem.textContent = '共有';
-      shareButtonElem.addEventListener(
-        'click',
-        () => {
-          if (rootClassList.contains('share-open')) {
-            rootClassList.remove('share-open');
-            shareButtonElem.textContent = '共有';
-            // return;
-          } else {
-            rootClassList.add('share-open');
-            shareButtonElem.textContent = '閉じる';
-          }
-        },
-        false,
-      );
-
-      const paragraphShareAreaElem = createBottomFixedBoxElem(
-        paragraphShareInnerAreaElem => {
-          function replaceFragmentIdSelector(fragmentID) {
-            const replaceSelector =
-              '[' +
-              cssEscape(fragmentIdAttr) +
-              '="' +
-              cssEscape(fragmentID) +
-              '"]';
-            eachStyleSheet(rule => {
-              if (
-                rule.selectorText &&
-                fragmentIdAttrSelectorRegExp.test(rule.selectorText)
-              ) {
-                rule.selectorText = rule.selectorText.replace(
-                  fragmentIdAttrSelectorRegExp,
-                  replaceSelector,
-                );
-              }
-            });
-          }
-
-          const paragraphSelectListener = event => {
-            if (
-              rootClassList.contains('share-open') &&
-              rootClassList.contains('paragraph-share')
-            ) {
-              const targetParagraphElem = findParentNode(
-                event.target,
-                node =>
-                  typeof node.hasAttribute === 'function' &&
-                  node.hasAttribute(fragmentIdAttr),
-                true,
-              );
-              if (targetParagraphElem) {
-                const fragmentID = targetParagraphElem.getAttribute(
-                  fragmentIdAttr,
-                );
-                const paragraphElem = document.getElementById(fragmentID);
-                const paragraphLastElem = last(
-                  mainNovelElem.querySelectorAll(
-                    '[' +
-                      cssEscape(fragmentIdAttr) +
-                      '="' +
-                      cssEscape(fragmentID) +
-                      '"]',
-                  ),
-                );
-
-                replaceFragmentIdSelector(fragmentID);
-
-                const padding = getWindowPaddingSize();
-                const topViewOut = getViewOutSize(paragraphElem, { padding })
-                  .top;
-                const bottomViewOut = getViewOutSize(paragraphLastElem, {
-                  padding,
-                }).bottom;
-                if (sign(topViewOut) !== sign(bottomViewOut)) {
-                  if (Math.abs(bottomViewOut) < Math.abs(topViewOut)) {
-                    window.scrollBy(0, bottomViewOut);
-                  } else {
-                    window.scrollBy(0, -topViewOut);
-                  }
-                }
-
-                selectedParagraphID = fragmentID;
-              }
-            }
-          };
-
-          const paragraphShareButtonElem = document.createElement('button');
-          paragraphShareButtonElem.className = 'share-button paragraph-share';
-          paragraphShareButtonElem.textContent = '一部を共有';
-          paragraphShareButtonElem.addEventListener(
+        createElem('button', twitterShareButtonElem => {
+          twitterShareButtonElem.className = 'share-button twitter-share';
+          twitterShareButtonElem.textContent = 'ツイート';
+          twitterShareButtonElem.addEventListener(
             'click',
             () => {
-              rootClassList.add('paragraph-share');
+              const url = buildShareURL();
+              let text = document.title;
+              if (selectedParagraphID) {
+                text = document
+                  .getElementById(selectedParagraphID)
+                  .getAttribute('data-share-text');
+              }
 
-              showUIElem(paragraphShareButtonElem, false);
-              showUIElem(allShareButtonElem);
-              allShareButtonElem.focus();
-
-              mainNovelElem.addEventListener(
-                'click',
-                paragraphSelectListener,
-                false,
-              );
-
-              addDataAttr(mainNovelElem);
-              const currentParagraphElem = findElem(
-                mainNovelElem.querySelectorAll(
-                  '[' + cssEscape(fragmentIdAttr) + ']',
-                ),
-                elem => {
-                  return isIntersection(elem, {
-                    padding: getWindowPaddingSize(),
-                  });
+              /**
+               * @see https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent.html
+               */
+              let shareURLQuery = '';
+              each(
+                [
+                  'url=' + encodeURIComponent(url),
+                  'text=' + encodeURIComponent(text),
+                ],
+                param => {
+                  if (param) {
+                    if (shareURLQuery) {
+                      shareURLQuery += '&';
+                    }
+                    shareURLQuery += param;
+                  }
                 },
               );
-              const currentParagraphID = currentParagraphElem.getAttribute(
-                fragmentIdAttr,
-              );
+              const shareURL =
+                'https://twitter.com/intent/tweet?' + shareURLQuery;
 
-              replaceFragmentIdSelector(currentParagraphID);
-
-              selectedParagraphID = currentParagraphID;
+              window.open(shareURL, '_blank');
             },
             false,
           );
-
-          const allShareButtonElem = document.createElement('button');
-          allShareButtonElem.className = 'share-button all-share';
-          allShareButtonElem.textContent = '全体を共有';
-          showUIElem(allShareButtonElem, false);
-          allShareButtonElem.addEventListener(
+        }),
+        createElem('button', lineShareButtonElem => {
+          lineShareButtonElem.className = 'share-button line-share';
+          lineShareButtonElem.textContent = 'LINEで送る';
+          lineShareButtonElem.addEventListener(
             'click',
             () => {
-              rootClassList.remove('paragraph-share');
+              const url = buildShareURL();
 
-              showUIElem(allShareButtonElem, false);
-              showUIElem(paragraphShareButtonElem);
-              paragraphShareButtonElem.focus();
+              let shareURL;
 
-              mainNovelElem.removeEventListener(
-                'click',
-                paragraphSelectListener,
-                false,
-              );
+              /**
+               * @see https://kojole.hatenablog.com/entry/2018/09/19/113840
+               */
+              if (selectedParagraphID) {
+                const text = document
+                  .getElementById(selectedParagraphID)
+                  .getAttribute('data-share-text');
 
-              selectedParagraphID = '';
+                /**
+                 * @see https://developers.line.biz/ja/docs/messaging-api/using-line-url-scheme/#sending-text-messages
+                 */
+                shareURL =
+                  'https://line.me/R/msg/text/?' +
+                  encodeURIComponent(text + '\n' + url);
+              } else {
+                /**
+                 * @see https://org-media.line.me/ja/how_to_install#lineitbutton
+                 */
+                shareURL =
+                  'https://social-plugins.line.me/lineit/share?url=' +
+                  encodeURIComponent(url);
+              }
+
+              window.open(shareURL, '_blank');
             },
             false,
           );
+        }),
+        createElem('button', otherShareButtonElem => {
+          otherShareButtonElem.className = 'share-button other-share';
+          otherShareButtonElem.textContent = 'その他';
+          otherShareButtonElem.addEventListener(
+            'click',
+            () => {
+              const url = buildShareURL();
+              if (selectedParagraphID) {
+                const text = document
+                  .getElementById(selectedParagraphID)
+                  .getAttribute('data-share-text');
 
-          return [paragraphShareButtonElem, allShareButtonElem];
-        },
-      );
-      prependClass(paragraphShareAreaElem, 'paragraph-share-area');
+                share({
+                  text,
+                  url,
+                });
+              } else {
+                share({
+                  url,
+                });
+              }
+            },
+            false,
+          );
+        }),
+      ];
+    },
+    rightMenuElem => {
+      rightMenuElem.classList.add('right-menu');
 
-      return [paragraphShareAreaElem, shareButtonElem];
+      return [
+        createBottomFixedBoxElem(
+          (paragraphShareInnerAreaElem, paragraphShareAreaElem) => {
+            paragraphShareAreaElem.classList.add('paragraph-share-area');
+
+            function replaceFragmentIdSelector(fragmentID) {
+              const replaceSelector =
+                '[' +
+                cssEscape(fragmentIdAttr) +
+                '="' +
+                cssEscape(fragmentID) +
+                '"]';
+              eachStyleSheet(rule => {
+                if (
+                  rule.selectorText &&
+                  fragmentIdAttrSelectorRegExp.test(rule.selectorText)
+                ) {
+                  rule.selectorText = rule.selectorText.replace(
+                    fragmentIdAttrSelectorRegExp,
+                    replaceSelector,
+                  );
+                }
+              });
+            }
+
+            const paragraphSelectListener = event => {
+              if (
+                rootClassList.contains('share-open') &&
+                rootClassList.contains('paragraph-share')
+              ) {
+                const targetParagraphElem = findParentNode(
+                  event.target,
+                  node =>
+                    typeof node.hasAttribute === 'function' &&
+                    node.hasAttribute(fragmentIdAttr),
+                  true,
+                );
+                if (targetParagraphElem) {
+                  const fragmentID = targetParagraphElem.getAttribute(
+                    fragmentIdAttr,
+                  );
+                  const paragraphElem = document.getElementById(fragmentID);
+                  const paragraphLastElem = last(
+                    mainNovelElem.querySelectorAll(
+                      '[' +
+                        cssEscape(fragmentIdAttr) +
+                        '="' +
+                        cssEscape(fragmentID) +
+                        '"]',
+                    ),
+                  );
+
+                  replaceFragmentIdSelector(fragmentID);
+
+                  const padding = getWindowPaddingSize();
+                  const topViewOut = getViewOutSize(paragraphElem, { padding })
+                    .top;
+                  const bottomViewOut = getViewOutSize(paragraphLastElem, {
+                    padding,
+                  }).bottom;
+                  if (sign(topViewOut) !== sign(bottomViewOut)) {
+                    if (Math.abs(bottomViewOut) < Math.abs(topViewOut)) {
+                      window.scrollBy(0, bottomViewOut);
+                    } else {
+                      window.scrollBy(0, -topViewOut);
+                    }
+                  }
+
+                  selectedParagraphID = fragmentID;
+                }
+              }
+            };
+
+            const paragraphShareButtonElem = createElem(
+              'button',
+              paragraphShareButtonElem => {
+                paragraphShareButtonElem.className =
+                  'share-button paragraph-share';
+                paragraphShareButtonElem.textContent = '一部を共有';
+                paragraphShareButtonElem.addEventListener(
+                  'click',
+                  () => {
+                    rootClassList.add('paragraph-share');
+
+                    showUIElem(paragraphShareButtonElem, false);
+                    showUIElem(allShareButtonElem);
+                    allShareButtonElem.focus();
+
+                    mainNovelElem.addEventListener(
+                      'click',
+                      paragraphSelectListener,
+                      false,
+                    );
+
+                    addDataAttr(mainNovelElem);
+                    const currentParagraphElem = findElem(
+                      mainNovelElem.querySelectorAll(
+                        '[' + cssEscape(fragmentIdAttr) + ']',
+                      ),
+                      elem => {
+                        return isIntersection(elem, {
+                          padding: getWindowPaddingSize(),
+                        });
+                      },
+                    );
+                    const currentParagraphID = currentParagraphElem.getAttribute(
+                      fragmentIdAttr,
+                    );
+
+                    replaceFragmentIdSelector(currentParagraphID);
+
+                    selectedParagraphID = currentParagraphID;
+                  },
+                  false,
+                );
+              },
+            );
+
+            const allShareButtonElem = createElem(
+              'button',
+              allShareButtonElem => {
+                allShareButtonElem.className = 'share-button all-share';
+                allShareButtonElem.textContent = '全体を共有';
+                showUIElem(allShareButtonElem, false);
+                allShareButtonElem.addEventListener(
+                  'click',
+                  () => {
+                    rootClassList.remove('paragraph-share');
+
+                    showUIElem(allShareButtonElem, false);
+                    showUIElem(paragraphShareButtonElem);
+                    paragraphShareButtonElem.focus();
+
+                    mainNovelElem.removeEventListener(
+                      'click',
+                      paragraphSelectListener,
+                      false,
+                    );
+
+                    selectedParagraphID = '';
+                  },
+                  false,
+                );
+              },
+            );
+
+            return [paragraphShareButtonElem, allShareButtonElem];
+          },
+        ),
+        createElem('button', shareButtonElem => {
+          shareButtonElem.className = 'share-button toggle-menu';
+          shareButtonElem.textContent = '共有';
+          shareButtonElem.addEventListener(
+            'click',
+            () => {
+              if (rootClassList.contains('share-open')) {
+                rootClassList.remove('share-open');
+                shareButtonElem.textContent = '共有';
+              } else {
+                rootClassList.add('share-open');
+                shareButtonElem.textContent = '閉じる';
+              }
+            },
+            false,
+          );
+        }),
+      ];
     },
   );
-  prependClass(shareAreaElem, 'share-area');
   footerElem.insertBefore(shareAreaElem, footerElem.firstChild);
 }
