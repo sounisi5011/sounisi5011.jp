@@ -249,6 +249,7 @@
   }
 
   const canonicalURL = getCanonicalURL() || location.href.replace(/#.*$/, '');
+  let selectedParagraphID = '';
   const rootClassList = document.documentElement.classList;
   const headerElem = document.querySelector('header.page');
   const mainNovelElem = document.querySelector('.novel-body');
@@ -275,9 +276,22 @@
       otherShareButtonElem.addEventListener(
         'click',
         () => {
-          share({
-            url: canonicalURL,
-          });
+          if (selectedParagraphID) {
+            const fragment = '#' + encodeURIComponent(selectedParagraphID);
+            const url = canonicalURL + fragment;
+            const text = document
+              .getElementById(selectedParagraphID)
+              .getAttribute('data-share-text');
+
+            share({
+              text,
+              url,
+            });
+          } else {
+            share({
+              url: canonicalURL,
+            });
+          }
         },
         false,
       );
@@ -301,29 +315,6 @@
             rootClassList.add('share-open');
             shareButtonElem.textContent = '閉じる';
           }
-
-          // const currentParagraphElem = findElem(
-          //   mainNovelElem.querySelectorAll(
-          //     '[' + cssEscape(fragmentIdAttr) + ']',
-          //   ),
-          //   elem => {
-          //     return isIntersection(elem, {
-          //       padding: getWindowPaddingSize(),
-          //     });
-          //   },
-          // );
-          // const currentParagraphID = currentParagraphElem.getAttribute(
-          //   fragmentIdAttr,
-          // );
-
-          // const fragment = '#' + encodeURIComponent(currentParagraphID);
-          // const url = canonicalURL + fragment;
-          // share({
-          //   text: document
-          //     .getElementById(currentParagraphID)
-          //     .getAttribute('data-share-text'),
-          //   url,
-          // });
         },
         false,
       );
@@ -392,6 +383,8 @@
                     window.scrollBy(0, -topViewOut);
                   }
                 }
+
+                selectedParagraphID = fragmentID;
               }
             }
           };
@@ -430,6 +423,8 @@
               );
 
               replaceFragmentIdSelector(currentParagraphID);
+
+              selectedParagraphID = currentParagraphID;
             },
             false,
           );
@@ -452,6 +447,8 @@
                 paragraphSelectListener,
                 false,
               );
+
+              selectedParagraphID = '';
             },
             false,
           );
