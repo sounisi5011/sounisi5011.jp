@@ -47,6 +47,12 @@ footer.page {
       background-color: @button-bg-color;
       color: @button-text-color;
       font-size: medium;
+      transition: background-color 0.2s;
+
+      &:hover,
+      &:focus {
+        background-color: lighten(@button-bg-color, 10%);
+      }
 
       &:before {
         .fa-icon;
@@ -72,6 +78,8 @@ footer.page {
       right: 0;
 
       .share-button.toggle-menu {
+        transition-property: color, background-color;
+
         &:before {
           content: @fa-var-share-alt;
         }
@@ -79,6 +87,11 @@ footer.page {
         .share-open & {
           background-color: @button-text-color;
           color: @button-bg-color;
+
+          &:hover,
+          &:focus {
+            background-color: darken(@button-text-color, 10%);
+          }
 
           &:before {
             content: @fa-var-times;
@@ -100,7 +113,7 @@ footer.page {
           .share-button {
             &.paragraph-share,
             &.all-share {
-              transition: transform 0.3s;
+              transition: background-color 0.2s, color 0.2s, transform 0.3s;
               backface-visibility: hidden;
             }
 
