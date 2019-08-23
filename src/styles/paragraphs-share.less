@@ -63,14 +63,20 @@ footer.page {
     }
 
     & > .left-menu {
+      @button-gap: 10px;
+
       left: 0;
+      max-width: 100%; // JSを使用して動的に上書きする
       display: none;
+      margin-left: -@button-gap;
+      text-align: left;
 
       .share-open & {
         display: block;
       }
 
       .share-button {
+        margin-left: @button-gap;
         font-size: x-small;
 
         &:before {

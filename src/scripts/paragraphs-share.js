@@ -90,6 +90,18 @@
     });
   }
 
+  function getElemWidth(elem) {
+    if (!(elem && typeof elem.getBoundingClientRect === 'function')) {
+      return 0;
+    }
+
+    return reduce(
+      elem.children,
+      (width, elem) => Math.max(width, getElemWidth(elem)),
+      elem.getBoundingClientRect().width,
+    );
+  }
+
   function getViewOutSize(
     elem,
     { padding: { top = 0, bottom = 0 } = {} } = {},
@@ -284,8 +296,10 @@
 
   addDataAttr(mainNovelElem);
 
+  let leftMenuElem;
   const shareAreaElem = createBottomFixedBoxElem(
-    (leftMenuElem, shareAreaElem) => {
+    (elem, shareAreaElem) => {
+      leftMenuElem = elem;
       shareAreaElem.classList.add('share-area');
       leftMenuElem.classList.add('left-menu');
 
@@ -559,6 +573,9 @@
               } else {
                 rootClassList.add('share-open');
                 shareButtonElem.textContent = '閉じる';
+                // Note: このスタイル指定は、.paragraph-shareと.all-shareが（displayプロパティなどで）完全に非表示にならない事を前提としている。
+                leftMenuElem.style.maxWidth =
+                  'calc(100% - (' + getElemWidth(rightMenuElem) + 'px + 1em))';
               }
             },
             false,
