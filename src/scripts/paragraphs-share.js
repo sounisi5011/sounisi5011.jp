@@ -274,6 +274,46 @@
     shareInnerAreaElem => {
       shareInnerAreaElem.classList.add('left-menu');
 
+      const twitterShareButtonElem = document.createElement('button');
+      twitterShareButtonElem.className = 'share-button twitter-share';
+      twitterShareButtonElem.textContent = 'ツイート';
+      twitterShareButtonElem.addEventListener(
+        'click',
+        () => {
+          let url = canonicalURL;
+          let text = document.title;
+          if (selectedParagraphID) {
+            url += '#' + encodeURIComponent(selectedParagraphID);
+            text = document
+              .getElementById(selectedParagraphID)
+              .getAttribute('data-share-text');
+          }
+
+          /**
+           * @see https://developer.twitter.com/en/docs/twitter-for-websites/tweet-button/guides/web-intent.html
+           */
+          let shareURLQuery = '';
+          each(
+            [
+              'url=' + encodeURIComponent(url),
+              'text=' + encodeURIComponent(text),
+            ],
+            param => {
+              if (param) {
+                if (shareURLQuery) {
+                  shareURLQuery += '&';
+                }
+                shareURLQuery += param;
+              }
+            },
+          );
+          const shareURL = 'https://twitter.com/intent/tweet?' + shareURLQuery;
+
+          window.open(shareURL, '_blank');
+        },
+        false,
+      );
+
       const otherShareButtonElem = document.createElement('button');
       otherShareButtonElem.className = 'share-button other-share';
       otherShareButtonElem.textContent = 'その他';
@@ -300,7 +340,7 @@
         false,
       );
 
-      return [otherShareButtonElem];
+      return [twitterShareButtonElem, otherShareButtonElem];
     },
     shareInnerAreaElem => {
       shareInnerAreaElem.classList.add('right-menu');
