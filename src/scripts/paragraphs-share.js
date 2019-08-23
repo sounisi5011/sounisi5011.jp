@@ -3,6 +3,10 @@
   /** @see https://drafts.csswg.org/css-syntax-3/#string-token-diagram */
   const fragmentIdAttrSelectorRegExp = /\[data-fragment-id=(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\]/gm;
 
+  function last(list) {
+    return list[list.length - 1];
+  }
+
   function each(list, callback) {
     const len = list.length;
     for (let i = 0; i < len; i++) {
@@ -78,12 +82,19 @@
     });
   }
 
-  function isIntersection(elem, { padding: { top = 0, bottom = 0 } } = {}) {
+  function isIntersection(
+    elem,
+    { padding: { top = 0, bottom = 0, full = false } } = {},
+  ) {
     const clientHeight = (elem.ownerDocument || document).documentElement
       .clientHeight;
     const rect = elem.getBoundingClientRect();
     const winTop = top;
     const winBottom = clientHeight - bottom;
+
+    if (full) {
+      return winTop <= rect.top && rect.bottom <= winBottom;
+    }
 
     // see https://blog.jxck.io/entries/2016-06-25/intersection-observer.html#表示判定
     return (
@@ -331,7 +342,41 @@
                 const fragmentID = targetParagraphElem.getAttribute(
                   fragmentIdAttr,
                 );
+                const paragraphElem = document.getElementById(fragmentID);
+
                 replaceFragmentIdSelector(fragmentID);
+
+                const isFullIntersect =
+                  isIntersection(paragraphElem, {
+                    padding: {
+                      bottom: footerElem.getBoundingClientRect().height,
+                      full: true,
+                      top: headerElem.getBoundingClientRect().height,
+                    },
+                  }) &&
+                  isIntersection(
+                    last(
+                      mainNovelElem.querySelectorAll(
+                        '[' +
+                          cssEscape(fragmentIdAttr) +
+                          '="' +
+                          cssEscape(fragmentID) +
+                          '"]',
+                      ),
+                    ),
+                    {
+                      padding: {
+                        bottom: footerElem.getBoundingClientRect().height,
+                        full: true,
+                        top: headerElem.getBoundingClientRect().height,
+                      },
+                    },
+                  );
+                if (!isFullIntersect) {
+                  paragraphElem.scrollIntoView({
+                    behavior: 'smooth',
+                  });
+                }
               }
             }
           };
