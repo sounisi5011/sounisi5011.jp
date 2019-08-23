@@ -3,6 +3,10 @@
   /** @see https://drafts.csswg.org/css-syntax-3/#string-token-diagram */
   const fragmentIdAttrSelectorRegExp = /\[data-fragment-id=(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\]/gm;
 
+  function sign(number) {
+    return number < 0 ? -1 : +1;
+  }
+
   function last(list) {
     return list[list.length - 1];
   }
@@ -376,7 +380,7 @@
                 const bottomViewOut = getViewOutSize(paragraphLastElem, {
                   padding,
                 }).bottom;
-                if (Math.sign(topViewOut) !== Math.sign(bottomViewOut)) {
+                if (sign(topViewOut) !== sign(bottomViewOut)) {
                   if (Math.abs(bottomViewOut) < Math.abs(topViewOut)) {
                     window.scrollBy(0, bottomViewOut);
                   } else {
