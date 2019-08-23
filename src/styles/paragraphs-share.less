@@ -198,3 +198,24 @@ footer.page {
     }
   }
 }
+
+dialog.share-dialog {
+  position: fixed;
+  top: 50%;
+  transform: translate(0, -50%);
+  max-width: 100%;
+  border: solid 1px #000;
+  border-radius: 0.5em;
+
+  .backdrop() {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  &::backdrop {
+    .backdrop();
+  }
+
+  & + .backdrop {
+    .backdrop();
+  }
+}
