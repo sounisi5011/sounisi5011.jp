@@ -59,6 +59,10 @@
           );
         };
 
+  function getWindowHeight(doc = document) {
+    return doc.documentElement.clientHeight;
+  }
+
   function eachStyleSheet(callback, styleSheets = document.styleSheets) {
     each(styleSheets, sheet => {
       each(sheet.cssRules, rule => {
@@ -84,10 +88,9 @@
 
   function isIntersection(
     elem,
-    { padding: { top = 0, bottom = 0, full = false } } = {},
+    { padding: { top = 0, bottom = 0 }, full = false } = {},
   ) {
-    const clientHeight = (elem.ownerDocument || document).documentElement
-      .clientHeight;
+    const clientHeight = getWindowHeight(elem.ownerDocument || document);
     const rect = elem.getBoundingClientRect();
     const winTop = top;
     const winBottom = clientHeight - bottom;
@@ -235,6 +238,15 @@
   const headerElem = document.querySelector('header.page');
   const mainNovelElem = document.querySelector('.novel-body');
   const footerElem = document.querySelector('footer.page');
+  const getWindowPaddingSize = () => {
+    const headerRect = headerElem.getBoundingClientRect();
+    const footerRect = footerElem.getBoundingClientRect();
+
+    return {
+      bottom: Math.min(0, getWindowHeight(document) - footerRect.top),
+      top: Math.max(0, headerRect.bottom),
+    };
+  };
 
   addDataAttr(mainNovelElem);
 
@@ -281,10 +293,7 @@
           //   ),
           //   elem => {
           //     return isIntersection(elem, {
-          //       padding: {
-          //         bottom: footerElem.getBoundingClientRect().height,
-          //         top: headerElem.getBoundingClientRect().height,
-          //       },
+          //       padding: getWindowPaddingSize(),
           //     });
           //   },
           // );
@@ -348,11 +357,8 @@
 
                 const isFullIntersect =
                   isIntersection(paragraphElem, {
-                    padding: {
-                      bottom: footerElem.getBoundingClientRect().height,
-                      full: true,
-                      top: headerElem.getBoundingClientRect().height,
-                    },
+                    full: true,
+                    padding: getWindowPaddingSize(),
                   }) &&
                   isIntersection(
                     last(
@@ -365,11 +371,8 @@
                       ),
                     ),
                     {
-                      padding: {
-                        bottom: footerElem.getBoundingClientRect().height,
-                        full: true,
-                        top: headerElem.getBoundingClientRect().height,
-                      },
+                      full: true,
+                      padding: getWindowPaddingSize(),
                     },
                   );
                 if (!isFullIntersect) {
@@ -406,10 +409,7 @@
                 ),
                 elem => {
                   return isIntersection(elem, {
-                    padding: {
-                      bottom: footerElem.getBoundingClientRect().height,
-                      top: headerElem.getBoundingClientRect().height,
-                    },
+                    padding: getWindowPaddingSize(),
                   });
                 },
               );
