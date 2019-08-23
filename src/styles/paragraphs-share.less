@@ -87,6 +87,21 @@ footer.page {
             content: @fa-var-twitter;
           }
         }
+
+        &.line-share {
+          /* see https://org-media.line.me/ja/how_to_install#lineitbutton */
+          background-color: #00b833;
+          color: #ffffff;
+
+          &:hover,
+          &:focus {
+            background-color: #02a52f;
+          }
+
+          &:before:extend(.fab) {
+            content: @fa-var-line;
+          }
+        }
       }
     }
 

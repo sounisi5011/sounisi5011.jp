@@ -267,6 +267,13 @@
       top: Math.max(0, headerRect.bottom),
     };
   };
+  const buildShareURL = () => {
+    const fragment = selectedParagraphID
+      ? '#' + encodeURIComponent(selectedParagraphID)
+      : '';
+    const url = canonicalURL + fragment;
+    return url;
+  };
 
   addDataAttr(mainNovelElem);
 
@@ -280,10 +287,9 @@
       twitterShareButtonElem.addEventListener(
         'click',
         () => {
-          let url = canonicalURL;
+          const url = buildShareURL();
           let text = document.title;
           if (selectedParagraphID) {
-            url += '#' + encodeURIComponent(selectedParagraphID);
             text = document
               .getElementById(selectedParagraphID)
               .getAttribute('data-share-text');
@@ -314,15 +320,52 @@
         false,
       );
 
+      const lineShareButtonElem = document.createElement('button');
+      lineShareButtonElem.className = 'share-button line-share';
+      lineShareButtonElem.textContent = 'LINEで送る';
+      lineShareButtonElem.addEventListener(
+        'click',
+        () => {
+          const url = buildShareURL();
+
+          let shareURL;
+
+          /**
+           * @see https://kojole.hatenablog.com/entry/2018/09/19/113840
+           */
+          if (selectedParagraphID) {
+            const text = document
+              .getElementById(selectedParagraphID)
+              .getAttribute('data-share-text');
+
+            /**
+             * @see https://developers.line.biz/ja/docs/messaging-api/using-line-url-scheme/#sending-text-messages
+             */
+            shareURL =
+              'https://line.me/R/msg/text/?' +
+              encodeURIComponent(text + '\n' + url);
+          } else {
+            /**
+             * @see https://org-media.line.me/ja/how_to_install#lineitbutton
+             */
+            shareURL =
+              'https://social-plugins.line.me/lineit/share?url=' +
+              encodeURIComponent(url);
+          }
+
+          window.open(shareURL, '_blank');
+        },
+        false,
+      );
+
       const otherShareButtonElem = document.createElement('button');
       otherShareButtonElem.className = 'share-button other-share';
       otherShareButtonElem.textContent = 'その他';
       otherShareButtonElem.addEventListener(
         'click',
         () => {
+          const url = buildShareURL();
           if (selectedParagraphID) {
-            const fragment = '#' + encodeURIComponent(selectedParagraphID);
-            const url = canonicalURL + fragment;
             const text = document
               .getElementById(selectedParagraphID)
               .getAttribute('data-share-text');
@@ -333,14 +376,18 @@
             });
           } else {
             share({
-              url: canonicalURL,
+              url,
             });
           }
         },
         false,
       );
 
-      return [twitterShareButtonElem, otherShareButtonElem];
+      return [
+        twitterShareButtonElem,
+        lineShareButtonElem,
+        otherShareButtonElem,
+      ];
     },
     shareInnerAreaElem => {
       shareInnerAreaElem.classList.add('right-menu');
