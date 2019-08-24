@@ -61,20 +61,21 @@
   }
 
   /*
-   * ページのURLにクエリパラメータ fragment が存在する場合は、URLをリライトする
+   * ページのルート要素にdata-canonical-url属性とdata-jump-id属性が存在する場合は、URLをリライトする
    */
-  const newURL = rootElem.getAttribute('data-canonical-url');
+  const canonicalURL = rootElem.getAttribute('data-canonical-url');
   const fragmentID = rootElem.getAttribute('data-jump-id');
-  if (newURL && fragmentID) {
+  if (canonicalURL && fragmentID) {
+    const newURL = canonicalURL + '#' + encodeURIComponent(fragmentID);
     if (history && isFunc(history.replaceState)) {
       history.replaceState(null, '', newURL);
       const linkElem = document.querySelector('link[rel=canonical]');
       const metaElem = document.querySelector('meta[property="og:url"]');
       if (linkElem) {
-        linkElem.setAttribute('href', newURL);
+        linkElem.setAttribute('href', canonicalURL);
       }
       if (metaElem) {
-        metaElem.setAttribute('content', newURL);
+        metaElem.setAttribute('content', canonicalURL);
       }
       rootElem.removeAttribute('data-canonical-url');
       rootElem.removeAttribute('data-jump-id');
