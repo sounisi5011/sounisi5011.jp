@@ -682,7 +682,27 @@
                   const readOnly = inputElem.readOnly;
                   inputElem.readOnly = true;
 
+                  /**
+                   * 選択で画面が拡大されないようにする
+                   * @see https://mamewaza.com/support/blog/javascript-copy.html#id35462
+                   * @see https://github.com/sindresorhus/copy-text-to-clipboard/blob/v2.1.0/index.js#L14
+                   */
+                  const fontSize = inputElem.style.fontSize;
+                  inputElem.style.fontSize = '16px';
+
+                  /**
+                   * select()メソッドが正しく機能しないiOSのWebKitブラウザでも全選択させる
+                   * @see https://mamewaza.com/support/blog/javascript-copy.html
+                   * @see https://stackoverflow.com/a/6431441/4907315
+                   * @see https://stackoverflow.com/a/13761214/4907315
+                   * @see http://pointofviewpoint.air-nifty.com/blog/2011/03/safaritextarea-.html
+                   * @see https://github.com/sindresorhus/copy-text-to-clipboard/blob/v2.1.0/index.js#L25-L27
+                   */
+                  inputElem.focus();
                   inputElem.select();
+                  inputElem.selectionStart = 0;
+                  inputElem.selectionEnd = inputElem.value.length;
+
                   try {
                     if (document.execCommand('copy')) {
                       copyButtonClassList.add('copy-success');
@@ -692,6 +712,7 @@
                   }
 
                   inputElem.readOnly = readOnly;
+                  inputElem.style.fontSize = fontSize;
                   copyButtonElem.focus();
                 },
                 false,
