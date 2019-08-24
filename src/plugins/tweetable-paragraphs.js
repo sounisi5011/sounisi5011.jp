@@ -59,13 +59,13 @@ function getURL($) {
 }
 
 function getValidTweetLength(tweetText, suffixText = '') {
-  const tweet = twitter.parseTweet(tweetText);
+  const tweet = twitter.parseTweet(tweetText + suffixText);
 
   if (tweet.valid) {
     return null;
   }
 
-  let validTweetLength = tweet.validRangeEnd;
+  let validTweetLength = Math.min(tweetText.length - 1, tweet.validRangeEnd);
   while (validTweetLength >= 0) {
     if (
       twitter.parseTweet(tweetText.substring(0, validTweetLength) + suffixText)
