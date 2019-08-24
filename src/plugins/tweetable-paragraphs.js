@@ -207,6 +207,7 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
 module.exports = opts => {
   const options = {
     filter: (filename, filedata, metalsmith, files) => true,
+    generateFragmentPageURL: (url, id) => url + '#' + strictUriEncode(id),
     ignoreElems: ['style', 'script', 'template'],
     pattern: '**/*.html',
     rootSelector: 'body',
@@ -261,7 +262,10 @@ module.exports = opts => {
               return;
             }
 
-            const fragmentPageURL = pageURL + '#' + strictUriEncode(id);
+            const fragmentPageURL = options.generateFragmentPageURL(
+              pageURL,
+              id,
+            );
             const validTweetLength = getValidTweetLength(text, fragmentPageURL);
 
             if (validTweetLength) {

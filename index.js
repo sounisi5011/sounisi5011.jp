@@ -1,3 +1,5 @@
+const { URL } = require('url');
+
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
@@ -271,6 +273,11 @@ Metalsmith(__dirname)
         tweetableParagraphs({
           filter(filename, filedata) {
             return filedata.tweetable;
+          },
+          generateFragmentPageURL(urlStr, id) {
+            const url = new URL(urlStr);
+            url.searchParams.set('fragment', id);
+            return url.href;
           },
           rootSelector: '.novel-body',
           textContentsReplacer($elem, childTextDataList) {
