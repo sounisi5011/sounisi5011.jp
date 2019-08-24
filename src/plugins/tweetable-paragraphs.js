@@ -5,6 +5,7 @@ const debug = require('debug')(
   `metalsmith---${path.relative(process.cwd(), __filename)}`,
 );
 const cheerio = require('cheerio');
+const pluginKit = require('metalsmith-plugin-kit');
 const multimatch = require('multimatch');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
@@ -233,6 +234,7 @@ module.exports = opts => {
 
       const newErrorList = [];
       let isUpdated = false;
+      const idList = [];
 
       const pageURL = getURL($);
       if (!pageURL) {
@@ -275,6 +277,9 @@ module.exports = opts => {
             }
 
             $(idNode).attr('data-share-text', text);
+
+            idList.push({ fragmentPageURL, id });
+
             isUpdated = true;
           });
         });
@@ -286,6 +291,66 @@ module.exports = opts => {
         if (isUpdated) {
           filedata.contents = Buffer.from($.html());
           debug(`contents updated: ${util.inspect(filename)}`);
+
+          const $head = $('head');
+          idList.forEach(({ id, fragmentPageURL }) => {
+            /**
+             * クロールを禁止するrobotsメタタグを追加
+             * @see https://developers.google.com/search/reference/robots_meta_tag?hl=ja
+             */
+            const $metaRobots = $head.find('meta[name=robots]');
+            if ($metaRobots.length >= 1) {
+              $metaRobots.each((i, elem) => {
+                const $meta = $(elem);
+                if (i === 0) {
+                  $meta.attr('content', 'noindex');
+                } else {
+                  $meta.remove();
+                }
+              });
+            } else {
+              $head.append('<meta name="robots" content="noindex">');
+            }
+
+            /*
+             * canonicalタグのURLを上書き
+             */
+            $head.find('link[rel=canonical]').each((i, elem) => {
+              const $link = $(elem);
+              if (i === 0) {
+                $link.attr('href', fragmentPageURL);
+              } else {
+                $link.remove();
+              }
+            });
+
+            /*
+             * OGPタグのURLを上書き
+             */
+            $head.find('meta[property="og:url"]').each((i, elem) => {
+              const $meta = $(elem);
+              if (i === 0) {
+                $meta.attr('content', fragmentPageURL);
+              } else {
+                $meta.remove();
+              }
+            });
+
+            /*
+             * ファイルを生成
+             */
+            const newFilename = path.join('.fragment', id, filename);
+            pluginKit.addFile(files, newFilename, $.html());
+
+            /*
+             * metalsmith-sitemapプラグインが生成するsitemap.xmlにファイルを含めない
+             *
+             * Note: metalsmith-sitemapプラグインが使用するmultimatchパッケージは、
+             *       通常のglobパターンではドットファイルにマッチしないため、".fragment"ディレクトリに一致しない。
+             *       だが、ピリオドを含むglobパターンでは一致するため、除外する必要がある。
+             */
+            files[newFilename].private = true;
+          });
         }
       }
     });
