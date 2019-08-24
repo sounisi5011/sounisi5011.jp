@@ -334,9 +334,13 @@
   }
 
   function main(dialogElem) {
-    const canonicalURL = getCanonicalURL() || location.href.replace(/#.*$/, '');
+    const rootElem = document.documentElement;
+    const canonicalURL =
+      rootElem.getAttribute('data-canonical-url') ||
+      getCanonicalURL() ||
+      location.href.replace(/#.*$/, '');
     let selectedParagraphID = '';
-    const rootClassList = document.documentElement.classList;
+    const rootClassList = rootElem.classList;
     const headerElem = document.querySelector('header.page');
     const mainNovelElem = document.querySelector('.novel-body');
     const footerElem = document.querySelector('footer.page');

@@ -296,8 +296,14 @@ module.exports = opts => {
           filedata.contents = Buffer.from($.html());
           debug(`contents updated: ${util.inspect(filename)}`);
 
+          const $root = $(':root');
           const $head = $('head');
+
+          $root.attr('data-canonical-url', pageURL);
+
           idList.forEach(({ id, fragmentPageURL }) => {
+            $root.attr('data-jump-id', id);
+
             /**
              * クロールを禁止するrobotsメタタグを追加
              * @see https://developers.google.com/search/reference/robots_meta_tag?hl=ja

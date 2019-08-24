@@ -1,7 +1,8 @@
 (window => {
   const { document, location, history } = window;
   const CSS = window.CSS || {};
-  const rootStyle = document.documentElement.style;
+  const rootElem = document.documentElement;
+  const rootStyle = rootElem.style;
   const isFunc = value => typeof value === 'function';
 
   /**
@@ -62,22 +63,21 @@
   /*
    * ページのURLにクエリパラメータ fragment が存在する場合は、URLをリライトする
    */
-  const origURL = location.href;
-  let fragmentID = false;
-  const queryRemovedURL = origURL.replace(
-    /(^|[?&])fragment=([^&#]*)(&|(?=#)|$)/g,
-    (_, beforeSep, id, afterSep) => {
-      if (fragmentID === false) {
-        fragmentID = id;
-      }
-      return afterSep ? beforeSep : '';
-    },
-  );
-  if (origURL !== queryRemovedURL) {
-    const newURL = queryRemovedURL.replace(/(?:#.*)?$/, '#' + fragmentID);
-
+  const newURL = rootElem.getAttribute('data-canonical-url');
+  const fragmentID = rootElem.getAttribute('data-jump-id');
+  if (newURL && fragmentID) {
     if (history && isFunc(history.replaceState)) {
       history.replaceState(null, '', newURL);
+      const linkElem = document.querySelector('link[rel=canonical]');
+      const metaElem = document.querySelector('meta[property="og:url"]');
+      if (linkElem) {
+        linkElem.setAttribute('href', newURL);
+      }
+      if (metaElem) {
+        metaElem.setAttribute('content', newURL);
+      }
+      rootElem.removeAttribute('data-canonical-url');
+      rootElem.removeAttribute('data-jump-id');
       scrollToFragment(fragmentID);
     } else if (isFunc(location.replace)) {
       location.replace(newURL);
