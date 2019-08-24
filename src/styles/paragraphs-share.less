@@ -220,6 +220,11 @@ dialog.share-dialog {
     .backdrop();
   }
 
+  input,
+  button {
+    padding: 0.5em 1em;
+  }
+
   button {
     cursor: pointer;
     border: solid 1px #ccc;
@@ -228,13 +233,11 @@ dialog.share-dialog {
   }
 
   & > label {
-    &,
-    input,
-    textarea {
-      display: block;
-    }
+    display: block;
 
-    textarea {
+    & > textarea,
+    .copy-area textarea {
+      display: block;
       box-sizing: border-box;
       width: 100%;
       min-width: 100%;
@@ -246,6 +249,7 @@ dialog.share-dialog {
     & > textarea,
     .copy-area,
     .copy-area textarea {
+      display: block;
       min-width: 15em;
       max-width: 100%;
     }
