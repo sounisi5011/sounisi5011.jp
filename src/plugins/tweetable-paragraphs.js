@@ -266,7 +266,10 @@ module.exports = opts => {
               pageURL,
               id,
             );
-            const validTweetLength = getValidTweetLength(text, fragmentPageURL);
+            const validTweetLength = getValidTweetLength(
+              text,
+              '\u{0020}' + fragmentPageURL,
+            );
 
             if (validTweetLength) {
               const lengthOutText = text.substring(validTweetLength);
