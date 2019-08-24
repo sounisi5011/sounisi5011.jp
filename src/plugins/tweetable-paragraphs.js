@@ -1,4 +1,5 @@
 const path = require('path');
+const { URL } = require('url');
 const util = require('util');
 
 const debug = require('debug')(
@@ -7,8 +8,11 @@ const debug = require('debug')(
 const cheerio = require('cheerio');
 const pluginKit = require('metalsmith-plugin-kit');
 const multimatch = require('multimatch');
+const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
+
+const { sha1 } = require('../utils/hash');
 
 /**
  * @see https://infra.spec.whatwg.org/#ascii-whitespace
@@ -216,95 +220,101 @@ module.exports = opts => {
   };
 
   return (files, metalsmith, done) => {
-    const errorList = [];
+    Promise.all(
+      multimatch(Object.keys(files), options.pattern).map(async filename => {
+        const filedata = files[filename];
+        if (!options.filter(filename, filedata, metalsmith, files)) {
+          return;
+        }
 
-    multimatch(Object.keys(files), options.pattern).forEach(filename => {
-      const filedata = files[filename];
-      if (!options.filter(filename, filedata, metalsmith, files)) {
-        return;
-      }
+        debug(`processing file: ${util.inspect(filename)}`);
 
-      debug(`processing file: ${util.inspect(filename)}`);
+        let $;
+        try {
+          $ = cheerio.load(filedata.contents.toString());
+        } catch (err) {
+          return;
+        }
 
-      let $;
-      try {
-        $ = cheerio.load(filedata.contents.toString());
-      } catch (err) {
-        return;
-      }
+        const newErrorList = [];
+        let isUpdated = false;
+        const idList = [];
 
-      const newErrorList = [];
-      let isUpdated = false;
-      const idList = [];
-
-      const pageURL = getURL($);
-      if (!pageURL) {
-        newErrorList.push({
-          filepath: filename,
-          message:
-            'ページの絶対URLを取得できませんでした。OGPのmeta要素、正規URLを指定するlink要素、または、絶対URLが記述されたbase要素が必要です',
-        });
-      } else {
-        $(options.rootSelector).each((i, elem) => {
-          const $root = $(elem);
-          const dataList = readTextContents($, $root, {
-            ignoreElems: options.ignoreElems,
-            replacer: options.textContentsReplacer,
+        const pageURL = getURL($);
+        if (!pageURL) {
+          newErrorList.push({
+            filepath: filename,
+            message:
+              'ページの絶対URLを取得できませんでした。OGPのmeta要素、正規URLを指定するlink要素、または、絶対URLが記述されたbase要素が必要です',
           });
+        } else {
+          $(options.rootSelector).each((i, elem) => {
+            const $root = $(elem);
+            const dataList = readTextContents($, $root, {
+              ignoreElems: options.ignoreElems,
+              replacer: options.textContentsReplacer,
+            });
 
-          dataList.forEach(({ id, idNode, text }) => {
-            if (!idNode) {
-              newErrorList.push({
-                filepath: filename,
-                message:
-                  'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
-              });
-              return;
-            }
+            dataList.forEach(({ id, idNode, text }) => {
+              if (!idNode) {
+                newErrorList.push({
+                  filepath: filename,
+                  message:
+                    'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
+                });
+                return;
+              }
 
-            const fragmentPageURL = options.generateFragmentPageURL(
-              pageURL,
-              id,
-            );
-            const validTweetLength = getValidTweetLength(
-              text,
-              '\u{0020}' + fragmentPageURL,
-            );
+              const fragmentPageURL = options.generateFragmentPageURL(
+                pageURL,
+                id,
+              );
+              const validTweetLength = getValidTweetLength(
+                text,
+                '\u{0020}' + fragmentPageURL,
+              );
 
-            if (validTweetLength) {
-              const lengthOutText = text.substring(validTweetLength);
-              const outLen = unicodeLength(lengthOutText);
-              newErrorList.push({
-                filepath: `${filename}#${id}`,
-                message:
-                  `テキストが長すぎます。以下のテキストを削除し、あと${outLen}文字減らしてください:\n\n` +
-                  lengthOutText.replace(/^/gm, '  > '),
-              });
-              return;
-            }
+              if (validTweetLength) {
+                const lengthOutText = text.substring(validTweetLength);
+                const outLen = unicodeLength(lengthOutText);
+                newErrorList.push({
+                  filepath: `${filename}#${id}`,
+                  message:
+                    `テキストが長すぎます。以下のテキストを削除し、あと${outLen}文字減らしてください:\n\n` +
+                    lengthOutText.replace(/^/gm, '  > '),
+                });
+                return;
+              }
 
-            $(idNode).attr('data-share-text', text);
+              $(idNode).attr('data-share-text', text);
 
-            idList.push({ fragmentPageURL, id });
+              idList.push({ fragmentPageURL, id });
 
-            isUpdated = true;
+              isUpdated = true;
+            });
           });
-        });
-      }
+        }
 
-      if (newErrorList.length >= 1) {
-        errorList.push(...newErrorList);
-      } else {
+        if (newErrorList.length >= 1) {
+          return newErrorList;
+        }
+
         if (isUpdated) {
           filedata.contents = Buffer.from($.html());
           debug(`contents updated: ${util.inspect(filename)}`);
 
           const $root = $(':root');
           const $head = $('head');
+          const twitterCardImageElems = $head.find(
+            'meta[name="twitter:image"]',
+          );
+          const twitterCardImageFound = Boolean(
+            twitterCardImageElems >= 1 && twitterCardImageElems.attr('content'),
+          );
 
           $root.attr('data-canonical-url', pageURL);
 
-          idList.forEach(({ id, fragmentPageURL }) => {
+          for (const { id, fragmentPageURL } of idList) {
             $root.attr('data-jump-id', id);
 
             /**
@@ -350,6 +360,46 @@ module.exports = opts => {
             });
 
             /*
+             * Twitter Cardの画像が未定義の場合は、URLを示すQRコードを指定する
+             */
+            if (!twitterCardImageFound) {
+              /*
+               * ページのURLを示すQRコードを生成
+               */
+              const encodedID = strictUriEncode(id);
+              const url = pageURL + '#' + encodedID;
+              const qrFilename = path.join(
+                path.dirname(filename),
+                `${sha1(`${encodedID}/${filename}`)}.png`,
+              );
+              pluginKit.addFile(
+                files,
+                qrFilename,
+                await QRCode.toBuffer(url, {
+                  type: 'png',
+                  width: 144,
+                }),
+              );
+              debug(`file generated: ${util.inspect(qrFilename)}`);
+
+              const qrFileURL = new URL(pageURL);
+              qrFileURL.pathname = qrFilename;
+              qrFileURL.search = '';
+              qrFileURL.hash = '';
+
+              const twitterCardImageElem = $head.find(
+                'meta[name="twitter:image"]',
+              );
+              if (twitterCardImageElem.length < 1) {
+                const twitterCardImageElem = $('<meta name="twitter:image">');
+                twitterCardImageElem.attr('content', String(qrFileURL));
+                $head.append(twitterCardImageElem);
+              } else {
+                twitterCardImageElem.attr('content', String(qrFileURL));
+              }
+            }
+
+            /*
              * ファイルを生成
              */
             const newFilename = path.join('_fragment-anchors', id, filename);
@@ -359,25 +409,32 @@ module.exports = opts => {
              * metalsmith-sitemapプラグインが生成するsitemap.xmlにファイルを含めない
              */
             files[newFilename].private = true;
-          });
-        }
-      }
-    });
 
-    if (errorList.length >= 1) {
-      done(
-        new Error(
-          [
-            '以下のファイルでエラーが発生しました：',
-            '',
-            ...errorList.map(({ filepath, message }) =>
-              `${filepath}: ${message}\n`.replace(/^(?=[^\r\n])/gm, '  '),
+            debug(`file generated: ${util.inspect(newFilename)}`);
+          }
+        }
+      }),
+    )
+      .then(errorListList => {
+        const errorList = [].concat(...errorListList).filter(Boolean);
+        if (errorList.length >= 1) {
+          done(
+            new Error(
+              [
+                '以下のファイルでエラーが発生しました：',
+                '',
+                ...errorList.map(({ filepath, message }) =>
+                  `${filepath}: ${message}\n`.replace(/^(?=[^\r\n])/gm, '  '),
+                ),
+              ].join('\n'),
             ),
-          ].join('\n'),
-        ),
-      );
-    } else {
-      done();
-    }
+          );
+        } else {
+          done();
+        }
+      })
+      .catch(error => {
+        done(error);
+      });
   };
 };
