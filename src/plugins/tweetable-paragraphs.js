@@ -339,15 +339,11 @@ module.exports = opts => {
             /*
              * ファイルを生成
              */
-            const newFilename = path.join('.fragment', id, filename);
+            const newFilename = path.join('_fragment-anchors', id, filename);
             pluginKit.addFile(files, newFilename, $.html());
 
             /*
              * metalsmith-sitemapプラグインが生成するsitemap.xmlにファイルを含めない
-             *
-             * Note: metalsmith-sitemapプラグインが使用するmultimatchパッケージは、
-             *       通常のglobパターンではドットファイルにマッチしないため、".fragment"ディレクトリに一致しない。
-             *       だが、ピリオドを含むglobパターンでは一致するため、除外する必要がある。
              */
             files[newFilename].private = true;
           });

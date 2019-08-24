@@ -1,5 +1,5 @@
 # Redirect default Netlify subdomain to primary domain
 https://{{netlifyDefaultSubdomain}}/* https://{{netlifyPrimaryDomain}}/:splat 301!
 
-/.fragment/:id/* /:splat?fragment=:id 301!
-/* fragment=:id /.fragment/:id/:splat 200!
+/_fragment-anchors/:id/* /:splat?fragment=:id 301!
+/* fragment=:id /_fragment-anchors/:id/:splat 200!
