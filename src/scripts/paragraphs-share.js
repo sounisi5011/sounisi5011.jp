@@ -719,9 +719,15 @@
         false,
       );
 
-      const titleInputElem = createElem('input');
-      const urlInputElem = createElem('input');
-      const textInputElem = createElem('textarea');
+      const titleInputElem = createElem('input', elem => {
+        elem.readOnly = true;
+      });
+      const urlInputElem = createElem('input', elem => {
+        elem.readOnly = true;
+      });
+      const textInputElem = createElem('textarea', elem => {
+        elem.readOnly = true;
+      });
 
       each(
         [
