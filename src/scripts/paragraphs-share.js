@@ -536,9 +536,14 @@
                     }).bottom;
                     if (sign(topViewOut) !== sign(bottomViewOut)) {
                       if (Math.abs(bottomViewOut) < Math.abs(topViewOut)) {
+                        // Note: 要素の下部に、固定フッタの高さを考慮したスタイルは指定していないため、
+                        //       scrollIntoView()メソッドではなく、scrollBy()メソッドを使用する。
                         window.scrollBy(0, bottomViewOut);
                       } else {
-                        window.scrollBy(0, -topViewOut);
+                        // Note: 固定ヘッダのあるページで正しい位置にスクロールさせるハック等の影響が出るため、
+                        //       scrollBy()メソッドではなく、scrollIntoView()メソッドを使用する。
+                        //       ハックの例：https://css-tricks.com/hash-tag-links-padding/#article-header-id-1
+                        paragraphElem.scrollIntoView();
                       }
                     }
 
