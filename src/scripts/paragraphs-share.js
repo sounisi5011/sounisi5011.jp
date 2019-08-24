@@ -1,4 +1,6 @@
-{
+(window => {
+  const { document, location, URIError, encodeURIComponent } = window;
+  const CSS = window.CSS || {};
   const fragmentIdAttr = 'data-fragment-id';
 
   function sign(number) {
@@ -24,7 +26,7 @@
   }
 
   const cssEscape =
-    typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+    typeof CSS.escape === 'function'
       ? CSS.escape
       : /** @see https://drafts.csswg.org/cssom/#serialize-an-identifier */
         str => {
@@ -810,4 +812,4 @@
       );
     }
   }
-}
+})(window);
