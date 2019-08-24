@@ -267,6 +267,7 @@ Metalsmith(__dirname)
           pattern: pugRender.defaultOptions.pattern,
           reuse: true,
         }),
+        blankshield({ insertNoreferrer: true }),
         tweetableParagraphs({
           filter(filename, filedata) {
             return filedata.tweetable;
@@ -291,7 +292,6 @@ Metalsmith(__dirname)
             return childTextDataList;
           },
         }),
-        blankshield({ insertNoreferrer: true }),
       ],
     }),
   )
