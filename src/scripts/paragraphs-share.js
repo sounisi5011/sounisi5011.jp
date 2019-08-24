@@ -350,11 +350,26 @@
       };
     };
     const buildShareURL = () => {
-      const fragment = selectedParagraphID
-        ? '#' + encodeURIComponent(selectedParagraphID)
-        : '';
-      const url = canonicalURL + fragment;
-      return url;
+      if (selectedParagraphID) {
+        return canonicalURL.replace(
+          /((?:\?[^#]*)?)((?:#.*)?)$/,
+          (_, query, fragment) => {
+            if (query === '') {
+              query = '?';
+            } else if (!/[?&]$/.test(query)) {
+              query += '&';
+            }
+            return (
+              query +
+              'fragment=' +
+              encodeURIComponent(selectedParagraphID) +
+              fragment
+            );
+          },
+        );
+      } else {
+        return canonicalURL;
+      }
     };
     let share = data => navigator.share(data);
 
