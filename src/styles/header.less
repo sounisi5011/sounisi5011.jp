@@ -86,24 +86,15 @@ header.page {
     }
 
     @supports not ((scroll-margin-top: 4px) and (scroll-padding-top: 4px)) {
-      /* see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css */
-      /* see https://dxr.mozilla.org/mozilla-central/source/layout/style/res/html.css */
-      /* see http://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css */
-      @block-level-elems: address, article, aside, blockquote, dd, details, div,
-        dl, dt, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5,
-        h6, header, hgroup, legend, main, nav, ol, p, pre, section, summary, ul;
-
-      @{block-level-elems} {
-        &[id]:before {
-          /* see https://css-tricks.com/hash-tag-links-padding/#article-header-id-1 */
-          /* see http://nicolasgallagher.com/jump-links-and-viewport-positioning/demo/#method-B */
-          display: block;
-          content: " ";
-          margin-top: calc(@header-height * -1);
-          height: @header-height;
-          visibility: hidden;
-          pointer-events: none;
-        }
+      body [id]:before {
+        /* see https://css-tricks.com/hash-tag-links-padding/#article-header-id-1 */
+        /* see http://nicolasgallagher.com/jump-links-and-viewport-positioning/demo/#method-B */
+        display: block;
+        content: " ";
+        margin-top: calc(@header-height * -1);
+        height: @header-height;
+        visibility: hidden;
+        pointer-events: none;
       }
     }
   }
