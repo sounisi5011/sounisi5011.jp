@@ -1,7 +1,5 @@
 {
   const fragmentIdAttr = 'data-fragment-id';
-  /** @see https://drafts.csswg.org/css-syntax-3/#string-token-diagram */
-  const fragmentIdAttrSelectorRegExp = /\[data-fragment-id=(?:"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')\]/gm;
 
   function sign(number) {
     return number < 0 ? -1 : +1;
@@ -65,29 +63,6 @@
 
   function getWindowHeight(doc = document) {
     return doc.documentElement.clientHeight;
-  }
-
-  function eachStyleSheet(callback, styleSheets = document.styleSheets) {
-    each(styleSheets, sheet => {
-      each(sheet.cssRules, rule => {
-        if (callback(rule) !== false) {
-          /**
-           * @see https://lab.syncer.jp/Web/API_Interface/Reference/IDL/CSSImportRule/
-           * @see https://drafts.csswg.org/cssom/#cssimportrule
-           */
-          if (rule.styleSheet) {
-            eachStyleSheet(callback, [rule.styleSheet]);
-          }
-
-          /**
-           * @see https://developer.mozilla.org/en-US/docs/Web/API/CSSGroupingRule
-           */
-          if (rule.cssRules) {
-            eachStyleSheet(callback, [rule]);
-          }
-        }
-      });
-    });
   }
 
   /**
@@ -500,24 +475,27 @@
             (paragraphShareInnerAreaElem, paragraphShareAreaElem) => {
               paragraphShareAreaElem.classList.add('paragraph-share-area');
 
-              function replaceFragmentIdSelector(fragmentID) {
+              function setSelectClass(fragmentID) {
                 const replaceSelector =
                   '[' +
                   cssEscape(fragmentIdAttr) +
                   '="' +
                   cssEscape(fragmentID) +
-                  '"]';
-                eachStyleSheet(rule => {
-                  if (
-                    rule.selectorText &&
-                    fragmentIdAttrSelectorRegExp.test(rule.selectorText)
-                  ) {
-                    rule.selectorText = rule.selectorText.replace(
-                      fragmentIdAttrSelectorRegExp,
-                      replaceSelector,
-                    );
-                  }
-                });
+                  '"],' +
+                  ('[' + cssEscape(fragmentIdAttr) + '].select');
+                each(
+                  mainNovelElem.querySelectorAll(replaceSelector),
+                  paragraphElem => {
+                    const classList = paragraphElem.classList;
+                    if (
+                      paragraphElem.getAttribute(fragmentIdAttr) === fragmentID
+                    ) {
+                      classList.add('select');
+                    } else {
+                      classList.remove('select');
+                    }
+                  },
+                );
               }
 
               const paragraphSelectListener = event => {
@@ -547,7 +525,7 @@
                       ),
                     );
 
-                    replaceFragmentIdSelector(fragmentID);
+                    setSelectClass(fragmentID);
 
                     const padding = getWindowPaddingSize();
                     const topViewOut = getViewOutSize(paragraphElem, {
@@ -605,7 +583,7 @@
                         fragmentIdAttr,
                       );
 
-                      replaceFragmentIdSelector(currentParagraphID);
+                      setSelectClass(currentParagraphID);
 
                       selectedParagraphID = currentParagraphID;
                     },
