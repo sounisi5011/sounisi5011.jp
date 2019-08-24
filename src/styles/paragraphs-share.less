@@ -1,3 +1,4 @@
+@import "_mixins";
 @import "_fontawesome/solid";
 @import "_fontawesome";
 
@@ -53,7 +54,7 @@ footer.page {
       }
 
       &:before {
-        .fa-icon;
+        &:extend(.fa-icon);
         margin-right: 0.3em;
       }
     }
@@ -217,5 +218,98 @@ dialog.share-dialog {
 
   & + .backdrop {
     .backdrop();
+  }
+
+  button {
+    cursor: pointer;
+    border: solid 1px #ccc;
+    border-radius: 0.5em;
+    background-color: #fff;
+  }
+
+  & > label {
+    &,
+    input,
+    textarea {
+      display: block;
+    }
+
+    textarea {
+      box-sizing: border-box;
+      width: 100%;
+      min-width: 100%;
+      height: 8em;
+      white-space: pre;
+    }
+
+    & > input,
+    & > textarea,
+    .copy-area,
+    .copy-area textarea {
+      min-width: 15em;
+      max-width: 100%;
+    }
+
+    &:not(.text-copy-area) {
+      .copy-area {
+        display: flex;
+
+        & > input {
+          flex: 1;
+        }
+
+        & > .copy-button {
+          margin-left: 0.5em;
+
+          span {
+            .invisible-text();
+          }
+        }
+      }
+    }
+
+    &.text-copy-area {
+      .copy-button {
+        display: block;
+        margin-top: 0.5em;
+        margin-left: auto;
+
+        &:before {
+          margin-right: 0.5em;
+        }
+      }
+    }
+
+    .copy-area {
+      & > .copy-button {
+        &:before {
+          &:extend(.fa-icon);
+          &:extend(.fas);
+          content: @fa-var-clipboard;
+        }
+
+        &.copy-success {
+          &:before {
+            content: @fa-var-clipboard-check;
+          }
+        }
+      }
+    }
+  }
+
+  .close-button {
+    display: block;
+    width: 100%;
+    margin-top: 1em;
+  }
+
+  &.hide-text {
+    .text-copy-area {
+      display: none;
+    }
+
+    .close-button {
+      margin-top: 2em;
+    }
   }
 }

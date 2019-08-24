@@ -245,9 +245,17 @@
   function createElem(tagName, childrenCallback) {
     const elem = document.createElement(tagName);
 
-    const childrenList = childrenCallback(elem) || [];
+    const childrenList =
+      (typeof childrenCallback === 'function'
+        ? childrenCallback(elem)
+        : childrenCallback) || [];
+
     each(childrenList, childNode => {
-      elem.appendChild(childNode);
+      elem.appendChild(
+        typeof childNode === 'string'
+          ? document.createTextNode(childNode)
+          : childNode,
+      );
     });
 
     return elem;
@@ -326,15 +334,6 @@
   }
 
   function main(dialogElem) {
-    function share({ title = document.title, text, url }) {
-      if (!dialogElem) {
-        navigator.share({ text, title, url });
-      } else {
-        dialogElem.textContent = url;
-        dialogElem.showModal();
-      }
-    }
-
     const canonicalURL = getCanonicalURL() || location.href.replace(/#.*$/, '');
     let selectedParagraphID = '';
     const rootClassList = document.documentElement.classList;
@@ -357,6 +356,7 @@
       const url = canonicalURL + fragment;
       return url;
     };
+    let share = data => navigator.share(data);
 
     addDataAttr(mainNovelElem);
 
@@ -655,6 +655,59 @@
     footerElem.insertBefore(shareAreaElem, footerElem.firstChild);
 
     if (dialogElem) {
+      const createCopyButton = (inputElem, className = 'copy-area') => {
+        if (typeof document.execCommand !== 'function') {
+          return inputElem;
+        }
+
+        return createElem('div', copyContainerElem => {
+          copyContainerElem.className = className;
+          return [
+            inputElem,
+            createElem('button', copyButtonElem => {
+              const copyButtonClassList = copyButtonElem.classList;
+              const focusoutListener = () => {
+                copyButtonClassList.remove('copy-success');
+              };
+
+              copyButtonElem.className = 'copy-button';
+              copyButtonElem.addEventListener(
+                'click',
+                () => {
+                  /**
+                   * コピー操作でキーボードが表示されないようにする
+                   * @see https://qiita.com/simiraaaa/items/2e7478d72f365aa48356#注意点
+                   * @see https://github.com/sindresorhus/copy-text-to-clipboard/blob/v2.1.0/index.js#L8-L9
+                   */
+                  const readOnly = inputElem.readOnly;
+                  inputElem.readOnly = true;
+
+                  inputElem.select();
+                  try {
+                    if (document.execCommand('copy')) {
+                      copyButtonClassList.add('copy-success');
+                    }
+                  } catch (e) {
+                    //
+                  }
+
+                  inputElem.readOnly = readOnly;
+                  copyButtonElem.focus();
+                },
+                false,
+              );
+              copyButtonElem.addEventListener('blur', focusoutListener, false);
+              copyButtonElem.addEventListener(
+                'mouseout',
+                focusoutListener,
+                false,
+              );
+              copyButtonElem.appendChild(createElem('span', ['コピー']));
+            }),
+          ];
+        });
+      };
+
       dialogElem.className = 'share-dialog';
       dialogElem.addEventListener(
         'click',
@@ -665,7 +718,47 @@
         },
         false,
       );
+
+      const titleInputElem = createElem('input');
+      const urlInputElem = createElem('input');
+      const textInputElem = createElem('textarea');
+
+      each(
+        [
+          createElem('label', ['タイトル', createCopyButton(titleInputElem)]),
+          createElem('label', ['URL', createCopyButton(urlInputElem)]),
+          createElem('label', labelElem => {
+            labelElem.className = 'text-copy-area';
+            return ['テキスト', createCopyButton(textInputElem)];
+          }),
+          createElem('button', closeButtonElem => {
+            closeButtonElem.className = 'close-button';
+            closeButtonElem.textContent = '閉じる';
+            closeButtonElem.addEventListener(
+              'click',
+              () => {
+                dialogElem.close();
+              },
+              false,
+            );
+          }),
+        ],
+        elem => dialogElem.appendChild(elem),
+      );
       document.body.appendChild(dialogElem);
+
+      const dialogClassList = dialogElem.classList;
+      share = ({ title = document.title, text, url }) => {
+        titleInputElem.value = title;
+        urlInputElem.value = url;
+        if (text) {
+          dialogClassList.remove('hide-text');
+          textInputElem.value = text;
+        } else {
+          dialogClassList.add('hide-text');
+        }
+        dialogElem.showModal();
+      };
     }
   }
 
