@@ -306,7 +306,7 @@ module.exports = opts => {
           /**
            * @see https://developers.facebook.com/docs/sharing/best-practices#images
            */
-          const ogpQrWidth = 600;
+          const ogpQrWidth = 599;
           /**
            * @see https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/summary
            */
