@@ -286,7 +286,9 @@ module.exports = opts => {
                 return;
               }
 
-              $(idNode).attr('data-share-text', text);
+              const $idElem = $(idNode);
+              $idElem.attr('data-share-url', fragmentPageURL);
+              $idElem.attr('data-share-text', text);
 
               idList.push({ fragmentPageURL, id });
 

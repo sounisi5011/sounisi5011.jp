@@ -330,28 +330,6 @@
         top: Math.max(0, headerRect.bottom),
       };
     };
-    const buildShareURL = () => {
-      if (selectedParagraphID) {
-        return canonicalURL.replace(
-          /((?:\?[^#]*)?)((?:#.*)?)$/,
-          (_, query, fragment) => {
-            if (query === '') {
-              query = '?';
-            } else if (!/[?&]$/.test(query)) {
-              query += '&';
-            }
-            return (
-              query +
-              'fragment=' +
-              encodeURIComponent(selectedParagraphID) +
-              fragment
-            );
-          },
-        );
-      } else {
-        return canonicalURL;
-      }
-    };
     let share = data => navigator.share(data);
 
     addDataAttr(mainNovelElem);
@@ -370,12 +348,14 @@
             twitterShareButtonElem.addEventListener(
               'click',
               () => {
-                const url = buildShareURL();
+                let url = canonicalURL;
                 let text = document.title;
                 if (selectedParagraphID) {
-                  text = document
-                    .getElementById(selectedParagraphID)
-                    .getAttribute('data-share-text');
+                  const selectedParagraphElem = document.getElementById(
+                    selectedParagraphID,
+                  );
+                  url = selectedParagraphElem.getAttribute('data-share-url');
+                  text = selectedParagraphElem.getAttribute('data-share-text');
                 }
 
                 /**
@@ -410,17 +390,21 @@
             lineShareButtonElem.addEventListener(
               'click',
               () => {
-                const url = buildShareURL();
-
                 let shareURL;
 
                 /**
                  * @see https://kojole.hatenablog.com/entry/2018/09/19/113840
                  */
                 if (selectedParagraphID) {
-                  const text = document
-                    .getElementById(selectedParagraphID)
-                    .getAttribute('data-share-text');
+                  const selectedParagraphElem = document.getElementById(
+                    selectedParagraphID,
+                  );
+                  const url = selectedParagraphElem.getAttribute(
+                    'data-share-url',
+                  );
+                  const text = selectedParagraphElem.getAttribute(
+                    'data-share-text',
+                  );
 
                   /**
                    * @see https://developers.line.biz/ja/docs/messaging-api/using-line-url-scheme/#sending-text-messages
@@ -434,7 +418,7 @@
                    */
                   shareURL =
                     'https://social-plugins.line.me/lineit/share?url=' +
-                    encodeURIComponent(url);
+                    encodeURIComponent(canonicalURL);
                 }
 
                 window.open(shareURL, '_blank');
@@ -448,19 +432,17 @@
             otherShareButtonElem.addEventListener(
               'click',
               () => {
-                const url = buildShareURL();
                 if (selectedParagraphID) {
-                  const text = document
-                    .getElementById(selectedParagraphID)
-                    .getAttribute('data-share-text');
-
+                  const selectedParagraphElem = document.getElementById(
+                    selectedParagraphID,
+                  );
                   share({
-                    text,
-                    url,
+                    text: selectedParagraphElem.getAttribute('data-share-text'),
+                    url: selectedParagraphElem.getAttribute('data-share-url'),
                   });
                 } else {
                   share({
-                    url,
+                    url: canonicalURL,
                   });
                 }
               },
