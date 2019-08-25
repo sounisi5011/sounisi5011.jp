@@ -732,8 +732,8 @@
         elem.readOnly = true;
       });
 
-      each(
-        [
+      dialogElem.appendChild(
+        createElem('div', [
           createElem('label', ['タイトル', createCopyButton(titleInputElem)]),
           createElem('label', ['URL', createCopyButton(urlInputElem)]),
           createElem('label', labelElem => {
@@ -751,8 +751,7 @@
               false,
             );
           }),
-        ],
-        elem => dialogElem.appendChild(elem),
+        ]),
       );
       document.body.appendChild(dialogElem);
 
