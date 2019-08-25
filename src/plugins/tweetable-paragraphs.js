@@ -314,6 +314,7 @@ module.exports = opts => {
 
           const $root = $(':root');
           const $head = $('head');
+          let $refreshMeta;
           let ogpImageElem;
           const twitterCardImageElems = $head.find(
             'meta[name="twitter:image"]',
@@ -372,6 +373,25 @@ module.exports = opts => {
             const encodedID = strictUriEncode(id);
             const urlWithFragment = pageURL + '#' + encodedID;
             const qrCodeBasename = sha1(`${encodedID}/${filename}`);
+
+            /*
+             * スクリプトが機能しない環境向けのリダイレクトタグを追加
+             */
+            if (!$refreshMeta) {
+              const $meta = $('<meta http-equiv="refresh">');
+              const $noscript = $('<noscript></noscript>');
+              $noscript.append($meta);
+
+              const $charset = $head.find('meta[charset]').first();
+              if ($charset.length >= 1) {
+                $charset.after($noscript);
+              } else {
+                $head.prepend($noscript);
+              }
+
+              $refreshMeta = $meta;
+            }
+            $refreshMeta.attr('content', `0; url=${urlWithFragment}`);
 
             await Promise.all(
               [
