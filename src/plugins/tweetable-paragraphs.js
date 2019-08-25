@@ -401,7 +401,7 @@ module.exports = opts => {
                    */
                   const qrFilename = path.join(
                     path.dirname(filename),
-                    `${qrCodeBasename}.ogp.png`,
+                    `${qrCodeBasename}.${ogpQrWidth}x${ogpQrWidth}.png`,
                   );
 
                   /*
@@ -434,7 +434,7 @@ module.exports = opts => {
                      */
                     const qrFilename = path.join(
                       path.dirname(filename),
-                      `${qrCodeBasename}.png`,
+                      `${qrCodeBasename}.${twitterCardQrWidth}x${twitterCardQrWidth}.png`,
                     );
                     pluginKit.addFile(
                       files,
