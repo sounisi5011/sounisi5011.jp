@@ -556,15 +556,13 @@
                       );
 
                       addDataAttr(mainNovelElem);
+                      const padding = getWindowPaddingSize();
+                      padding.top += 16 * 1.5;
                       const currentParagraphElem = findElem(
                         mainNovelElem.querySelectorAll(
                           '[' + cssEscape(fragmentIdAttr) + ']',
                         ),
-                        elem => {
-                          return isIntersection(elem, {
-                            padding: getWindowPaddingSize(),
-                          });
-                        },
+                        elem => isIntersection(elem, { padding }),
                       );
                       const currentParagraphID = currentParagraphElem.getAttribute(
                         fragmentIdAttr,
