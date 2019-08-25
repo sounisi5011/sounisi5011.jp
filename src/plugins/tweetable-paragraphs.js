@@ -8,16 +8,11 @@ const debug = require('debug')(
 const cheerio = require('cheerio');
 const pluginKit = require('metalsmith-plugin-kit');
 const multimatch = require('multimatch');
-const { PNG } = require('pngjs');
 const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
 const { sha1 } = require('../utils/hash');
-
-const parsePNG = util.promisify((imageData, callback) =>
-  new PNG().parse(imageData, callback),
-);
 
 /**
  * @see https://infra.spec.whatwg.org/#ascii-whitespace
@@ -38,19 +33,6 @@ function last(list) {
 
 function unicodeLength(str) {
   return [...str].length;
-}
-
-async function stream2buffer(stream) {
-  return new Promise((resolve, reject) => {
-    const bufferList = [];
-    stream.on('error', reject);
-    stream.on('data', data => {
-      bufferList.push(data);
-    });
-    stream.on('end', () => {
-      resolve(Buffer.concat(bufferList));
-    });
-  });
 }
 
 function getURL($) {
@@ -323,7 +305,7 @@ module.exports = opts => {
 
           const $root = $(':root');
           const $head = $('head');
-          const ogpImageElemMap = {};
+          let ogpImageElem;
           const twitterCardImageElems = $head.find(
             'meta[name="twitter:image"]',
           );
@@ -389,17 +371,13 @@ module.exports = opts => {
                    * OGPの画像に、QRコードを追加する
                    */
 
-                  if (!ogpImageElemMap.url) {
-                    ogpImageElemMap.url = $('<meta property="og:image">');
-                    ogpImageElemMap.type = $(
-                      '<meta property="og:image:type" content="image/png">',
-                    );
-                    ogpImageElemMap.width = $(
-                      '<meta property="og:image:width">',
-                    );
-                    ogpImageElemMap.height = $(
-                      '<meta property="og:image:height">',
-                    );
+                  /**
+                   * @see https://developers.facebook.com/docs/sharing/best-practices#images
+                   */
+                  const qrWidth = 600;
+
+                  if (!ogpImageElem) {
+                    ogpImageElem = $('<meta property="og:image">');
 
                     $head
                       .find(
@@ -407,46 +385,31 @@ module.exports = opts => {
                       )
                       .first()
                       .before(
-                        ogpImageElemMap.url,
-                        ogpImageElemMap.type,
-                        ogpImageElemMap.width,
-                        ogpImageElemMap.height,
+                        ogpImageElem,
+                        '<meta property="og:image:type" content="image/png">',
+                        `<meta property="og:image:width" content="${qrWidth}">`,
+                        `<meta property="og:image:height" content="${qrWidth}">`,
                       );
                   }
 
-                  /**
-                   * @see https://developers.facebook.com/docs/sharing/best-practices#images
+                  /*
+                   * ページのURLを示すQRコードを生成
                    */
-                  const ogpImage = new PNG({
-                    colorType: 0,
-                    height: 600,
-                    width: 600 * 1.91,
-                  });
-
-                  const qrImage = await parsePNG(
-                    await QRCode.toBuffer(urlWithFragment, {
-                      type: 'png',
-                      width: Math.min(ogpImage.width, ogpImage.height),
-                    }),
-                  );
-                  qrImage.bitblt(
-                    ogpImage,
-                    0,
-                    0,
-                    qrImage.width,
-                    qrImage.height,
-                    Math.max(0, (ogpImage.width - qrImage.width) / 2),
-                    Math.max(0, (ogpImage.height - qrImage.height) / 2),
-                  );
-
                   const qrFilename = path.join(
                     path.dirname(filename),
                     `${qrCodeBasename}.ogp.png`,
                   );
+
+                  /*
+                   * QRコードの画像ファイルを生成
+                   */
                   pluginKit.addFile(
                     files,
                     qrFilename,
-                    await stream2buffer(ogpImage.pack()),
+                    await QRCode.toBuffer(urlWithFragment, {
+                      type: 'png',
+                      width: qrWidth,
+                    }),
                   );
                   debug(`file generated: ${util.inspect(qrFilename)}`);
 
@@ -455,9 +418,7 @@ module.exports = opts => {
                   qrFileURL.search = '';
                   qrFileURL.hash = '';
 
-                  ogpImageElemMap.url.attr('content', String(qrFileURL));
-                  ogpImageElemMap.width.attr('content', ogpImage.width);
-                  ogpImageElemMap.height.attr('content', ogpImage.height);
+                  ogpImageElem.attr('content', String(qrFileURL));
                 },
                 async () => {
                   /*
