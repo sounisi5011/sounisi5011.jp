@@ -2,7 +2,7 @@
 @import "_fontawesome/solid";
 @import "_fontawesome";
 
-.bottom-fixed-box {
+.bottom-fixed-box() {
   position: absolute;
   left: 0;
   right: 0;
@@ -29,14 +29,33 @@ html.share-open.paragraph-share {
 }
 
 footer.page {
-  margin-top: 5em;
+  @share-area-height: 5em;
+
+  margin-bottom: @share-area-height;
+
+  @supports (position: sticky) {
+    margin-top: @share-area-height;
+    margin-bottom: 0;
+  }
 
   & > .share-area {
     @button-bg-color: #000;
     @button-text-color: #fff;
 
+    position: fixed;
+    bottom: 0;
+    left: 1em;
+    right: 1em;
     margin: 0;
     font-size: larger;
+
+    @supports (position: sticky) {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: auto;
+    }
 
     .share-button {
       cursor: pointer;
@@ -60,6 +79,8 @@ footer.page {
     }
 
     & > * {
+      position: absolute;
+      bottom: 0;
       margin-bottom: 1em;
     }
 
@@ -153,6 +174,7 @@ footer.page {
       }
 
       .paragraph-share-area {
+        .bottom-fixed-box();
         display: none;
 
         .share-open & {

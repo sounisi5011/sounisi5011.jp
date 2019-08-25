@@ -251,8 +251,6 @@
       });
     });
 
-    outerElem.classList.add('bottom-fixed-box');
-
     return outerElem;
   }
 
