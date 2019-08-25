@@ -303,6 +303,15 @@ module.exports = opts => {
           filedata.contents = Buffer.from($.html());
           debug(`contents updated: ${util.inspect(filename)}`);
 
+          /**
+           * @see https://developers.facebook.com/docs/sharing/best-practices#images
+           */
+          const ogpQrWidth = 600;
+          /**
+           * @see https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/summary
+           */
+          const twitterCardQrWidth = 144;
+
           const $root = $(':root');
           const $head = $('head');
           let ogpImageElem;
@@ -371,11 +380,6 @@ module.exports = opts => {
                    * OGPの画像に、QRコードを追加する
                    */
 
-                  /**
-                   * @see https://developers.facebook.com/docs/sharing/best-practices#images
-                   */
-                  const qrWidth = 600;
-
                   if (!ogpImageElem) {
                     ogpImageElem = $('<meta property="og:image">');
 
@@ -387,8 +391,8 @@ module.exports = opts => {
                       .before(
                         ogpImageElem,
                         '<meta property="og:image:type" content="image/png">',
-                        `<meta property="og:image:width" content="${qrWidth}">`,
-                        `<meta property="og:image:height" content="${qrWidth}">`,
+                        `<meta property="og:image:width" content="${ogpQrWidth}">`,
+                        `<meta property="og:image:height" content="${ogpQrWidth}">`,
                       );
                   }
 
@@ -408,7 +412,7 @@ module.exports = opts => {
                     qrFilename,
                     await QRCode.toBuffer(urlWithFragment, {
                       type: 'png',
-                      width: qrWidth,
+                      width: ogpQrWidth,
                     }),
                   );
                   debug(`file generated: ${util.inspect(qrFilename)}`);
@@ -437,7 +441,7 @@ module.exports = opts => {
                       qrFilename,
                       await QRCode.toBuffer(urlWithFragment, {
                         type: 'png',
-                        width: 144,
+                        width: twitterCardQrWidth,
                       }),
                     );
                     debug(`file generated: ${util.inspect(qrFilename)}`);
