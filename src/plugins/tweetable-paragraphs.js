@@ -8,11 +8,16 @@ const debug = require('debug')(
 const cheerio = require('cheerio');
 const pluginKit = require('metalsmith-plugin-kit');
 const multimatch = require('multimatch');
+const { PNG } = require('pngjs');
 const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
 const { sha1 } = require('../utils/hash');
+
+const parsePNG = util.promisify((imageData, callback) =>
+  new PNG().parse(imageData, callback),
+);
 
 /**
  * @see https://infra.spec.whatwg.org/#ascii-whitespace
@@ -33,6 +38,19 @@ function last(list) {
 
 function unicodeLength(str) {
   return [...str].length;
+}
+
+async function stream2buffer(stream) {
+  return new Promise((resolve, reject) => {
+    const bufferList = [];
+    stream.on('error', reject);
+    stream.on('data', data => {
+      bufferList.push(data);
+    });
+    stream.on('end', () => {
+      resolve(Buffer.concat(bufferList));
+    });
+  });
 }
 
 function getURL($) {
@@ -305,6 +323,7 @@ module.exports = opts => {
 
           const $root = $(':root');
           const $head = $('head');
+          const ogpImageElemMap = {};
           const twitterCardImageElems = $head.find(
             'meta[name="twitter:image"]',
           );
@@ -359,45 +378,130 @@ module.exports = opts => {
               }
             });
 
-            /*
-             * Twitter Cardの画像が未定義の場合は、URLを示すQRコードを指定する
-             */
-            if (!twitterCardImageFound) {
-              /*
-               * ページのURLを示すQRコードを生成
-               */
-              const encodedID = strictUriEncode(id);
-              const url = pageURL + '#' + encodedID;
-              const qrFilename = path.join(
-                path.dirname(filename),
-                `${sha1(`${encodedID}/${filename}`)}.png`,
-              );
-              pluginKit.addFile(
-                files,
-                qrFilename,
-                await QRCode.toBuffer(url, {
-                  type: 'png',
-                  width: 144,
-                }),
-              );
-              debug(`file generated: ${util.inspect(qrFilename)}`);
+            const encodedID = strictUriEncode(id);
+            const urlWithFragment = pageURL + '#' + encodedID;
+            const qrCodeBasename = sha1(`${encodedID}/${filename}`);
 
-              const qrFileURL = new URL(pageURL);
-              qrFileURL.pathname = qrFilename;
-              qrFileURL.search = '';
-              qrFileURL.hash = '';
+            await Promise.all(
+              [
+                async () => {
+                  /*
+                   * OGPの画像に、QRコードを追加する
+                   */
 
-              const twitterCardImageElem = $head.find(
-                'meta[name="twitter:image"]',
-              );
-              if (twitterCardImageElem.length < 1) {
-                const twitterCardImageElem = $('<meta name="twitter:image">');
-                twitterCardImageElem.attr('content', String(qrFileURL));
-                $head.append(twitterCardImageElem);
-              } else {
-                twitterCardImageElem.attr('content', String(qrFileURL));
-              }
-            }
+                  if (!ogpImageElemMap.url) {
+                    ogpImageElemMap.url = $('<meta property="og:image">');
+                    ogpImageElemMap.type = $(
+                      '<meta property="og:image:type" content="image/png">',
+                    );
+                    ogpImageElemMap.width = $(
+                      '<meta property="og:image:width">',
+                    );
+                    ogpImageElemMap.height = $(
+                      '<meta property="og:image:height">',
+                    );
+
+                    $head
+                      .find(
+                        'meta[property="og:image"], meta[property^="og:image:"]',
+                      )
+                      .first()
+                      .before(
+                        ogpImageElemMap.url,
+                        ogpImageElemMap.type,
+                        ogpImageElemMap.width,
+                        ogpImageElemMap.height,
+                      );
+                  }
+
+                  /**
+                   * @see https://developers.facebook.com/docs/sharing/best-practices#images
+                   */
+                  const ogpImage = new PNG({
+                    colorType: 0,
+                    height: 600,
+                    width: 600 * 1.91,
+                  });
+
+                  const qrImage = await parsePNG(
+                    await QRCode.toBuffer(urlWithFragment, {
+                      type: 'png',
+                      width: Math.min(ogpImage.width, ogpImage.height),
+                    }),
+                  );
+                  qrImage.bitblt(
+                    ogpImage,
+                    0,
+                    0,
+                    qrImage.width,
+                    qrImage.height,
+                    Math.max(0, (ogpImage.width - qrImage.width) / 2),
+                    Math.max(0, (ogpImage.height - qrImage.height) / 2),
+                  );
+
+                  const qrFilename = path.join(
+                    path.dirname(filename),
+                    `${qrCodeBasename}.ogp.png`,
+                  );
+                  pluginKit.addFile(
+                    files,
+                    qrFilename,
+                    await stream2buffer(ogpImage.pack()),
+                  );
+                  debug(`file generated: ${util.inspect(qrFilename)}`);
+
+                  const qrFileURL = new URL(pageURL);
+                  qrFileURL.pathname = qrFilename;
+                  qrFileURL.search = '';
+                  qrFileURL.hash = '';
+
+                  ogpImageElemMap.url.attr('content', String(qrFileURL));
+                  ogpImageElemMap.width.attr('content', ogpImage.width);
+                  ogpImageElemMap.height.attr('content', ogpImage.height);
+                },
+                async () => {
+                  /*
+                   * Twitter Cardの画像が未定義の場合は、URLを示すQRコードを指定する
+                   */
+                  if (!twitterCardImageFound) {
+                    /*
+                     * ページのURLを示すQRコードを生成
+                     */
+                    const qrFilename = path.join(
+                      path.dirname(filename),
+                      `${qrCodeBasename}.png`,
+                    );
+                    pluginKit.addFile(
+                      files,
+                      qrFilename,
+                      await QRCode.toBuffer(urlWithFragment, {
+                        type: 'png',
+                        width: 144,
+                      }),
+                    );
+                    debug(`file generated: ${util.inspect(qrFilename)}`);
+
+                    const qrFileURL = new URL(pageURL);
+                    qrFileURL.pathname = qrFilename;
+                    qrFileURL.search = '';
+                    qrFileURL.hash = '';
+
+                    const twitterCardImageElem = $head.find(
+                      'meta[name="twitter:image"]',
+                    );
+                    if (twitterCardImageElem.length < 1) {
+                      const twitterCardImageElem = $(
+                        '<meta name="twitter:image">',
+                      );
+                      twitterCardImageElem.attr('content', String(qrFileURL));
+                      $head.append(twitterCardImageElem);
+                    } else {
+                      twitterCardImageElem.attr('content', String(qrFileURL));
+                    }
+                  }
+                },
+              ].map(fn => fn()),
+            );
 
             /*
              * ファイルを生成
