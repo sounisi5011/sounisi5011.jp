@@ -527,7 +527,13 @@ module.exports = opts => {
             /*
              * ファイルを生成
              */
-            const newFilename = path.join('_fragment-anchors', id, filename);
+            const newFilename = path.join(
+              '..',
+              'functions',
+              '_fragment-anchors',
+              id,
+              filename,
+            );
             pluginKit.addFile(files, newFilename, $.html());
 
             /*

@@ -3,7 +3,7 @@ const util = require('util');
 
 const readFile = util.promisify(fs.readFile);
 
-const dataDirname = 'assets';
+const dataDirname = '_fragment-anchors';
 
 exports.handler = async (event, context) => {
   const fragment = event.queryStringParameters.fragment;
