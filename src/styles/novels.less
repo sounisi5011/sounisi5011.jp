@@ -150,7 +150,7 @@ ruby rp {
       display: block;
     }
 
-    span&[area-hidden="true"]:empty {
+    span&[aria-hidden="true"]:empty {
       &:before {
         .repeat-content("\a", @lines);
         white-space: pre;
@@ -181,11 +181,11 @@ ruby rp {
   }
 
   span&[role="presentation"],
-  span&[area-hidden="true"] {
+  span&[aria-hidden="true"] {
     display: block;
   }
 
-  span&[area-hidden="true"]:empty {
+  span&[aria-hidden="true"]:empty {
     margin-top: @spacing;
 
     &:before,
