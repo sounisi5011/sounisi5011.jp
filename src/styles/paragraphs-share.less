@@ -14,15 +14,37 @@
   }
 }
 
-html.share-open.paragraph-share {
-  scroll-behavior: smooth;
+.share-open.paragraph-share {
+  html&,
+  & body {
+    scroll-behavior: smooth;
+  }
+}
 
-  .novel-body {
-    [data-fragment-id] {
+.novel-body {
+  [data-fragment-id] {
+    transition: opacity 0.2s;
+
+    .share-open.paragraph-share & {
       cursor: pointer;
 
       &:not(.select) {
         opacity: 0.2;
+      }
+
+      &.select {
+        animation: paragraph-flash 1s linear infinite;
+      }
+
+      @keyframes paragraph-flash {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.2;
+        }
       }
     }
   }
