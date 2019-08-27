@@ -3,11 +3,9 @@ if env.GOOGLE_ANALYTICS_MEASUREMENT_ID
   script(src=`https://www.googletagmanager.com/gtag/js?id=${env.GOOGLE_ANALYTICS_MEASUREMENT_ID}` async)
   -
     const gtagScript = [
-      '!function(l){',
-      [
-        `l.push(['js',new Date])`,
-        `l.push(['config',${JSON.stringify(env.GOOGLE_ANALYTICS_MEASUREMENT_ID)}])`,
-      ].join(';'),
-      '}(window.dataLayer=window.dataLayer||[]);',
+      'window.dataLayer=window.dataLayer||[];',
+      'function gtag(){dataLayer.push(arguments)}',
+      `gtag('js',new Date);`,
+      `gtag('config',${JSON.stringify(env.GOOGLE_ANALYTICS_MEASUREMENT_ID)})`,
     ].join('');
   script!= gtagScript
