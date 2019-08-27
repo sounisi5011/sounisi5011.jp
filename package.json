@@ -8,6 +8,7 @@
   "author": "sounisi5011",
   "scripts": {
     "build": "npm-run-all show-envs clean:public --parallel build:*",
+    "build:lambda": "netlify-lambda build ./src/lambda",
     "build:pages": "node ./index.js",
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",
@@ -15,6 +16,7 @@
     "lint": "eslint ./",
     "show-envs": "./scripts/show-envs.js",
     "start": "run-s build start:server",
+    "start:lambda": "netlify-lambda serve ./src/lambda",
     "start:server": "./scripts/get-port.js netlify dev -c 'static-server ./public/ -p {}' -p '{}'",
     "test": "run-p lint"
   },
