@@ -255,6 +255,7 @@ module.exports = opts => {
               replacer: options.textContentsReplacer,
             });
 
+            const usedIdMap = new Map();
             dataList.forEach(({ id, idNode, text }) => {
               if (!idNode) {
                 newErrorList.push({
@@ -263,6 +264,18 @@ module.exports = opts => {
                     'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
                 });
                 return;
+              }
+
+              if (usedIdMap.has(id)) {
+                if (usedIdMap.get(id) !== idNode) {
+                  newErrorList.push({
+                    filepath: `${filename}#${id}`,
+                    message:
+                      'id属性が重複しています。idの値はユニークでなければなりません',
+                  });
+                }
+              } else {
+                usedIdMap.set(id, idNode);
               }
 
               const fragmentPageURL = options.generateFragmentPageURL(
