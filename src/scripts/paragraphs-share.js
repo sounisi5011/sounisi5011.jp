@@ -273,6 +273,10 @@
       return dataset;
     }
 
+    if (rootNode.hasAttribute('data-share-ignore')) {
+      return {};
+    }
+
     if (rootNode.id) {
       currentID.value = rootNode.id;
     }

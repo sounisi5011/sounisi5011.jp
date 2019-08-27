@@ -103,9 +103,7 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
     replacer: (node, dataList) => dataList,
     ...opts,
   };
-  const ignoreElemSelector = options.ignoreElems
-    .map(nodeName => `:not(${String(nodeName).toLowerCase()})`)
-    .join('');
+  const ignoreElemSelector = options.ignoreElems.join(', ');
 
   const $elem = $(elem);
   const dataList = [];
@@ -115,7 +113,7 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
 
     if (node.type === 'text') {
       dataList.push(createData($, prevIdNode, node.data));
-    } else if (node.type === 'tag' && $node.is(ignoreElemSelector)) {
+    } else if (node.type === 'tag' && !$node.is(ignoreElemSelector)) {
       let currentIdNode = $node.is('[id]') ? node : prevIdNode;
       /**
        * @see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css
@@ -324,6 +322,11 @@ module.exports = opts => {
               idList.push({ fragmentPageURL, id });
 
               isUpdated = true;
+            });
+
+            $root.find(options.ignoreElems.join(', ')).each((i, elem) => {
+              const $elem = $(elem);
+              $elem.attr('data-share-ignore', '');
             });
           });
         }

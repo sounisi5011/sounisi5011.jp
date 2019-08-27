@@ -280,6 +280,7 @@ Metalsmith(__dirname)
             url.searchParams.set('fragment', id);
             return url.href;
           },
+          ignoreElems: ['style', 'script', 'template', 'aside.message'],
           rootSelector: '.novel-body',
           textContentsReplacer($elem, childTextDataList) {
             const textData = childTextDataList[0];
