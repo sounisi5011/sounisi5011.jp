@@ -71,6 +71,11 @@ function path2url(pathstr) {
 exports.path2url = path2url;
 
 function rootRrelativeURL(...paths) {
+  // TODO: 複数のURLとパスを検知した場合の動作
+  if (/^(?:https?:)?[/]{2}/.test(paths[0])) {
+    return paths[0];
+  }
+
   return path
     .join('/', ...paths.map(pathstr => path.normalize(pathstr)))
     .split(path.sep)
