@@ -285,7 +285,7 @@ Metalsmith(__dirname)
             const textData = childTextDataList[0];
             if (textData) {
               const isEmpty =
-                $elem.is('[area-hidden=true]') ||
+                $elem.is('[aria-hidden=true]') ||
                 /^[\t\n\f\r ]+$/.test($elem.text());
 
               for (let lines = 30; lines; lines--) {
