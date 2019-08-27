@@ -212,6 +212,7 @@ Metalsmith(__dirname)
       plugins: [
         pugRender({
           locals: {
+            env: process.env,
             ...templateFuncs,
           },
           pattern: 'characters/**/*.html',
