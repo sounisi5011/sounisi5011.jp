@@ -4,4 +4,4 @@ https://{{netlifyDefaultSubdomain}}/* https://{{netlifyPrimaryDomain}}/:splat 30
 /test/* /.netlify/functions/test 200!
 
 /_fragment-anchors/:id/* /:splat?fragment=:id 301!
-/* fragment=:id /_fragment-anchors/:id/:splat 200!
+/* fragment=:id /.netlify/functions/fragment-rewrite 200!
