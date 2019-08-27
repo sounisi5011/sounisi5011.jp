@@ -67,4 +67,5 @@ typings/
 
 # Project directories
 /cache/
+/functions/
 /public/
