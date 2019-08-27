@@ -266,6 +266,24 @@ module.exports = opts => {
                 return;
               }
 
+              if (id === '') {
+                newErrorList.push({
+                  filepath: filename,
+                  message: 'id属性は空文字列を許可していません',
+                });
+                return;
+              }
+
+              if (HTML_WS_REGEXP.test(id)) {
+                newErrorList.push({
+                  filepath: filename,
+                  message: `id属性値にASCIIホワイトスペース文字を含めることはできません: ${util.inspect(
+                    id,
+                  )}`,
+                });
+                return;
+              }
+
               if (usedIdMap.has(id)) {
                 if (usedIdMap.get(id) !== idNode) {
                   newErrorList.push({
