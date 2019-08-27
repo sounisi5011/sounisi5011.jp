@@ -5,9 +5,9 @@ if env.GOOGLE_ANALYTICS_MEASUREMENT_ID
     const gtagScript = [
       '!function(l){',
       [
-        'l.push("js",new Date())',
-        `l.push('config',${JSON.stringify(env.GOOGLE_ANALYTICS_MEASUREMENT_ID)})`,
+        `l.push(['js',new Date])`,
+        `l.push(['config',${JSON.stringify(env.GOOGLE_ANALYTICS_MEASUREMENT_ID)}])`,
       ].join(';'),
       '}(window.dataLayer=window.dataLayer||[]);',
     ].join('');
-  script= gtagScript
+  script!= gtagScript
