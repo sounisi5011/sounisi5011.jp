@@ -410,12 +410,7 @@ module.exports = opts => {
               const $noscript = $('<noscript></noscript>');
               $noscript.append($meta);
 
-              const $charset = $head.find('meta[charset]').first();
-              if ($charset.length >= 1) {
-                $charset.after($noscript);
-              } else {
-                $head.prepend($noscript);
-              }
+              $head.append($noscript);
 
               $refreshMeta = $meta;
             }
