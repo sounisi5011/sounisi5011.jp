@@ -351,7 +351,10 @@
               'click',
               () => {
                 let url = canonicalURL;
-                let text = document.title;
+                let text = document.title.replace(
+                  /(^|[\s])sounisi5011\.jp(?=[\s\r\n]|$)/,
+                  '$1sounisi5011\u{200B}.jp',
+                );
                 if (selectedParagraphID) {
                   const selectedParagraphElem = document.getElementById(
                     selectedParagraphID,
