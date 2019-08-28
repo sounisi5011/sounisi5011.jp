@@ -387,18 +387,6 @@ module.exports = opts => {
             }
 
             /*
-             * canonicalタグのURLを上書き
-             */
-            $head.find('link[rel=canonical]').each((i, elem) => {
-              const $link = $(elem);
-              if (i === 0) {
-                $link.attr('href', fragmentPageURL);
-              } else {
-                $link.remove();
-              }
-            });
-
-            /*
              * OGPタグのURLを上書き
              */
             $head.find('meta[property="og:url"]').each((i, elem) => {
