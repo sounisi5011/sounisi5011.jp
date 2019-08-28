@@ -546,30 +546,14 @@ module.exports = opts => {
              * @see https://mottox2.com/posts/119
              */
             redirectsSet.add(
-              `${rootRrelativeURL(
-                filename,
-              )} fragment=${encodedID} ${rootRrelativeURL(newFilename)} 200!`,
-            );
-            redirectsSet.add(
-              `${rootRrelativeURL(filename)} fragment=${id.replace(
-                /[\s%]/g,
-                encodeURIComponent,
-              )} ${rootRrelativeURL(newFilename)} 200!`,
-            );
-            redirectsSet.add(
-              `${rootRrelativeURL(
-                filename.replace(/\/index.html$/, ''),
-              )} fragment=${encodedID} ${rootRrelativeURL(
-                newFilename.replace(/\/index.html$/, ''),
+              `${rootRrelativeURL(filename)} fragment=${id} ${rootRrelativeURL(
+                newFilename,
               )} 200!`,
             );
             redirectsSet.add(
               `${rootRrelativeURL(
                 filename.replace(/\/index.html$/, ''),
-              )} fragment=${id.replace(
-                /[\s%]/g,
-                encodeURIComponent,
-              )} ${rootRrelativeURL(
+              )} fragment=${id} ${rootRrelativeURL(
                 newFilename.replace(/\/index.html$/, ''),
               )} 200!`,
             );
