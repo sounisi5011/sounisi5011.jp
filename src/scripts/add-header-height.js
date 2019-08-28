@@ -28,13 +28,12 @@
         /*
          * 擬似クラス ::target を起動させるため。ハッシュフラグメントを書き換え、戻す。
          */
-        const hash = location.hash;
         location.hash =
           'x-' +
           Math.random()
             .toString(36)
             .substring(2);
-        location.hash = hash;
+        history.back();
 
         return;
       }
