@@ -96,7 +96,6 @@
     "husky": "^2.7.0",
     "lint-staged": "^8.1.7",
     "netlify-cli": "^2.11.22",
-    "netlify-lambda": "^1.6.3",
     "prettier": "^1.17.1",
     "prettier-package-json": "^2.1.0",
     "prettier-plugin-toml": "^0.3.1",
