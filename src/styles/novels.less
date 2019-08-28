@@ -76,7 +76,29 @@ ruby rp {
 }
 
 .novel-body {
-  word-break: keep-all;
+  // word-break: keep-all;
+
+  :target,
+  .pseudo-class\:\:target {
+    animation: fragment-target-flash 0.75s linear;
+
+    @keyframes fragment-target-flash {
+      0% {
+        background-color: transparent;
+        color: inherit;
+      }
+
+      10% {
+        background-color: #fff;
+        color: #000;
+      }
+
+      100% {
+        background-color: transparent;
+        color: inherit;
+      }
+    }
+  }
 
   & > .message {
     &:first-child {

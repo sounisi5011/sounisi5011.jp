@@ -1,3 +1,5 @@
+const { URL } = require('url');
+
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
@@ -32,6 +34,7 @@ const sitemap = require('./src/plugins/sitemap');
 const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
+const tweetableParagraphs = require('./src/plugins/tweetable-paragraphs');
 const templateFuncs = require('./src/utils/template-functions');
 
 Metalsmith(__dirname)
@@ -83,6 +86,18 @@ Metalsmith(__dirname)
       if (!filedata.hasOwnProperty('preloadDependencies')) {
         filedata.preloadDependencies = [];
       }
+
+      if (!Array.isArray(filedata.localPageStyles)) {
+        filedata.localPageStyles = [];
+      }
+      if (!Array.isArray(filedata.localPageScripts)) {
+        filedata.localPageScripts = [];
+      }
+      if (filedata.tweetable) {
+        filedata.localPageStyles.push('/paragraphs-share.css');
+        filedata.localPageScripts.push('/paragraphs-share.js');
+      }
+
       if (Array.isArray(filedata.preloadDependencies)) {
         const preloadDependenciesSet = new Set();
         [
@@ -162,11 +177,43 @@ Metalsmith(__dirname)
       .ignore('.eslintrc.*')
       .use(
         babel({
+          comments: false,
           presets: [
             [
               '@babel/preset-env',
               {
                 corejs: 3,
+                exclude: [
+                  /**
+                   * Symbolsは使用しないので、Symbol関係のpolyfillを除外する
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/README.md#ecmascript-string-and-regexp
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.object.to-string.js
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/internals/object-to-string.js
+                   */
+                  'es.string.match',
+                  'es.string.replace',
+                  'es.string.search',
+                  'es.string.split',
+                  'es.object.to-string',
+                  /**
+                   * RegExpのtoStringメソッドの関数名と、RegExpオブジェクトではないオブジェクトがthisだった場合に動作させる修正。
+                   * このような機能に依存した処理を書くつもりは無いため、除外。
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.regexp.to-string.js
+                   */
+                  'es.regexp.to-string',
+                  /**
+                   * RegExp.lastIndexの値と、マッチしなかったグループの値がundefinedではない値になる、IE8のexecメソッドに関するバグ修正。
+                   * こんな絶妙な使い方をすることはおそらく無く、またIE8など眼中に無いため、無効化。
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/internals/regexp-exec.js
+                   */
+                  'es.regexp.exec',
+                  /**
+                   * 不正な形式のDateオブジェクトを文字列化した際に"Invalid Date"を返すpolyfill。
+                   * この値に依存した処理を書くつもりは無いため、除外。
+                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.date.to-string.js
+                   */
+                  'es.date.to-string',
+                ],
                 useBuiltIns: 'usage',
               },
             ],
@@ -224,6 +271,36 @@ Metalsmith(__dirname)
           reuse: true,
         }),
         blankshield({ insertNoreferrer: true }),
+        tweetableParagraphs({
+          filter(filename, filedata) {
+            return filedata.tweetable;
+          },
+          generateFragmentPageURL(urlStr, id) {
+            const url = new URL(urlStr);
+            url.searchParams.set('fragment', id);
+            return url.href;
+          },
+          ignoreElems: ['style', 'script', 'template', 'aside.message'],
+          rootSelector: '.novel-body',
+          textContentsReplacer($elem, childTextDataList) {
+            const textData = childTextDataList[0];
+            if (textData) {
+              const isEmpty =
+                $elem.is('[aria-hidden=true]') ||
+                /^[\t\n\f\r ]+$/.test($elem.text());
+
+              for (let lines = 30; lines; lines--) {
+                if ($elem.is(`.spacing-${lines}`)) {
+                  textData.margin.top = lines;
+                  if (!isEmpty) {
+                    textData.margin.bottom = lines;
+                  }
+                }
+              }
+            }
+            return childTextDataList;
+          },
+        }),
       ],
     }),
   )

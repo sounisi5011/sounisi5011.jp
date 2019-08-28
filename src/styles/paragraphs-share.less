@@ -1,0 +1,375 @@
+@import "_mixins";
+@import "_fontawesome/solid";
+@import "_fontawesome";
+
+.bottom-fixed-box() {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+
+  & > * {
+    position: absolute;
+    bottom: 0;
+  }
+}
+
+.share-open.paragraph-share {
+  html&,
+  & body {
+    scroll-behavior: smooth;
+  }
+}
+
+.novel-body {
+  [data-fragment-id] {
+    transition: opacity 0.2s;
+
+    .share-open.paragraph-share & {
+      cursor: pointer;
+
+      &:not(.select) {
+        opacity: 0.2;
+      }
+
+      &.select {
+        animation: paragraph-flash 1s linear infinite;
+      }
+
+      @keyframes paragraph-flash {
+        0%,
+        100% {
+          opacity: 1;
+        }
+
+        50% {
+          opacity: 0.2;
+        }
+      }
+    }
+  }
+}
+
+footer.page {
+  @share-area-height: 5em;
+
+  margin-bottom: @share-area-height;
+
+  @supports (position: sticky) {
+    margin-top: @share-area-height;
+    margin-bottom: 0;
+  }
+
+  & > .share-area {
+    @button-bg-color: #000;
+    @button-text-color: #fff;
+
+    position: fixed;
+    bottom: 0;
+    left: 1em;
+    right: 1em;
+    margin: 0;
+    font-size: larger;
+
+    @supports (position: sticky) {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: auto;
+    }
+
+    .share-button {
+      cursor: pointer;
+      border: solid 1px currentColor;
+      padding: 0.5em;
+      white-space: nowrap;
+      background-color: @button-bg-color;
+      color: @button-text-color;
+      font-size: medium;
+      transition: background-color 0.2s;
+
+      &:hover,
+      &:focus {
+        background-color: lighten(@button-bg-color, 10%);
+      }
+
+      &:before {
+        &:extend(.fa-icon);
+        margin-right: 0.3em;
+      }
+    }
+
+    & > * {
+      position: absolute;
+      bottom: 0;
+      margin-bottom: 1em;
+    }
+
+    & > .left-menu {
+      @button-gap: 10px;
+
+      left: 0;
+      max-width: 100%; // JSを使用して動的に上書きする
+      display: none;
+      margin-left: -@button-gap;
+      text-align: left;
+
+      .share-open & {
+        display: block;
+      }
+
+      .share-button {
+        margin-left: @button-gap;
+        font-size: x-small;
+
+        &:before {
+          font-size: x-large;
+        }
+
+        &.twitter-share {
+          /* see https://about.twitter.com/ja/company/brand-resources.html */
+          @bg-color: $background-color;
+
+          background-color: #1da1f2;
+          color: #ffffff;
+
+          &:hover,
+          &:focus {
+            background-color: lighten(@bg-color, 10%);
+          }
+
+          &:before:extend(.fab) {
+            content: @fa-var-twitter;
+            display: block;
+          }
+        }
+
+        &.line-share {
+          /* see https://org-media.line.me/ja/how_to_install#lineitbutton */
+          background-color: #00b833;
+          color: #ffffff;
+
+          &:hover,
+          &:focus {
+            background-color: #02a52f;
+          }
+
+          &:before:extend(.fab) {
+            content: @fa-var-line;
+            display: block;
+          }
+        }
+
+        &.other-share {
+          &:before:extend(.fas) {
+            content: @fa-var-share-alt;
+            display: block;
+          }
+        }
+      }
+    }
+
+    & > .right-menu {
+      right: 0;
+
+      .share-button.toggle-menu {
+        transition-property: color, background-color;
+
+        &:before:extend(.fas) {
+          content: @fa-var-share-alt;
+        }
+
+        .share-open & {
+          background-color: @button-text-color;
+          color: @button-bg-color;
+
+          &:hover,
+          &:focus {
+            background-color: darken(@button-text-color, 10%);
+          }
+
+          &:before:extend(.fas) {
+            content: @fa-var-times;
+          }
+        }
+      }
+
+      .paragraph-share-area {
+        .bottom-fixed-box();
+        display: none;
+
+        .share-open & {
+          display: block;
+        }
+
+        & > * {
+          right: 0;
+          margin-bottom: 1em;
+
+          .share-button {
+            &.paragraph-share,
+            &.all-share {
+              transition: background-color 0.2s, color 0.2s, transform 0.3s;
+              backface-visibility: hidden;
+            }
+
+            &.paragraph-share {
+              .paragraph-share & {
+                transform: rotateY(180deg);
+              }
+
+              &:before:extend(.fas) {
+                content: @fa-var-bookmark;
+              }
+            }
+
+            &.all-share {
+              position: absolute;
+              right: 0;
+              transform: rotateY(-180deg);
+
+              .paragraph-share & {
+                transform: rotateY(0);
+              }
+
+              &:before:extend(.fas) {
+                content: @fa-var-scroll;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+dialog.share-dialog {
+  position: fixed;
+  top: 50%;
+  transform: translate(0, -50%);
+  width: 20em;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: none;
+  padding: 0;
+  background: transparent;
+
+  .backdrop() {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  &::backdrop {
+    .backdrop();
+  }
+
+  & + .backdrop {
+    .backdrop();
+  }
+
+  input,
+  button {
+    padding: 0.5em 1em;
+  }
+
+  button {
+    cursor: pointer;
+    border: solid 1px #ccc;
+    border-radius: 0.5em;
+    background-color: #fff;
+  }
+
+  & > * {
+    border: solid 1px #000;
+    border-radius: 0.5em;
+    padding: 1em;
+    background-color: white;
+    color: black;
+
+    & > label {
+      display: block;
+
+      & > textarea,
+      .copy-area textarea {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 100%;
+        height: 8em;
+        white-space: pre;
+      }
+
+      & > input,
+      & > textarea,
+      .copy-area,
+      .copy-area textarea {
+        display: block;
+        min-width: 15em;
+        max-width: 100%;
+      }
+
+      &:not(.text-copy-area) {
+        .copy-area {
+          display: flex;
+
+          & > input {
+            flex: 1;
+          }
+
+          & > .copy-button {
+            margin-left: 0.5em;
+
+            span {
+              .invisible-text();
+            }
+          }
+        }
+      }
+
+      &.text-copy-area {
+        .copy-button {
+          display: block;
+          margin-top: 0.5em;
+          margin-left: auto;
+
+          &:before {
+            margin-right: 0.5em;
+          }
+        }
+      }
+
+      .copy-area {
+        & > .copy-button {
+          &:before {
+            &:extend(.fa-icon);
+            &:extend(.fas);
+            content: @fa-var-clipboard;
+          }
+
+          &.copy-success {
+            &:before {
+              content: @fa-var-clipboard-check;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .close-button {
+    display: block;
+    width: 100%;
+    margin-top: 1em;
+  }
+
+  &.hide-text {
+    .text-copy-area {
+      display: none;
+    }
+
+    .close-button {
+      margin-top: 2em;
+    }
+  }
+}
