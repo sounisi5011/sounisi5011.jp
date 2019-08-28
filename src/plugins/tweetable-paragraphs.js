@@ -13,6 +13,9 @@ const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
 const { sha1 } = require('../utils/hash');
+const { rootRrelativeURL } = require('../utils/template-functions');
+
+const ASSETS_DIR = '_fragment-anchors';
 
 /**
  * @see https://infra.spec.whatwg.org/#ascii-whitespace
@@ -218,6 +221,7 @@ module.exports = opts => {
   };
 
   return (files, metalsmith, done) => {
+    const redirectsSet = new Set();
     Promise.all(
       multimatch(Object.keys(files), options.pattern).map(async filename => {
         const filedata = files[filename];
@@ -527,13 +531,7 @@ module.exports = opts => {
             /*
              * ファイルを生成
              */
-            const newFilename = path.join(
-              '..',
-              'functions',
-              '_fragment-anchors',
-              id,
-              filename,
-            );
+            const newFilename = path.join(ASSETS_DIR, id, filename);
             pluginKit.addFile(files, newFilename, $.html());
 
             /*
@@ -542,6 +540,23 @@ module.exports = opts => {
             files[newFilename].private = true;
 
             debug(`file generated: ${util.inspect(newFilename)}`);
+
+            /*
+             * リライトのルールを追加
+             * @see https://mottox2.com/posts/119
+             */
+            redirectsSet.add(
+              `${rootRrelativeURL(
+                filename,
+              )} fragment=${encodedID} ${rootRrelativeURL(newFilename)} 200!`,
+            );
+            redirectsSet.add(
+              `${rootRrelativeURL(
+                filename.replace(/\/index.html$/, ''),
+              )} fragment=${encodedID} ${rootRrelativeURL(
+                newFilename.replace(/\/index.html$/, ''),
+              )} 200!`,
+            );
           }
         }
       }),
@@ -560,9 +575,34 @@ module.exports = opts => {
               ].join('\n'),
             ),
           );
-        } else {
-          done();
+          return;
         }
+
+        /*
+         * _redirectsファイルに書き込む
+         */
+        let redirectsFiledata = files['_redirects'];
+        if (!redirectsFiledata) {
+          pluginKit.addFile(
+            files,
+            '_redirects',
+            '# tweetable-paragraphs rewrite paths #\n',
+          );
+          redirectsFiledata = files['_redirects'];
+        }
+        redirectsFiledata.contents = Buffer.from(
+          String(redirectsFiledata.contents).replace(
+            /^# tweetable-paragraphs rewrite paths #$/m,
+            () =>
+              [
+                `/${ASSETS_DIR}/:id/* /:splat?fragment=:id 301!`,
+                ...redirectsSet,
+                '/* fragment=:id /:splat#:id 301!',
+              ].join('\n'),
+          ),
+        );
+
+        done();
       })
       .catch(error => {
         done(error);
