@@ -28,17 +28,17 @@ html(lang="ja" style=rootInlineStyle)
       meta(charset="utf-8")
       meta(name="viewport" content="width=device-width,initial-scale=1")
       meta(name="format-detection" content="telephone=no,email=no,address=no")
+      include _head/google_analytics
       title
         = title
         if title !== siteName
           = ` - ${siteName}`
       meta(name="description" content=description)
       link(rel="canonical" href=canonicalURL(rootURL, path))
-      block ogp
-        include _head/ogp
       block preload
         include _head/preload
-      include _head/google_analytics
+      block ogp
+        include _head/ogp
       block stylesheets
         include _head/stylesheets
       block head-script

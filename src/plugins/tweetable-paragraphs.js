@@ -410,7 +410,12 @@ module.exports = opts => {
               const $noscript = $('<noscript></noscript>');
               $noscript.append($meta);
 
-              $head.append($noscript);
+              const $charset = $head.find('meta[charset]').first();
+              if ($charset.length >= 1) {
+                $charset.after($noscript);
+              } else {
+                $head.prepend($noscript);
+              }
 
               $refreshMeta = $meta;
             }
@@ -426,10 +431,10 @@ module.exports = opts => {
                   if (!ogpImageElem) {
                     ogpImageElem = $('<meta property="og:image">');
 
-                    const $ogpImageMeta = $head.find(
-                      'meta[property="og:image"], meta[property^="og:image:"]',
-                    );
-                    $ogpImageMeta
+                    $head
+                      .find(
+                        'meta[property="og:image"], meta[property^="og:image:"]',
+                      )
                       .first()
                       .before(
                         ogpImageElem,
@@ -437,9 +442,6 @@ module.exports = opts => {
                         `<meta property="og:image:width" content="${ogpQrWidth}">`,
                         `<meta property="og:image:height" content="${ogpQrWidth}">`,
                       );
-                    $ogpImageMeta.each((i, elem) => {
-                      $(elem).remove();
-                    });
                   }
 
                   /*
