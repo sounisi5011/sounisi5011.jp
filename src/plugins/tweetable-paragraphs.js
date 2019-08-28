@@ -551,9 +551,25 @@ module.exports = opts => {
               )} fragment=${encodedID} ${rootRrelativeURL(newFilename)} 200!`,
             );
             redirectsSet.add(
+              `${rootRrelativeURL(filename)} fragment=${id.replace(
+                /[\s%]/g,
+                encodeURIComponent,
+              )} ${rootRrelativeURL(newFilename)} 200!`,
+            );
+            redirectsSet.add(
               `${rootRrelativeURL(
                 filename.replace(/\/index.html$/, ''),
               )} fragment=${encodedID} ${rootRrelativeURL(
+                newFilename.replace(/\/index.html$/, ''),
+              )} 200!`,
+            );
+            redirectsSet.add(
+              `${rootRrelativeURL(
+                filename.replace(/\/index.html$/, ''),
+              )} fragment=${id.replace(
+                /[\s%]/g,
+                encodeURIComponent,
+              )} ${rootRrelativeURL(
                 newFilename.replace(/\/index.html$/, ''),
               )} 200!`,
             );
