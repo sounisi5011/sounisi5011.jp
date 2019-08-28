@@ -25,15 +25,35 @@
       if (potentialIndicatedElement) {
         potentialIndicatedElement.scrollIntoView();
 
-        /*
-         * 擬似クラス ::target を起動させるため。ハッシュフラグメントを書き換え、戻す。
-         */
-        location.hash =
-          'x-' +
-          Math.random()
-            .toString(36)
-            .substring(2);
-        history.back();
+        let timerID;
+        const removeClass = () => {
+          potentialIndicatedElement.classList.remove('pseudo-class::target');
+          window.removeEventListener('hashchange', removeClass, false);
+          potentialIndicatedElement.removeEventListener(
+            'animationend',
+            removeClass,
+            false,
+          );
+          potentialIndicatedElement.removeEventListener(
+            'animationcancel',
+            removeClass,
+            false,
+          );
+          window.clearTimeout(timerID);
+        };
+        window.addEventListener('hashchange', removeClass, false);
+        potentialIndicatedElement.addEventListener(
+          'animationend',
+          removeClass,
+          false,
+        );
+        potentialIndicatedElement.addEventListener(
+          'animationcancel',
+          removeClass,
+          false,
+        );
+        potentialIndicatedElement.classList.add('pseudo-class::target');
+        timerID = window.setTimeout(removeClass, 2000);
 
         return;
       }
