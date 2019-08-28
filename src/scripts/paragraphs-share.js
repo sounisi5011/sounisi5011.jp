@@ -352,7 +352,7 @@
               () => {
                 let url = canonicalURL;
                 let text = document.title.replace(
-                  /(^|[\s])sounisi5011\.jp(?=[\s\r\n]|$)/,
+                  /(^|[\s])sounisi5011\.jp(?=[\s]|$)/gm,
                   '$1sounisi5011\u{200B}.jp',
                 );
                 if (selectedParagraphID) {
