@@ -426,10 +426,10 @@ module.exports = opts => {
                   if (!ogpImageElem) {
                     ogpImageElem = $('<meta property="og:image">');
 
-                    $head
-                      .find(
-                        'meta[property="og:image"], meta[property^="og:image:"]',
-                      )
+                    const $ogpImageMeta = $head.find(
+                      'meta[property="og:image"], meta[property^="og:image:"]',
+                    );
+                    $ogpImageMeta
                       .first()
                       .before(
                         ogpImageElem,
@@ -437,6 +437,9 @@ module.exports = opts => {
                         `<meta property="og:image:width" content="${ogpQrWidth}">`,
                         `<meta property="og:image:height" content="${ogpQrWidth}">`,
                       );
+                    $ogpImageMeta.each((i, elem) => {
+                      $(elem).remove();
+                    });
                   }
 
                   /*
