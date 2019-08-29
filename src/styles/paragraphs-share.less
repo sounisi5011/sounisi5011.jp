@@ -55,6 +55,10 @@ footer.page {
 
   margin-bottom: @share-area-height;
 
+  @supports not (position: fixed) {
+    margin-bottom: 0;
+  }
+
   @supports (position: sticky) {
     margin-top: @share-area-height;
     margin-bottom: 0;
@@ -70,6 +74,14 @@ footer.page {
     right: 1em;
     margin: 0;
     font-size: larger;
+
+    @supports not (position: fixed) {
+      position: relative;
+      left: 0;
+      right: 0;
+      margin-left: 1em;
+      margin-right: 1em;
+    }
 
     @supports (position: sticky) {
       position: absolute;
@@ -104,6 +116,12 @@ footer.page {
       position: absolute;
       bottom: 0;
       margin-bottom: 1em;
+
+      @supports not ((position: fixed) and (position: sticky)) {
+        position: relative;
+        display: inline-block;
+        margin-top: 1em;
+      }
     }
 
     & > .left-menu {
@@ -255,6 +273,10 @@ dialog.share-dialog {
   border: none;
   padding: 0;
   background: transparent;
+
+  @supports not (position: fixed) {
+    position: absolute;
+  }
 
   .backdrop() {
     background-color: rgba(0, 0, 0, 0.5);
