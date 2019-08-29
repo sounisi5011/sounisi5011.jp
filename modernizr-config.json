@@ -1,6 +1,0 @@
-{
-  "classPrefix": "modernizr--",
-  "minify": true,
-  "options": ["setClasses"],
-  "feature-detects": ["elem/ruby"]
-}
