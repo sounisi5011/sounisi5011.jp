@@ -778,13 +778,13 @@
         } else {
           dialogClassList.add('hide-text');
         }
-        dialogElem.showModal();
         if (cssSupports('position: fixed') === false) {
           dialogElem.style.top =
             window.pageYOffset +
             getWindowHeight(dialogElem.ownerDocument || document) / 2 +
             'px';
         }
+        dialogElem.showModal();
       };
     }
   }
