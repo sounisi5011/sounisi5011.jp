@@ -77,7 +77,6 @@ footer.page {
 
     @supports not (position: fixed) {
       position: absolute;
-      bottom: (@share-area-height - 1em) * -1;
     }
 
     @supports (position: sticky) {
@@ -113,6 +112,10 @@ footer.page {
       position: absolute;
       bottom: 0;
       margin-bottom: 1em;
+
+      @supports not (position: fixed) {
+        margin-bottom: (@share-area-height - 1em) * -1;
+      }
     }
 
     & > .left-menu {
