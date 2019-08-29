@@ -105,7 +105,7 @@ function resolvePreload(
   }
 
   /*
-   * preload対象のファイルのメタデータを追加する
+   * [dependenciesKey]プロパティで指定された依存ファイルのメタデータを追加する
    */
   if (filedata.hasOwnProperty(dependenciesKey)) {
     const dependentFiles = filedata[dependenciesKey];
