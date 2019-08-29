@@ -779,7 +779,7 @@
           dialogClassList.add('hide-text');
         }
         dialogElem.showModal();
-        if (cssSupports('position', 'fixed') === false) {
+        if (cssSupports('position: fixed') === false) {
           const top =
             window.pageYOffset +
             getWindowHeight(dialogElem.ownerDocument || document) / 2;
@@ -795,6 +795,15 @@
             ),
           );
         }
+
+        dialogElem.appendChild(
+          document.createTextNode(
+            "cssSupports('position: fixed'): " +
+              cssSupports('position: fixed') +
+              "cssSupports('position', 'fixed'): " +
+              cssSupports('position', 'fixed'),
+          ),
+        );
       };
     }
   }
