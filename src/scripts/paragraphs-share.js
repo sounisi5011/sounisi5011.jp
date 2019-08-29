@@ -3,6 +3,12 @@
   const CSS = window.CSS || {};
   const fragmentIdAttr = 'data-fragment-id';
 
+  /**
+   * @see https://dev.opera.com/articles/opera-mini-and-javascript/#detecting-opera-mini-using-the-windowoperamini-property
+   */
+  const isOperaMini =
+    Object.prototype.toString.call(window.operamini) === '[object OperaMini]';
+
   function sign(number) {
     return number < 0 ? -1 : +1;
   }
@@ -766,7 +772,11 @@
           }),
         ]),
       );
-      document.body.appendChild(dialogElem);
+      if (isOperaMini) {
+        footerElem.insertBefore(dialogElem, shareAreaElem.nextSibling);
+      } else {
+        document.body.appendChild(dialogElem);
+      }
 
       const dialogClassList = dialogElem.classList;
       share = ({ title = document.title, text, url }) => {
@@ -778,7 +788,9 @@
         } else {
           dialogClassList.add('hide-text');
         }
-        if (cssSupports('position: fixed') === false) {
+        if (isOperaMini) {
+          dialogElem.style.position = 'static';
+        } else if (cssSupports('position: fixed') === false) {
           dialogElem.style.top =
             window.pageYOffset +
             getWindowHeight(dialogElem.ownerDocument || document) / 2 +
