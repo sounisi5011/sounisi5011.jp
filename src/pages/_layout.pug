@@ -43,7 +43,7 @@ html(lang="ja" style=rootInlineStyle)
         include _head/stylesheets
       block head-script
         each scriptData in unique(globalPageHeadScripts, localPageHeadScripts).filter(Boolean)
-          script(src=scriptData)
+          script(src=rootRrelativeURL(scriptData))
   body(itemscope=Boolean(microdataRootSchema) itemtype=(microdataRootSchema || null))
     block header
       include _header
@@ -52,4 +52,4 @@ html(lang="ja" style=rootInlineStyle)
       include _footer
     block body-script
       each scriptData in unique(globalPageScripts, localPageScripts).filter(Boolean)
-        script(src=scriptData async defer)
+        script(src=rootRrelativeURL(scriptData) async defer)
