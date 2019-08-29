@@ -780,10 +780,20 @@
         }
         dialogElem.showModal();
         if (cssSupports('position', 'fixed') === false) {
-          dialogElem.style.top =
+          const top =
             window.pageYOffset +
-            getWindowHeight(dialogElem.ownerDocument || document) / 2 +
-            'px';
+            getWindowHeight(dialogElem.ownerDocument || document) / 2;
+          dialogElem.style.top = top + 'px';
+          dialogElem.appendChild(
+            document.createTextNode(
+              'top: ' +
+                top +
+                ' / pageYOffset: ' +
+                window.pageYOffset +
+                ' / WindowHeight: ' +
+                getWindowHeight(dialogElem.ownerDocument || document),
+            ),
+          );
         }
       };
     }
