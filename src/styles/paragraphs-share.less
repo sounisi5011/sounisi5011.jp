@@ -60,6 +60,10 @@ footer.page {
     margin-bottom: 0;
   }
 
+  @supports not ((position: sticky) and (position: fixed)) {
+    position: relative;
+  }
+
   & > .share-area {
     @button-bg-color: #000;
     @button-text-color: #fff;
@@ -70,6 +74,11 @@ footer.page {
     right: 1em;
     margin: 0;
     font-size: larger;
+
+    @supports not (position: fixed) {
+      position: absolute;
+      bottom: @share-area-height - 1em;
+    }
 
     @supports (position: sticky) {
       position: absolute;
