@@ -780,30 +780,11 @@
         }
         dialogElem.showModal();
         if (cssSupports('position: fixed') === false) {
-          const top =
+          dialogElem.style.top =
             window.pageYOffset +
-            getWindowHeight(dialogElem.ownerDocument || document) / 2;
-          dialogElem.style.top = top + 'px';
-          dialogElem.firstChild.appendChild(
-            document.createTextNode(
-              'top: ' +
-                top +
-                ' / pageYOffset: ' +
-                window.pageYOffset +
-                ' / WindowHeight: ' +
-                getWindowHeight(dialogElem.ownerDocument || document),
-            ),
-          );
+            getWindowHeight(dialogElem.ownerDocument || document) / 2 +
+            'px';
         }
-
-        dialogElem.firstChild.appendChild(
-          document.createTextNode(
-            "cssSupports('position: fixed'): " +
-              cssSupports('position: fixed') +
-              " / cssSupports('position', 'fixed'): " +
-              cssSupports('position', 'fixed'),
-          ),
-        );
       };
     }
   }
