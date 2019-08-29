@@ -8,6 +8,7 @@
   "author": "sounisi5011",
   "scripts": {
     "build": "npm-run-all show-envs clean:public --parallel build:*",
+    "build:modernizr": "modernizr -c ./modernizr-config.json -d ./public/",
     "build:pages": "node ./index.js",
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",
