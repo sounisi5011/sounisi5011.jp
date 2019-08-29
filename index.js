@@ -26,6 +26,7 @@ const copyConvention = require('./src/plugins/copy-convention');
 const downloadConvention = require('./src/plugins/download-convention');
 const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
+const modernizr = require('./src/plugins/modernizr');
 const mustache = require('./src/plugins/mustache');
 const netlifyMetadata = require('./src/plugins/netlifyMetadata');
 const pageQrCodeGenerator = require('./src/plugins/page-qr-code-gen');
@@ -230,6 +231,26 @@ Metalsmith(__dirname)
   .use(
     permalinks({
       relative: false,
+    }),
+  )
+  .use(
+    modernizr({
+      config(filename, filedata) {
+        if (filedata.hasOwnProperty('modernizr-feature-detects')) {
+          return {
+            classPrefix: 'modernizr--',
+            'feature-detects': filedata['modernizr-feature-detects'] || [],
+            minify: true,
+            options: filedata['modernizr-options'] || [],
+          };
+        }
+      },
+      outputProp(modernizrFilename, filename, filedata) {
+        filedata.localPageScripts = [
+          ...(filedata.localPageScripts || []),
+          modernizrFilename,
+        ];
+      },
     }),
   )
   .use(

@@ -1,3 +1,10 @@
+// ---
+// modernizr-feature-detects:
+//   - elem/ruby
+// modernizr-options:
+//   - setClasses
+// ---
+
 @import "_mixins";
 
 html {
@@ -60,8 +67,7 @@ abbr[title] {
   }
 }
 
-// TODO: ruby要素に対応している環境だけで適用する
-ruby rp {
+.modernizr--ruby ruby rp {
   display: inline;
   position: absolute;
   .invisible-text;
