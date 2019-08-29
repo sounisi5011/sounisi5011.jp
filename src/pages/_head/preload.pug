@@ -1,3 +1,29 @@
+each stylePath in unique(globalPageStyles, localPageStyles)
+  -
+    if (typeof stylePath === 'string') {
+      const filepath = stylePath;
+      const preloadPathSet = new Set(preloadList && preloadList.map(({ href }) => rootRrelativeURL(href)));
+      if (!preloadPathSet.has(rootRrelativeURL(filepath))) {
+        if (!preloadList) preloadList = [];
+        preloadList.push({
+          href: filepath,
+          as: 'style',
+        });
+      }
+    }
+each scriptPath in unique(globalPageHeadScripts, localPageHeadScripts, globalPageScripts, localPageScripts)
+  -
+    if (typeof scriptPath === 'string') {
+      const filepath = scriptPath;
+      const preloadPathSet = new Set(preloadList && preloadList.map(({ href }) => rootRrelativeURL(href)));
+      if (!preloadPathSet.has(rootRrelativeURL(filepath))) {
+        if (!preloadList) preloadList = [];
+        preloadList.push({
+          href: filepath,
+          as: 'script',
+        });
+      }
+    }
 if preloadList
   each resourceData in preloadList
     if resourceData
