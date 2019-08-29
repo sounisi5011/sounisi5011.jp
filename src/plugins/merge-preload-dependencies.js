@@ -4,10 +4,6 @@ function unique(array) {
   return [...new Set(array)];
 }
 
-function isValidPreloadURLs(value) {
-  return Array.isArray(value) && value.every(url => typeof url === 'string');
-}
-
 function findFilename(files, filepath) {
   if (files.hasOwnProperty(filepath)) {
     return filepath;
@@ -39,19 +35,42 @@ function url2filename(url, filepath, destDirpath) {
   }
 }
 
-/**
- * [dependenciesKey]プロパティに格納されたファイルデータから、
- * [preloadURLsKey]プロパティに格納されたpreload対象のURLを取得する。
- * @return {Array.<Array.<string>>}
- */
-function dependencies2preloadURLs(filedata, dependenciesKey, preloadURLsKey) {
-  return Object.values(filedata[dependenciesKey] || {})
-    .filter(
-      dependentFiledata =>
-        dependentFiledata &&
-        isValidPreloadURLs(dependentFiledata[preloadURLsKey]),
-    )
-    .map(dependentFiledata => dependentFiledata[preloadURLsKey]);
+function assignArrayProps(filedata, ...dependentFiledata) {
+  const dependentMetadataMap = new Map();
+
+  dependentFiledata.forEach(dependentFiledata => {
+    if (!dependentFiledata) {
+      return;
+    }
+    (dependentFiledata instanceof Map
+      ? dependentFiledata
+      : Object.entries(dependentFiledata)
+    ).forEach(([prop, value]) => {
+      if (!dependentMetadataMap.has(prop)) {
+        dependentMetadataMap.set(prop, value);
+      } else {
+        const prevValue = dependentMetadataMap.get(prop);
+        if (Array.isArray(prevValue) && Array.isArray(value)) {
+          dependentMetadataMap.set(prop, [...prevValue, ...value]);
+        }
+      }
+    });
+  });
+
+  dependentMetadataMap.forEach((value, prop) => {
+    if (Array.isArray(value)) {
+      if (filedata.hasOwnProperty(prop)) {
+        const origValue = filedata[prop];
+        if (Array.isArray(origValue)) {
+          filedata[prop] = unique([...origValue, ...value]);
+        }
+      } else {
+        filedata[prop] = [...value];
+      }
+    }
+  });
+
+  return filedata;
 }
 
 function resolvePreload(
@@ -86,50 +105,48 @@ function resolvePreload(
   }
 
   /*
-   * [dependenciesKey]プロパティに格納されたファイルから、
-   * preload対象のファイル一覧を取得する
+   * preload対象のファイルのメタデータを追加する
    */
-  const newDependencies = dependencies2preloadURLs(
-    filedata,
-    dependenciesKey,
-    preloadURLsKey,
-  );
+  if (filedata.hasOwnProperty(dependenciesKey)) {
+    const dependentFiles = filedata[dependenciesKey];
+    if (dependentFiles) {
+      assignArrayProps(filedata, ...Object.values(dependentFiles));
+    }
+  }
 
   /*
    * preload対象の各ファイルに関連付けられたpreload対象のファイル一覧を取得する
    * TODO: 再帰的なpreloadへの対応
    */
-  const newPreloadURLList = unique(
-    filedata[preloadURLsKey].concat(...newDependencies),
-  ).map(url => {
-    const preloadFilepath = findFilename(
-      files,
-      url2filename(url, filepath, destDirpath),
-    );
-    const preloadFiledata = files[preloadFilepath];
+  const preloadFiledataList = unique(filedata[preloadURLsKey])
+    .filter(url => typeof url === 'string')
+    .map(url => {
+      const preloadFilepath = findFilename(
+        files,
+        url2filename(url, filepath, destDirpath),
+      );
+      const preloadFiledata = files[preloadFilepath];
 
-    if (!preloadFiledata) {
-      return [];
-    }
+      if (!preloadFiledata) {
+        return [];
+      }
 
-    resolvePreload(
-      files,
-      preloadFilepath,
-      preloadFiledata,
-      destDirpath,
-      options,
-      resolvedFilesSet,
-    );
+      resolvePreload(
+        files,
+        preloadFilepath,
+        preloadFiledata,
+        destDirpath,
+        options,
+        resolvedFilesSet,
+      );
 
-    return preloadFiledata[preloadURLsKey];
-  });
+      return preloadFiledata;
+    });
 
   /*
-   * preload対象のファイル一覧を追加する
+   * preload対象のファイルのメタデータを追加する
    */
-  filedata[preloadURLsKey] = unique(
-    filedata[preloadURLsKey].concat(...newDependencies, ...newPreloadURLList),
-  );
+  assignArrayProps(filedata, ...preloadFiledataList);
 
   /*
    * 現在のファイルを解決済一覧に追加
