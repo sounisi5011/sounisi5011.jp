@@ -77,7 +77,7 @@ footer.page {
 
     @supports not (position: fixed) {
       position: absolute;
-      bottom: @share-area-height - 1em;
+      bottom: (@share-area-height - 1em) * -1;
     }
 
     @supports (position: sticky) {
