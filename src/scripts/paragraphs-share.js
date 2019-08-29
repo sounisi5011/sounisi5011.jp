@@ -784,7 +784,7 @@
             window.pageYOffset +
             getWindowHeight(dialogElem.ownerDocument || document) / 2;
           dialogElem.style.top = top + 'px';
-          dialogElem.appendChild(
+          dialogElem.firstChild.appendChild(
             document.createTextNode(
               'top: ' +
                 top +
@@ -796,11 +796,11 @@
           );
         }
 
-        dialogElem.appendChild(
+        dialogElem.firstChild.appendChild(
           document.createTextNode(
             "cssSupports('position: fixed'): " +
               cssSupports('position: fixed') +
-              "cssSupports('position', 'fixed'): " +
+              " / cssSupports('position', 'fixed'): " +
               cssSupports('position', 'fixed'),
           ),
         );
