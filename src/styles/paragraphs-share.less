@@ -55,13 +55,13 @@ footer.page {
 
   margin-bottom: @share-area-height;
 
-  @supports (position: sticky) {
-    margin-top: @share-area-height;
+  @supports not (position: fixed) {
     margin-bottom: 0;
   }
 
-  @supports not ((position: sticky) and (position: fixed)) {
-    position: relative;
+  @supports (position: sticky) {
+    margin-top: @share-area-height;
+    margin-bottom: 0;
   }
 
   & > .share-area {
@@ -76,7 +76,11 @@ footer.page {
     font-size: larger;
 
     @supports not (position: fixed) {
-      position: absolute;
+      position: relative;
+      left: 0;
+      right: 0;
+      margin-left: 1em;
+      margin-right: 1em;
     }
 
     @supports (position: sticky) {
@@ -113,8 +117,10 @@ footer.page {
       bottom: 0;
       margin-bottom: 1em;
 
-      @supports not (position: fixed) {
-        margin-bottom: (@share-area-height - 1em) * -1;
+      @supports not ((position: fixed) and (position: sticky)) {
+        position: relative;
+        display: inline-block;
+        margin-top: 1em;
       }
     }
 
