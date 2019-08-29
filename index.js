@@ -236,10 +236,7 @@ Metalsmith(__dirname)
   .use(
     modernizr({
       config(filename, filedata) {
-        if (
-          filedata.hasOwnProperty('modernizr-feature-detects') ||
-          filedata.hasOwnProperty('modernizr-options')
-        ) {
+        if (filedata.hasOwnProperty('modernizr-feature-detects')) {
           return {
             classPrefix: 'modernizr--',
             'feature-detects': filedata['modernizr-feature-detects'] || [],
