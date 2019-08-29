@@ -25,6 +25,12 @@
     return retval;
   }
 
+  const cssSupports =
+    typeof CSS.supports === 'function'
+      ? CSS.supports
+      : typeof window.supportsCSS === 'function'
+      ? window.supportsCSS
+      : () => null;
   const cssEscape =
     typeof CSS.escape === 'function'
       ? CSS.escape
@@ -773,6 +779,12 @@
           dialogClassList.add('hide-text');
         }
         dialogElem.showModal();
+        if (cssSupports('position', 'fixed') === false) {
+          dialogElem.style.top =
+            window.pageYOffset +
+            getWindowHeight(dialogElem.ownerDocument || document) / 2 +
+            'px';
+        }
       };
     }
   }
