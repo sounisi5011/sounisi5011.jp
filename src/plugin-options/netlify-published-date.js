@@ -9,6 +9,17 @@ const cheerio = require('cheerio');
 const HTML_WS_REGEXP = /[\t\n\f\r ]+/g;
 const netlifyDeployUrlRegExp = /^https?:\/\/[0-9a-f]+--[0-9a-z-]+\.netlify\.com(?=[/?#]|$)/i;
 
+function getTime($time) {
+  const dateStr = $time.attr('datetime') || $time.text();
+  if (dateStr) {
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+      return date;
+    }
+  }
+  return null;
+}
+
 function getCanonicalURLList($) {
   return $('head link[rel=canonical]')
     .map((index, element) => {
@@ -39,6 +50,25 @@ function removeDateModifiedProp($elem) {
     }
   }
 }
+
+exports.setPublishedDate = (previewContents, filedata) => {
+  try {
+    const $ = cheerio.load(previewContents.toString());
+    const $footer = $('footer.page');
+    const $publishedTimes = $footer.find('time[itemprop~=datePublished]');
+    const $modifiedTimes = $footer.find('time[itemprop~=dateModified]');
+
+    const publishedDate = getTime($publishedTimes);
+    const modifiedDate = getTime($modifiedTimes);
+
+    if (publishedDate || modifiedDate) {
+      filedata.published = publishedDate || modifiedDate;
+      filedata.modified = modifiedDate || publishedDate;
+    }
+  } catch (err) {
+    //
+  }
+};
 
 /**
  * @see https://github.com/sounisi5011/metalsmith-netlify-published-date/blob/v0.1.0/example/remove-time-elem.js
