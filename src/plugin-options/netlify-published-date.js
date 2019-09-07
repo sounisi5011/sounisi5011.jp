@@ -9,7 +9,6 @@ const cheerio = require('cheerio');
  * @see https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions/Character_Classes
  */
 const HTML_WS_REGEXP = /[\t\n\f\r ]+/g;
-const netlifyDeployUrlRegExp = /^https?:\/\/[0-9a-f]+--[0-9a-z-]+\.netlify\.com(?=[/?#]|$)/i;
 
 function getTime($time) {
   const dateStr = $time.attr('datetime') || $time.text();
@@ -53,7 +52,7 @@ function removeDateModifiedProp($elem) {
   }
 }
 
-exports.setPublishedDate = (previewContents, filedata) => {
+exports.setPublishedDate = (previewContents, filedata, { metalsmith }) => {
   try {
     const $ = cheerio.load(previewContents.toString());
     const $footer = $('footer.page');
@@ -76,6 +75,21 @@ exports.setPublishedDate = (previewContents, filedata) => {
         }
       },
     );
+
+    // ページのルートURLをプレビューに合うように変更
+    getCanonicalURLList($).forEach(canonicalURLstr => {
+      const rootURL = new URL(
+        { ...metalsmith.metadata(), ...filedata }.rootURL,
+      );
+      const canonicalURL = new URL(canonicalURLstr);
+
+      filedata.canonical = canonicalURLstr;
+
+      canonicalURL.pathname = rootURL.pathname;
+      canonicalURL.search = rootURL.search;
+      canonicalURL.hash = rootURL.hash;
+      filedata.rootURL = String(canonicalURL);
+    });
 
     if (publishedDate || modifiedDate) {
       filedata.published = publishedDate || modifiedDate;
@@ -164,34 +178,6 @@ exports.ignoreContentsEquals = contents => {
             isUpdated = true;
           },
         );
-      }
-    });
-
-    // link要素のURLを置換
-    $('link[href^="http"]').each((index, element) => {
-      const $meta = $(element);
-      const hrefAttr = $meta.attr('href');
-      if (netlifyDeployUrlRegExp.test(hrefAttr)) {
-        $meta.attr(
-          'href',
-          hrefAttr.replace(netlifyDeployUrlRegExp, process.env.URL),
-        );
-        isUpdated = true;
-      }
-    });
-
-    // OGPの絶対URLを置換
-    $(
-      'head meta:matches([property^="og:"], [property^="twitter:"])[content^="http"]',
-    ).each((index, element) => {
-      const $meta = $(element);
-      const contentAttr = $meta.attr('content');
-      if (netlifyDeployUrlRegExp.test(contentAttr)) {
-        $meta.attr(
-          'content',
-          contentAttr.replace(netlifyDeployUrlRegExp, process.env.URL),
-        );
-        isUpdated = true;
       }
     });
 
