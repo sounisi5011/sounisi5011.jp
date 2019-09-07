@@ -94,17 +94,13 @@ exports.ignoreContentsEquals = contents => {
     }, new Map())
     .forEach((linkElemList, parentElem) => {
       const $head = $(parentElem);
-      const $linkList = linkElemList.map(linkElem => $(linkElem));
-      const $sortedLinkList = [...$linkList].sort(($link1, $link2) =>
-        cmp($.html($link1), $.html($link2)),
-      );
-
-      if ($linkList.some((a, i) => a !== $sortedLinkList[i])) {
-        $sortedLinkList.forEach($link => {
+      linkElemList
+        .map(linkElem => $(linkElem))
+        .sort(($link1, $link2) => cmp($.html($link1), $.html($link2)))
+        .forEach($link => {
           $head.append($link);
         });
-        isUpdated = true;
-      }
+      isUpdated = true;
     });
 
   getCanonicalURLList($).forEach(canonicalURL => {
