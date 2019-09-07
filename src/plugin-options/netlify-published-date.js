@@ -1,5 +1,7 @@
 const { URL } = require('url');
+const util = require('util');
 
+const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const cheerio = require('cheerio');
 
 /**
@@ -215,3 +217,38 @@ exports.ignoreContentsEquals = contents => {
 
   return contents;
 };
+
+try {
+  const chalk = require('chalk');
+  const { HtmlDiffer } = require('html-differ');
+  const logger = require('html-differ/lib/logger');
+
+  const htmlDiffer = new HtmlDiffer({
+    ignoreComments: false,
+    ignoreWhitespaces: false,
+  });
+
+  exports.showContentsDifference = ({
+    file,
+    previewPage,
+    metadata: { filename },
+  }) => {
+    if (!file.equals(previewPage)) {
+      const diff = htmlDiffer.diffHtml(String(previewPage), String(file));
+      const diffText = logger.getDiffText(diff);
+
+      console.log(
+        `${chalk.cyan(util.inspect(filename))}の差分:\n${diffText.replace(
+          /^[\r\n]+|[\r\n]+$/,
+          '',
+        )}\n\n`,
+      );
+
+      return false;
+    }
+    return true;
+  };
+} catch (err) {
+  exports.showContentsDifference =
+    netlifyPublishedDate.defaultOptions.contentsEquals;
+}

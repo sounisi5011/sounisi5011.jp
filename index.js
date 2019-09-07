@@ -16,6 +16,7 @@ const {
 
 const {
   ignoreContentsEquals,
+  showContentsDifference,
   setPublishedDate,
 } = require('./src/plugin-options/netlify-published-date');
 const addFileMeta = require('./src/plugins/add-file-metadata');
@@ -278,6 +279,7 @@ Metalsmith(__dirname)
   .use(
     netlifyPublishedDate({
       contentsConverter: ignoreContentsEquals,
+      contentsEquals: showContentsDifference,
       metadataUpdater: setPublishedDate,
       plugins: [
         pugRender({
