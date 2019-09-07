@@ -160,10 +160,6 @@ exports.showContentsDifference =
 try {
   const chalk = require('chalk');
 
-  console.log({
-    supportsColor: chalk.supportsColor,
-  });
-
   if (chalk.supportsColor && chalk.supportsColor.level > 0) {
     const { HtmlDiffer } = require('html-differ');
     const logger = require('html-differ/lib/logger');
