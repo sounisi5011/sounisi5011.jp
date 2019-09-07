@@ -63,6 +63,20 @@ exports.setPublishedDate = (previewContents, filedata) => {
     const publishedDate = getTime($publishedTimes);
     const modifiedDate = getTime($modifiedTimes);
 
+    $('script[src^="https://www.googletagmanager.com/gtag/js?"]').each(
+      (index, element) => {
+        const $gaScript = $(element);
+        const gaSrc = $gaScript.attr('src');
+        const id = gaSrc && new URL(gaSrc).searchParams.get('id');
+        if (id) {
+          filedata.env = {
+            ...filedata.env,
+            GOOGLE_ANALYTICS_MEASUREMENT_ID: id,
+          };
+        }
+      },
+    );
+
     if (publishedDate || modifiedDate) {
       filedata.published = publishedDate || modifiedDate;
       filedata.modified = modifiedDate || publishedDate;
