@@ -4,6 +4,16 @@ const util = require('util');
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const cheerio = require('cheerio');
 
+function cmp(a, b) {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
+}
+
 function getTime($time) {
   const dateStr = $time.attr('datetime') || $time.text();
   if (dateStr) {
@@ -80,6 +90,27 @@ exports.ignoreContentsEquals = contents => {
 
   try {
     const $ = cheerio.load(contents.toString());
+
+    // preloadを定義するlink要素の順序をリセットする
+    $('link[rel=preload]')
+      .get()
+      .reduce((map, linkElem) => {
+        const parentElem = linkElem.parent;
+        const list = map.get(parentElem) || [];
+        list.push(linkElem);
+        return map.set(parentElem, list);
+      }, new Map())
+      .forEach((linkElemList, parentElem) => {
+        const $head = $(parentElem);
+        linkElemList
+          .map(linkElem => $(linkElem))
+          .sort(($link1, $link2) =>
+            cmp($link1.attr('href'), $link2.attr('href')),
+          )
+          .forEach($link => {
+            $head.append($link);
+          });
+      });
 
     getCanonicalURLList($).forEach(canonicalURL => {
       const canonicalURLPath = new URL(canonicalURL).pathname;
