@@ -45,7 +45,7 @@
   "dependencies": {
     "@babel/preset-env": "^7.5.5",
     "@fortawesome/fontawesome-free": "^5.9.0",
-    "@sounisi5011/metalsmith-netlify-published-date": "0.1.1",
+    "@sounisi5011/metalsmith-netlify-published-date": "0.2.0",
     "autoprefixer": "^9.6.1",
     "babel-preset-minify": "^0.5.1",
     "cheerio": "^1.0.0-rc.3",
@@ -94,6 +94,7 @@
     "eslint-plugin-sort-requires-by-path": "^1.0.2",
     "eslint-plugin-standard": "^4.0.0",
     "get-port": "^5.0.0",
+    "html-differ": "^1.4.0",
     "husky": "^2.7.0",
     "lint-staged": "^8.1.7",
     "netlify-cli": "^2.11.22",
