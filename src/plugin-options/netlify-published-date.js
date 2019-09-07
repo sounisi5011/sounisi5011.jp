@@ -96,7 +96,7 @@ exports.ignoreContentsEquals = contents => {
       const $head = $(parentElem);
       const $linkList = linkElemList.map(linkElem => $(linkElem));
       const $sortedLinkList = [...$linkList].sort(($link1, $link2) =>
-        cmp($link1.attr('href'), $link2.attr('href')),
+        cmp($.html($link1), $.html($link2)),
       );
 
       if ($linkList.some((a, i) => a !== $sortedLinkList[i])) {
