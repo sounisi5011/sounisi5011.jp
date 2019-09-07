@@ -35,50 +35,44 @@ function getCanonicalURLList($) {
 }
 
 exports.setPublishedDate = (previewContents, filedata, { metalsmith }) => {
-  try {
-    const $ = cheerio.load(previewContents.toString());
+  const $ = cheerio.load(previewContents.toString());
 
-    $('script[src^="https://www.googletagmanager.com/gtag/js?"]').each(
-      (index, element) => {
-        const $gaScript = $(element);
-        const gaSrc = $gaScript.attr('src');
-        const id = gaSrc && new URL(gaSrc).searchParams.get('id');
-        if (id) {
-          filedata.env = {
-            ...filedata.env,
-            GOOGLE_ANALYTICS_MEASUREMENT_ID: id,
-          };
-        }
-      },
-    );
+  $('script[src^="https://www.googletagmanager.com/gtag/js?"]').each(
+    (index, element) => {
+      const $gaScript = $(element);
+      const gaSrc = $gaScript.attr('src');
+      const id = gaSrc && new URL(gaSrc).searchParams.get('id');
+      if (id) {
+        filedata.env = {
+          ...filedata.env,
+          GOOGLE_ANALYTICS_MEASUREMENT_ID: id,
+        };
+      }
+    },
+  );
 
-    // ページのルートURLをプレビューに合うように変更
-    getCanonicalURLList($).forEach(canonicalURLstr => {
-      const rootURL = new URL(
-        { ...metalsmith.metadata(), ...filedata }.rootURL,
-      );
-      const canonicalURL = new URL(canonicalURLstr);
+  // ページのルートURLをプレビューに合うように変更
+  getCanonicalURLList($).forEach(canonicalURLstr => {
+    const rootURL = new URL({ ...metalsmith.metadata(), ...filedata }.rootURL);
+    const canonicalURL = new URL(canonicalURLstr);
 
-      filedata.canonical = canonicalURLstr;
+    filedata.canonical = canonicalURLstr;
 
-      canonicalURL.pathname = rootURL.pathname;
-      canonicalURL.search = rootURL.search;
-      canonicalURL.hash = rootURL.hash;
-      filedata.rootURL = String(canonicalURL);
-    });
+    canonicalURL.pathname = rootURL.pathname;
+    canonicalURL.search = rootURL.search;
+    canonicalURL.hash = rootURL.hash;
+    filedata.rootURL = String(canonicalURL);
+  });
 
-    // ページの公開・更新日をプレビューに合うように変更
-    const $footer = $('footer.page');
-    const $publishedTimes = $footer.find('time[itemprop~=datePublished]');
-    const $modifiedTimes = $footer.find('time[itemprop~=dateModified]');
-    const publishedDate = getTime($publishedTimes);
-    const modifiedDate = getTime($modifiedTimes);
-    if (publishedDate || modifiedDate) {
-      filedata.published = publishedDate || modifiedDate;
-      filedata.modified = modifiedDate || publishedDate;
-    }
-  } catch (err) {
-    //
+  // ページの公開・更新日をプレビューに合うように変更
+  const $footer = $('footer.page');
+  const $publishedTimes = $footer.find('time[itemprop~=datePublished]');
+  const $modifiedTimes = $footer.find('time[itemprop~=dateModified]');
+  const publishedDate = getTime($publishedTimes);
+  const modifiedDate = getTime($modifiedTimes);
+  if (publishedDate || modifiedDate) {
+    filedata.published = publishedDate || modifiedDate;
+    filedata.modified = modifiedDate || publishedDate;
   }
 };
 
@@ -87,68 +81,61 @@ exports.setPublishedDate = (previewContents, filedata, { metalsmith }) => {
  */
 exports.ignoreContentsEquals = contents => {
   let isUpdated = false;
+  const $ = cheerio.load(contents.toString());
 
-  try {
-    const $ = cheerio.load(contents.toString());
-
-    // preloadを定義するlink要素の順序をリセットする
-    $('link[rel=preload]')
-      .get()
-      .reduce((map, linkElem) => {
-        const parentElem = linkElem.parent;
-        const list = map.get(parentElem) || [];
-        list.push(linkElem);
-        return map.set(parentElem, list);
-      }, new Map())
-      .forEach((linkElemList, parentElem) => {
-        const $head = $(parentElem);
-        linkElemList
-          .map(linkElem => $(linkElem))
-          .sort(($link1, $link2) =>
-            cmp($link1.attr('href'), $link2.attr('href')),
-          )
-          .forEach($link => {
-            $head.append($link);
-          });
-      });
-
-    getCanonicalURLList($).forEach(canonicalURL => {
-      const canonicalURLPath = new URL(canonicalURL).pathname;
-
-      // 小説の各ページを処理
-      if (/^[/]novels[/][^/]+[/][^/]+[/]?$/.test(canonicalURLPath)) {
-        $('.pagination a:matches([rel=prev], [rel=next], .prev, .next)').each(
-          (index, element) => {
-            const $a = $(element);
-
-            /**
-             * ページネーションのa要素を置換
-             * @example
-             * `<a href="/novels/:title/:page" rel="prev">前へ</a>` -> `<a>前へ</a>`
-             * `<a class="prev" aria-hidden="true">前へ</a>`        -> `<a>前へ</a>`
-             * `<a href="/novels/:title/:page" rel="next">次へ</a>` -> `<a>次へ</a>`
-             * `<a class="next" aria-hidden="true">次へ</a>`        -> `<a>次へ</a>`
-             */
-            $a.removeClass('prev next');
-            if (/^\s*$/.test($a.attr('class'))) {
-              // class属性値が空文字列になったら、属性を削除
-              $a.removeAttr('class');
-            }
-            $a.removeAttr('href');
-            $a.removeAttr('rel');
-            $a.removeAttr('aria-hidden');
-
-            isUpdated = true;
-          },
-        );
-      }
+  // preloadを定義するlink要素の順序をリセットする
+  $('link[rel=preload]')
+    .get()
+    .reduce((map, linkElem) => {
+      const parentElem = linkElem.parent;
+      const list = map.get(parentElem) || [];
+      list.push(linkElem);
+      return map.set(parentElem, list);
+    }, new Map())
+    .forEach((linkElemList, parentElem) => {
+      const $head = $(parentElem);
+      linkElemList
+        .map(linkElem => $(linkElem))
+        .sort(($link1, $link2) => cmp($link1.attr('href'), $link2.attr('href')))
+        .forEach($link => {
+          $head.append($link);
+        });
     });
 
-    if (isUpdated) {
-      return Buffer.from($.html());
+  getCanonicalURLList($).forEach(canonicalURL => {
+    const canonicalURLPath = new URL(canonicalURL).pathname;
+
+    // 小説の各ページを処理
+    if (/^[/]novels[/][^/]+[/][^/]+[/]?$/.test(canonicalURLPath)) {
+      $('.pagination a:matches([rel=prev], [rel=next], .prev, .next)').each(
+        (index, element) => {
+          const $a = $(element);
+
+          /**
+           * ページネーションのa要素を置換
+           * @example
+           * `<a href="/novels/:title/:page" rel="prev">前へ</a>` -> `<a>前へ</a>`
+           * `<a class="prev" aria-hidden="true">前へ</a>`        -> `<a>前へ</a>`
+           * `<a href="/novels/:title/:page" rel="next">次へ</a>` -> `<a>次へ</a>`
+           * `<a class="next" aria-hidden="true">次へ</a>`        -> `<a>次へ</a>`
+           */
+          $a.removeClass('prev next');
+          if (/^\s*$/.test($a.attr('class'))) {
+            // class属性値が空文字列になったら、属性を削除
+            $a.removeAttr('class');
+          }
+          $a.removeAttr('href');
+          $a.removeAttr('rel');
+          $a.removeAttr('aria-hidden');
+
+          isUpdated = true;
+        },
+      );
     }
-  } catch (err) {
-    //
+  });
+
+  if (isUpdated) {
+    return Buffer.from($.html());
   }
 
   return contents;
