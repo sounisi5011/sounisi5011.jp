@@ -123,37 +123,46 @@ exports.ignoreContentsEquals = contents => {
   return contents;
 };
 
+exports.showContentsDifference =
+  netlifyPublishedDate.defaultOptions.contentsEquals;
+
 try {
   const chalk = require('chalk');
-  const { HtmlDiffer } = require('html-differ');
-  const logger = require('html-differ/lib/logger');
 
-  const htmlDiffer = new HtmlDiffer({
-    ignoreComments: false,
-    ignoreWhitespaces: false,
+  console.log({
+    supportsColor: chalk.supportsColor,
   });
 
-  exports.showContentsDifference = ({
-    file,
-    previewPage,
-    metadata: { filename },
-  }) => {
-    if (!file.equals(previewPage)) {
-      const diff = htmlDiffer.diffHtml(String(previewPage), String(file));
-      const diffText = logger.getDiffText(diff);
+  if (chalk.supportsColor && chalk.supportsColor.level > 0) {
+    const { HtmlDiffer } = require('html-differ');
+    const logger = require('html-differ/lib/logger');
 
-      console.log(
-        `${chalk.cyan(util.inspect(filename))}の差分:\n${diffText.replace(
-          /^[\r\n]+|[\r\n]+$/,
-          '',
-        )}\n\n`,
-      );
+    const htmlDiffer = new HtmlDiffer({
+      ignoreComments: false,
+      ignoreWhitespaces: false,
+    });
 
-      return false;
-    }
-    return true;
-  };
+    exports.showContentsDifference = ({
+      file,
+      previewPage,
+      metadata: { filename },
+    }) => {
+      if (!file.equals(previewPage)) {
+        const diff = htmlDiffer.diffHtml(String(previewPage), String(file));
+        const diffText = logger.getDiffText(diff);
+
+        console.log(
+          `${chalk.cyan(util.inspect(filename))}の差分:\n${diffText.replace(
+            /^[\r\n]+|[\r\n]+$/,
+            '',
+          )}\n\n`,
+        );
+
+        return false;
+      }
+      return true;
+    };
+  }
 } catch (err) {
-  exports.showContentsDifference =
-    netlifyPublishedDate.defaultOptions.contentsEquals;
+  //
 }
