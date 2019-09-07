@@ -45,7 +45,7 @@
   "dependencies": {
     "@babel/preset-env": "^7.5.5",
     "@fortawesome/fontawesome-free": "^5.9.0",
-    "@sounisi5011/metalsmith-netlify-published-date": "0.1.1",
+    "@sounisi5011/metalsmith-netlify-published-date": "0.2.0",
     "autoprefixer": "^9.6.1",
     "babel-preset-minify": "^0.5.1",
     "cheerio": "^1.0.0-rc.3",
