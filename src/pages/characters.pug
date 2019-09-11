@@ -19,6 +19,9 @@ block content
       if (!seriesA && seriesB) return aFirst;
       if (seriesA && !seriesB) return bFirst;
 
+      sortSeriesOrderA = Number.isFinite(sortSeriesOrderA) ? sortSeriesOrderA : null;
+      sortSeriesOrderB = Number.isFinite(sortSeriesOrderB) ? sortSeriesOrderB : null;
+
       // sortSeriesOrderプロパティを持たない作品シリーズは後ろにソート
       if (sortSeriesOrderA && !sortSeriesOrderB) return aFirst;
       if (!sortSeriesOrderA && sortSeriesOrderB) return bFirst;
