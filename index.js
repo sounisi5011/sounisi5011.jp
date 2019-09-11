@@ -5,6 +5,7 @@ const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
 const babel = require('metalsmith-babel');
 const collections = require('metalsmith-collections');
+const directoryMetadata = require('metalsmith-directory-metadata');
 const excerpts = require('metalsmith-excerpts');
 const ignore = require('metalsmith-ignore');
 const permalinks = require('metalsmith-permalinks');
@@ -67,6 +68,7 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use(directoryMetadata({ pattern: '**/.metadata.*' }))
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
     if (!metadata.hasOwnProperty('preloadDependencies')) {
