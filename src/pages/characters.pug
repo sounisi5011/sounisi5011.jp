@@ -11,7 +11,7 @@ block content
   h1= title
 
   -
-    function sortSeries([seriesA, characterListA], [seriesB, characterListB]) {
+    function sortSeries([seriesA, [ { sortSeriesOrder: sortSeriesOrderA } ]], [seriesB, [ { sortSeriesOrder: sortSeriesOrderB } ]]) {
       const aFirst = -1;
       const bFirst = 1;
 
@@ -19,8 +19,8 @@ block content
       if (!seriesA && seriesB) return aFirst;
       if (seriesA && !seriesB) return bFirst;
 
-      const sortSeriesOrderA = findPropValue(characterListA, 'sortSeriesOrder');
-      const sortSeriesOrderB = findPropValue(characterListB, 'sortSeriesOrder');
+      sortSeriesOrderA = Number.isFinite(sortSeriesOrderA) ? sortSeriesOrderA : null;
+      sortSeriesOrderB = Number.isFinite(sortSeriesOrderB) ? sortSeriesOrderB : null;
 
       // sortSeriesOrderプロパティを持たない作品シリーズは後ろにソート
       if (sortSeriesOrderA && !sortSeriesOrderB) return aFirst;
