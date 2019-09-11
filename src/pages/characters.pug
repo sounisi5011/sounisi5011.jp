@@ -11,16 +11,13 @@ block content
   h1= title
 
   -
-    function sortSeries([seriesA, characterListA], [seriesB, characterListB]) {
+    function sortSeries([seriesA, [ { sortSeriesOrder: sortSeriesOrderA } ]], [seriesB, [ { sortSeriesOrder: sortSeriesOrderB } ]]) {
       const aFirst = -1;
       const bFirst = 1;
 
       // シリーズ名のどちらかが空文字列の場合は先頭にソート
       if (!seriesA && seriesB) return aFirst;
       if (seriesA && !seriesB) return bFirst;
-
-      const sortSeriesOrderA = findPropValue(characterListA, 'sortSeriesOrder');
-      const sortSeriesOrderB = findPropValue(characterListB, 'sortSeriesOrder');
 
       // sortSeriesOrderプロパティを持たない作品シリーズは後ろにソート
       if (sortSeriesOrderA && !sortSeriesOrderB) return aFirst;

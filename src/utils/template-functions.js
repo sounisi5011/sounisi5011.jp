@@ -36,12 +36,6 @@ function unique(...args) {
 }
 Object.assign(exports, { unique });
 
-function findPropValue(objList, propName) {
-  const obj = objList.find(obj => obj.hasOwnProperty(propName));
-  return obj ? obj[propName] : undefined;
-}
-Object.assign(exports, { findPropValue });
-
 function compareUnicode(a, b) {
   const aChars = [...a];
   const bChars = [...b];
