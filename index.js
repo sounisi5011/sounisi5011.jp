@@ -344,6 +344,9 @@ Metalsmith(__dirname)
   )
   .build(err => {
     if (err) {
+      if (err.stack && !err.stack.includes(err.message)) {
+        console.error(err.message);
+      }
       throw err;
     }
   });
