@@ -7,6 +7,7 @@ const babel = require('metalsmith-babel');
 const collections = require('metalsmith-collections');
 const directoryMetadata = require('metalsmith-directory-metadata');
 const excerpts = require('metalsmith-excerpts');
+const htmlValidator = require('metalsmith-html-validator');
 const ignore = require('metalsmith-ignore');
 const permalinks = require('metalsmith-permalinks');
 const postcss = require('metalsmith-postcss');
@@ -331,6 +332,7 @@ Metalsmith(__dirname)
       ],
     }),
   )
+  .use(htmlValidator())
   .use(
     sitemap({
       hostname(files, metalsmith) {
@@ -342,6 +344,9 @@ Metalsmith(__dirname)
   )
   .build(err => {
     if (err) {
+      if (err.stack && !err.stack.includes(err.message)) {
+        console.error(err.message);
+      }
       throw err;
     }
   });
