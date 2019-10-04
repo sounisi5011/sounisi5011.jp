@@ -1,0 +1,21 @@
+---
+title: 魂喰
+description: 彼女との出会いが、僕の運命を、永遠に変えてしまったんだ。
+sortOrder: 2
+localPageStyles:
+  - /novels.css
+  - /novel-list.css
+---
+
+extends ../_layout
+
+prepend vars
+  include ../_mixin
+
+block novel-content
+  p= description
+
+  p
+    | #[a(href="http://green.ribbon.to/~keiru/mtss/mtss.cgi?sort=&stnm=&genre=&name=%91z%90%BC") 某所で書いていた黒歴史]の一つ「#[a(href="https://www.pixiv.net/novel/series/224800") VD]」のリブート作品です。今回は最後まで書き上げたい。
+
+  +pageLinkList(getPageDataList())(itemprop="hasPart")
