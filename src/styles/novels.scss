@@ -1,0 +1,226 @@
+// ---
+// modernizr-feature-detects:
+//   - elem/ruby
+// modernizr-options:
+//   - setClasses
+// ---
+
+@import "_mixins";
+
+html {
+  // see https://github.com/sounisi5011/original-characters/blob/v1.4/assets/default.css#L12-L23
+  -webkit-font-smoothing: antialiased;
+  font-family: "Hiragino Kaku Gothic ProN", "ヒラギノ角ゴ ProN W3",
+    "游ゴシック体", "Yu Gothic", YuGothic, "メイリオ", Meiryo, sans-serif;
+  background-color: #111;
+  color: #eee;
+}
+
+h1 {
+  text-align: center;
+}
+
+a {
+  $focus-color: #fff;
+  $text-color: darken($focus-color, 40%);
+
+  &:link,
+  &:visited {
+    color: $text-color;
+    text-decoration: underline;
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: $focus-color;
+    }
+  }
+}
+
+hr,
+[role="separator"] {
+  margin-left: 1em;
+  margin-right: 1em;
+  border-top-style: inset;
+  border-bottom-style: inset;
+  border-width: 2px;
+  line-height: 2;
+  text-align: center;
+
+  &:empty {
+    border-width: 1px;
+  }
+}
+
+em:lang(ja) {
+  @supports (text-emphasis-style: dot filled) {
+    text-emphasis-style: dot filled;
+    font-style: normal;
+  }
+}
+
+abbr[title] {
+  text-decoration: none;
+
+  &:after {
+    content: "（" attr(title) "）";
+  }
+}
+
+.modernizr--ruby ruby rp {
+  display: inline;
+  position: absolute;
+  @include invisible-text;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.small {
+  font-size: smaller;
+}
+
+.novel-body {
+  // word-break: keep-all;
+
+  :target,
+  .pseudo-class\:\:target {
+    animation: fragment-target-flash 0.75s linear;
+
+    @keyframes fragment-target-flash {
+      0% {
+        background-color: transparent;
+        color: inherit;
+      }
+
+      10% {
+        background-color: #fff;
+        color: #000;
+      }
+
+      100% {
+        background-color: transparent;
+        color: inherit;
+      }
+    }
+  }
+
+  & > .message {
+    &:first-child {
+      border-bottom: solid 1px;
+    }
+
+    &:last-child {
+      border-top: solid 1px;
+
+      h2 {
+        margin-top: 1em;
+        margin-bottom: 1em;
+        border-left: solid 5px;
+        padding-left: 1em;
+        font-size: 1em;
+      }
+    }
+  }
+}
+
+.pagination {
+  $pagination-gap: 1em;
+
+  display: flex;
+  justify-content: center;
+
+  & > a {
+    margin-left: $pagination-gap / 2;
+    margin-right: $pagination-gap / 2;
+
+    &[rel="prev"],
+    &.prev {
+      order: 1;
+    }
+
+    &[rel="contents"] {
+      order: 2;
+    }
+
+    &[rel="next"],
+    &.next {
+      order: 3;
+    }
+  }
+
+  & > .split-text {
+    display: none;
+  }
+}
+
+@for $lines from 2 through 30 {
+  $default-lh: 1.5;
+  $default-hr-margin: 0.5em;
+  $spacing: $lines * $default-lh;
+
+  .spacing-#{$lines} {
+    p&,
+    span&[role="presentation"] {
+      margin-top: $spacing * 1em;
+      margin-bottom: $spacing * 1em;
+
+      @supports (margin-top: 3lh) {
+        margin-top: #{$lines}lh;
+        margin-bottom: #{$lines}lh;
+      }
+    }
+
+    span&[role="presentation"] {
+      display: block;
+    }
+
+    span&[aria-hidden="true"]:empty {
+      &:before {
+        @include repeat-content("\a", $lines);
+        white-space: pre;
+      }
+    }
+
+    hr& {
+      margin-top: $spacing + $default-hr-margin;
+      margin-bottom: $spacing + $default-hr-margin;
+
+      @supports (margin-top: 3lh) {
+        margin-top: calc(#{$lines}lh + $default-hr-margin);
+        margin-bottom: calc(#{$lines}lh + $default-hr-margin);
+      }
+    }
+  }
+}
+
+.spacing-vh {
+  $default-hr-margin: 0.5em;
+  $spacing: 100vh;
+
+  p&,
+  span&[role="presentation"] {
+    margin-top: $spacing;
+    margin-bottom: $spacing;
+  }
+
+  span&[role="presentation"],
+  span&[aria-hidden="true"] {
+    display: block;
+  }
+
+  span&[aria-hidden="true"]:empty {
+    margin-top: $spacing;
+
+    &:before,
+    &:after {
+      content: "";
+    }
+  }
+
+  hr& {
+    margin-top: calc($spacing + $default-hr-margin);
+    margin-bottom: calc($spacing + $default-hr-margin);
+  }
+}

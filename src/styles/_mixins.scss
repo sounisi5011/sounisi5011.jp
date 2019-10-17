@@ -1,0 +1,24 @@
+/* see https://stackoverflow.com/a/38713737/4907315 */
+@mixin repeat-content($str, $n) {
+  $c: "";
+  @for $i from 1 through $n {
+    $c: $c + $str;
+  }
+  content: $c;
+}
+
+@mixin invisible-text {
+  font-size: 0;
+  line-height: 0;
+}
+
+@mixin pseudo-image-resize($image, $width: 1em, $height: 1em) {
+  /* see https://saruwakakun.com/html-css/reference/change-before-after */
+  content: "";
+  display: inline-block;
+  width: $width;
+  height: $height;
+  background-image: $image;
+  background-size: contain;
+  vertical-align: middle;
+}

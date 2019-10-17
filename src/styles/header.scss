@@ -1,0 +1,101 @@
+$header-bottom-border: 1px;
+$margin-v: 0.5em;
+$url-font-size: 0.8em;
+
+header.page {
+  margin: 0 -0.5em;
+  border-bottom: solid $header-bottom-border;
+  padding: inherit;
+
+  @supports (position: sticky) {
+    position: sticky;
+    top: 0;
+    background-color: inherit;
+    z-index: 1;
+  }
+
+  & > * {
+    margin-top: $margin-v;
+    margin-bottom: $margin-v;
+
+    &:first-child {
+      margin-top: 0;
+      padding-top: $margin-v;
+    }
+  }
+
+  img {
+    vertical-align: middle;
+  }
+
+  .page-location {
+    display: flex;
+    align-items: center;
+
+    & > .qr-code {
+      image-rendering: pixelated;
+    }
+
+    & > .url {
+      overflow-x: auto;
+      margin-left: $margin-v;
+      font-size: $url-font-size;
+
+      & > .segment {
+        white-space: nowrap;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+
+        &:hover,
+        &:active,
+        &:focus {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+@supports (position: sticky) {
+  $default-lh: 1.5;
+  $header-height: var(
+    --header-height,
+    calc(
+      $margin-v * 2 + $header-bottom-border +
+        var(
+          --header-qr-height,
+          calc($url-font-size * $default-lh * var(--header-url-max-lines))
+        )
+    )
+  );
+
+  @supports (height: $header-height) {
+    @supports ((scroll-margin-top: 4px) and (scroll-padding-top: 4px)) {
+      /*
+       * Chrome v73+ only works with <body>.
+       * ULTIMATELY this needs to go on <html>, not <body>.
+       * see https://css-tricks.com/fixed-headers-on-page-links-and-overlapping-content-oh-my/
+       */
+      html,
+      body {
+        scroll-padding-top: $header-height;
+      }
+    }
+
+    @supports not ((scroll-margin-top: 4px) and (scroll-padding-top: 4px)) {
+      body [id]:before {
+        /* see https://css-tricks.com/hash-tag-links-padding/#article-header-id-1 */
+        /* see http://nicolasgallagher.com/jump-links-and-viewport-positioning/demo/#method-B */
+        display: block;
+        content: " ";
+        margin-top: calc($header-height * -1);
+        height: $header-height;
+        visibility: hidden;
+        pointer-events: none;
+      }
+    }
+  }
+}
