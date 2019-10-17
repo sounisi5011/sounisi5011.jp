@@ -10,7 +10,7 @@ const excerpts = require('metalsmith-excerpts');
 const htmlValidator = require('metalsmith-html-validator');
 const ignore = require('metalsmith-ignore');
 const permalinks = require('metalsmith-permalinks');
-const postcss = require('metalsmith-postcss');
+const postcss = require('metalsmith-postcss2');
 const {
   compile: pugCompile,
   render: pugRender,
@@ -28,7 +28,6 @@ const childPages = require('./src/plugins/child-pages');
 const commentFrontmatter = require('./src/plugins/comment-matters');
 const copyConvention = require('./src/plugins/copy-convention');
 const downloadConvention = require('./src/plugins/download-convention');
-const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const modernizr = require('./src/plugins/modernizr');
 const mustache = require('./src/plugins/mustache');
@@ -164,19 +163,9 @@ Metalsmith(__dirname)
   .use(
     anotherSource('./src/styles')
       .use(commentFrontmatter())
-      .use(less({ sourceMap: false }))
-      .use(
-        postcss({
-          // Source Mapのファイル名が<input css>になってしまうため無効化
-          map: false,
-          plugins: [
-            { autoprefixer: { remove: false } },
-            { 'postcss-clean': { level: 2 } },
-          ],
-        }),
-      )
+      .use(postcss({ pattern: ['**/*.scss', '!**/_*', '!**/_*/**'] }))
       .use(mergePreloadDependencies())
-      .use(ignore('**/*.less')),
+      .use(ignore(['**/*.scss', '**/*.less'])),
   )
   .use(
     anotherSource('./src/scripts')
