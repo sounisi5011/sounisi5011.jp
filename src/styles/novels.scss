@@ -161,8 +161,8 @@ abbr[title] {
   $spacing: $lines * $default-lh;
 
   .spacing-#{$lines} {
-    p&,
-    span&[role="presentation"] {
+    p#{&},
+    span#{&}[role="presentation"] {
       margin-top: $spacing * 1em;
       margin-bottom: $spacing * 1em;
 
@@ -172,18 +172,18 @@ abbr[title] {
       }
     }
 
-    span&[role="presentation"] {
+    span#{&}[role="presentation"] {
       display: block;
     }
 
-    span&[aria-hidden="true"]:empty {
+    span#{&}[aria-hidden="true"]:empty {
       &:before {
         @include repeat-content("\a", $lines);
         white-space: pre;
       }
     }
 
-    hr& {
+    hr#{&} {
       margin-top: $spacing + $default-hr-margin;
       margin-bottom: $spacing + $default-hr-margin;
 
@@ -199,18 +199,18 @@ abbr[title] {
   $default-hr-margin: 0.5em;
   $spacing: 100vh;
 
-  p&,
-  span&[role="presentation"] {
+  p#{&},
+  span#{&}[role="presentation"] {
     margin-top: $spacing;
     margin-bottom: $spacing;
   }
 
-  span&[role="presentation"],
-  span&[aria-hidden="true"] {
+  span#{&}[role="presentation"],
+  span#{&}[aria-hidden="true"] {
     display: block;
   }
 
-  span&[aria-hidden="true"]:empty {
+  span#{&}[aria-hidden="true"]:empty {
     margin-top: $spacing;
 
     &:before,
@@ -219,7 +219,7 @@ abbr[title] {
     }
   }
 
-  hr& {
+  hr#{&} {
     margin-top: calc($spacing + $default-hr-margin);
     margin-bottom: calc($spacing + $default-hr-margin);
   }
