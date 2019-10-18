@@ -40,7 +40,10 @@
       $grid-template:
         "date-line pub-date" max-content
         "date-line mod-date" max-content
-        / auto max-content;
+        #{" / "} auto max-content;
+      // Note: SCSSはスラッシュの前後の空白文字を消してしまう。
+      //       空白文字が消された場合、autoprefixerは、スラッシュの直前のmax-contentキーワードにベンダープレフィックスを追加しない。
+      //       よって、スラッシュの前後の空白文字を維持させるためのハックを追加する。
 
       @mixin supports-grid-layout() {
         @supports (
