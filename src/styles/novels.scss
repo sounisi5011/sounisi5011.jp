@@ -160,57 +160,57 @@ abbr[title] {
   $default-hr-margin: 0.5em;
   $spacing: $lines * $default-lh;
 
-  .spacing-#{$lines} {
-    p#{&},
-    span#{&}[role="presentation"] {
-      margin-top: $spacing * 1em;
-      margin-bottom: $spacing * 1em;
+  p.spacing-#{$lines},
+  span.spacing-#{$lines}[role="presentation"] {
+    margin-top: $spacing * 1em;
+    margin-bottom: $spacing * 1em;
 
-      @supports (margin-top: 3lh) {
-        margin-top: #{$lines}lh;
-        margin-bottom: #{$lines}lh;
-      }
+    @supports (margin-top: 3lh) {
+      margin-top: #{$lines}lh;
+      margin-bottom: #{$lines}lh;
     }
+  }
 
-    span#{&}[role="presentation"] {
+  span.spacing-#{$lines} {
+    &[role="presentation"] {
       display: block;
     }
 
-    span#{&}[aria-hidden="true"]:empty {
+    &[aria-hidden="true"]:empty {
       &:before {
         @include repeat-content("\a", $lines);
         white-space: pre;
       }
     }
+  }
 
-    hr#{&} {
-      margin-top: $spacing + $default-hr-margin;
-      margin-bottom: $spacing + $default-hr-margin;
+  hr.spacing-#{$lines} {
+    margin-top: $spacing + $default-hr-margin;
+    margin-bottom: $spacing + $default-hr-margin;
 
-      @supports (margin-top: 3lh) {
-        margin-top: calc(#{$lines}lh + $default-hr-margin);
-        margin-bottom: calc(#{$lines}lh + $default-hr-margin);
-      }
+    @supports (margin-top: 3lh) {
+      margin-top: calc(#{$lines}lh + #{$default-hr-margin});
+      margin-bottom: calc(#{$lines}lh + #{$default-hr-margin});
     }
   }
 }
 
-.spacing-vh {
-  $default-hr-margin: 0.5em;
-  $spacing: 100vh;
+$default-hr-margin: 0.5em;
+$spacing: 100vh;
 
-  p#{&},
-  span#{&}[role="presentation"] {
-    margin-top: $spacing;
-    margin-bottom: $spacing;
-  }
+p.spacing-vh,
+span.spacing-vh[role="presentation"] {
+  margin-top: $spacing;
+  margin-bottom: $spacing;
+}
 
-  span#{&}[role="presentation"],
-  span#{&}[aria-hidden="true"] {
+span.spacing-vh {
+  &[role="presentation"],
+  &[aria-hidden="true"] {
     display: block;
   }
 
-  span#{&}[aria-hidden="true"]:empty {
+  &[aria-hidden="true"]:empty {
     margin-top: $spacing;
 
     &:before,
@@ -218,9 +218,9 @@ abbr[title] {
       content: "";
     }
   }
+}
 
-  hr#{&} {
-    margin-top: calc($spacing + $default-hr-margin);
-    margin-bottom: calc($spacing + $default-hr-margin);
-  }
+hr.spacing-vh {
+  margin-top: calc(#{$spacing} + #{$default-hr-margin});
+  margin-bottom: calc(#{$spacing} + #{$default-hr-margin});
 }

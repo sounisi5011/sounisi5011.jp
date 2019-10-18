@@ -64,10 +64,10 @@ header.page {
   $header-height: var(
     --header-height,
     calc(
-      $margin-v * 2 + $header-bottom-border +
+      #{$margin-v} * 2 + #{$header-bottom-border} +
         var(
           --header-qr-height,
-          calc($url-font-size * $default-lh * var(--header-url-max-lines))
+          calc(#{$url-font-size} * #{$default-lh} * var(--header-url-max-lines))
         )
     )
   );
@@ -91,7 +91,7 @@ header.page {
         /* see http://nicolasgallagher.com/jump-links-and-viewport-positioning/demo/#method-B */
         display: block;
         content: " ";
-        margin-top: calc($header-height * -1);
+        margin-top: calc(#{$header-height} * -1);
         height: $header-height;
         visibility: hidden;
         pointer-events: none;
