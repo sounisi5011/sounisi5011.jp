@@ -1,0 +1,10 @@
+parser: postcss-scss
+map: false # Source Mapのsourcesが<input css>になってしまうため無効化
+plugins:
+  "@csstools/postcss-sass":
+    includePaths:
+      - node_modules
+  autoprefixer:
+    remove: false
+  postcss-clean:
+    level: 2
