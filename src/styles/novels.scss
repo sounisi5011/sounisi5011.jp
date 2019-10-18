@@ -195,32 +195,34 @@ abbr[title] {
   }
 }
 
-$default-hr-margin: 0.5em;
-$spacing: 100vh;
+@each $selector in ".spacing-vh" {
+  $default-hr-margin: 0.5em;
+  $spacing: 100vh;
 
-p.spacing-vh,
-span.spacing-vh[role="presentation"] {
-  margin-top: $spacing;
-  margin-bottom: $spacing;
-}
-
-span.spacing-vh {
-  &[role="presentation"],
-  &[aria-hidden="true"] {
-    display: block;
+  p#{$selector},
+  span#{$selector}[role="presentation"] {
+    margin-top: $spacing;
+    margin-bottom: $spacing;
   }
 
-  &[aria-hidden="true"]:empty {
-    margin-top: $spacing;
+  span#{$selector} {
+    &[role="presentation"],
+    &[aria-hidden="true"] {
+      display: block;
+    }
 
-    &:before,
-    &:after {
-      content: "";
+    &[aria-hidden="true"]:empty {
+      margin-top: $spacing;
+
+      &:before,
+      &:after {
+        content: "";
+      }
     }
   }
-}
 
-hr.spacing-vh {
-  margin-top: calc(#{$spacing} + #{$default-hr-margin});
-  margin-bottom: calc(#{$spacing} + #{$default-hr-margin});
+  hr#{$selector} {
+    margin-top: calc(#{$spacing} + #{$default-hr-margin});
+    margin-bottom: calc(#{$spacing} + #{$default-hr-margin});
+  }
 }
