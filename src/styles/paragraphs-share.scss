@@ -258,6 +258,7 @@ footer.page {
               }
 
               &:before {
+                @extend .fas;
                 content: fa-content($fa-var-scroll);
               }
             }
@@ -371,7 +372,7 @@ dialog.share-dialog {
         & > .copy-button {
           &:before {
             @extend %fa-icon;
-            @extend .fab;
+            @extend .fas;
             content: fa-content($fa-var-clipboard);
           }
 
