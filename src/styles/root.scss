@@ -110,11 +110,11 @@ h2 {
     }
 
     & > a {
-      $bg-color: $background-color;
+      $bg-color: #333;
 
       display: block;
       padding: 0.6em 0.3em;
-      background-color: #333;
+      background-color: $bg-color;
       color: #fff;
       text-decoration: unset;
 
@@ -125,9 +125,9 @@ h2 {
 
       &[href^='https://twitter.com/'] {
         /* see https://about.twitter.com/ja/company/brand-resources.html */
-        $bg-color: $background-color;
+        $bg-color: #1da1f2;
 
-        background-color: #1da1f2;
+        background-color: $bg-color;
         color: #ffffff;
 
         &:hover,
@@ -149,11 +149,11 @@ h2 {
 
       &[href^="https://github.com/"] {
         /* https://github.com/logos */
-        $bg-color: $background-color;
-        $text-color: $color;
+        $bg-color: #171516;
+        $text-color: #ffffff;
 
-        background-color: #171516;
-        color: #ffffff;
+        background-color: $bg-color;
+        color: $text-color;
 
         &:hover,
         &:focus {
@@ -175,9 +175,9 @@ h2 {
 
       &[href^='https://www.pixiv.net/'] {
         /* see https://www.pixiv.net/terms/?page=brand */
-        $bg-color: $background-color;
+        $bg-color: #ffffff;
 
-        background-color: #ffffff;
+        background-color: $bg-color;
         color: #009cff;
 
         &:hover,
@@ -200,9 +200,9 @@ h2 {
 
       &[href^="https://qiita.com/"] {
         /* see https://help.qiita.com/ja/articles/others-brand-guideline */
-        $bg-color: $background-color;
+        $bg-color: #fff;
 
-        background-color: #fff;
+        background-color: $bg-color;
         color: #4aac00;
 
         &:hover,

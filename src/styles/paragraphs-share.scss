@@ -15,7 +15,7 @@
 }
 
 .share-open.paragraph-share {
-  html&,
+  html#{&},
   & body {
     scroll-behavior: smooth;
   }
@@ -107,7 +107,7 @@ footer.page {
       }
 
       &:before {
-        @extend .fa-icon;
+        @extend %fa-icon;
         margin-right: 0.3em;
       }
     }
@@ -147,9 +147,9 @@ footer.page {
 
         &.twitter-share {
           /* see https://about.twitter.com/ja/company/brand-resources.html */
-          $bg-color: $background-color;
+          $bg-color: #1da1f2;
 
-          background-color: #1da1f2;
+          background-color: $bg-color;
           color: #ffffff;
 
           &:hover,
