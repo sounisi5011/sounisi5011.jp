@@ -5,7 +5,9 @@ module.exports = {
   }, 
   "plugins": [
     require("@csstools/postcss-sass")({
-      importer: require('node-sass-package-importer')(),
+      includePaths: [
+        'node_modules'
+      ],
     }),
     require("autoprefixer")({
       "remove": false
