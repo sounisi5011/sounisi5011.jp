@@ -160,69 +160,75 @@ abbr[title] {
   $default-hr-margin: 0.5em;
   $spacing: $lines * $default-lh;
 
-  p.spacing-#{$lines},
-  span.spacing-#{$lines}[role="presentation"] {
-    margin-top: $spacing * 1em;
-    margin-bottom: $spacing * 1em;
+  .spacing-#{$lines} {
+    @at-root {
+      p#{&},
+      span#{&}[role="presentation"] {
+        margin-top: $spacing * 1em;
+        margin-bottom: $spacing * 1em;
 
-    @supports (margin-top: 3lh) {
-      margin-top: #{$lines}lh;
-      margin-bottom: #{$lines}lh;
-    }
-  }
-
-  span.spacing-#{$lines} {
-    &[role="presentation"] {
-      display: block;
-    }
-
-    &[aria-hidden="true"]:empty {
-      &:before {
-        @include repeat-content("\a", $lines);
-        white-space: pre;
+        @supports (margin-top: 3lh) {
+          margin-top: #{$lines}lh;
+          margin-bottom: #{$lines}lh;
+        }
       }
-    }
-  }
 
-  hr.spacing-#{$lines} {
-    margin-top: $spacing + $default-hr-margin;
-    margin-bottom: $spacing + $default-hr-margin;
+      span#{&} {
+        &[role="presentation"] {
+          display: block;
+        }
 
-    @supports (margin-top: 3lh) {
-      margin-top: calc(#{$lines}lh + #{$default-hr-margin});
-      margin-bottom: calc(#{$lines}lh + #{$default-hr-margin});
+        &[aria-hidden="true"]:empty {
+          &:before {
+            @include repeat-content("\a", $lines);
+            white-space: pre;
+          }
+        }
+      }
+
+      hr#{&} {
+        margin-top: $spacing + $default-hr-margin;
+        margin-bottom: $spacing + $default-hr-margin;
+
+        @supports (margin-top: 3lh) {
+          margin-top: calc(#{$lines}lh + #{$default-hr-margin});
+          margin-bottom: calc(#{$lines}lh + #{$default-hr-margin});
+        }
+      }
     }
   }
 }
 
-@each $selector in ".spacing-vh" {
+.spacing-vh {
   $default-hr-margin: 0.5em;
   $spacing: 100vh;
 
-  p#{$selector},
-  span#{$selector}[role="presentation"] {
-    margin-top: $spacing;
-    margin-bottom: $spacing;
-  }
-
-  span#{$selector} {
-    &[role="presentation"],
-    &[aria-hidden="true"] {
-      display: block;
+  @at-root {
+    p#{&},
+    span#{&}[role="presentation"] {
+      margin-top: $spacing;
+      margin-bottom: $spacing;
     }
 
-    &[aria-hidden="true"]:empty {
-      margin-top: $spacing;
+    span#{&} {
+      &[role="presentation"],
+      &[aria-hidden="true"] {
+        display: block;
+      }
 
-      &:before,
-      &:after {
-        content: "";
+      &[aria-hidden="true"]:empty {
+        margin-top: $spacing;
+
+        &:before,
+        &:after {
+          content: "";
+        }
       }
     }
-  }
 
-  hr#{$selector} {
-    margin-top: calc(#{$spacing} + #{$default-hr-margin});
-    margin-bottom: calc(#{$spacing} + #{$default-hr-margin});
+    hr#{&} {
+      margin-top: calc(#{$spacing} + #{$default-hr-margin});
+      margin-bottom: calc(#{$spacing} + #{$default-hr-margin});
+    }
   }
 }

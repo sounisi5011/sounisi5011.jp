@@ -14,9 +14,9 @@
   }
 }
 
-@each $selector in ".share-open.paragraph-share" {
-  html#{$selector},
-  #{$selector} body {
+.share-open.paragraph-share {
+  @at-root html#{&},
+    & body {
     scroll-behavior: smooth;
   }
 }
