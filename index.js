@@ -170,7 +170,7 @@ Metalsmith(__dirname)
         }),
       )
       .use(mergePreloadDependencies())
-      .use(ignore(['**/*.scss', '**/*.less'])),
+      .use(ignore('**/*.scss')),
   )
   .use(
     anotherSource('./src/scripts')
