@@ -1,9 +1,0 @@
-parser: postcss-scss
-map:
-  inline: false
-plugins:
-  "@csstools/postcss-sass": {}
-  autoprefixer:
-    remove: false
-  postcss-clean:
-    level: 2
