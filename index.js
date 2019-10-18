@@ -163,7 +163,12 @@ Metalsmith(__dirname)
   .use(
     anotherSource('./src/styles')
       .use(commentFrontmatter())
-      .use(postcss({ pattern: ['**/*.scss', '!**/_*', '!**/_*/**'] }))
+      .use(
+        postcss({
+          dependenciesKey: 'dependencies',
+          pattern: ['**/*.scss', '!**/_*', '!**/_*/**'],
+        }),
+      )
       .use(mergePreloadDependencies())
       .use(ignore(['**/*.scss', '**/*.less'])),
   )
