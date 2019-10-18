@@ -1,2 +1,5 @@
 $fa-font-path: "/fontawesome";
-@import "@fortawesome/fontawesome-free/scss/fontawesome";
+
+@import "@fortawesome/fontawesome-free/scss/variables";
+@import "@fortawesome/fontawesome-free/scss/mixins";
+@import "@fortawesome/fontawesome-free/scss/core";
