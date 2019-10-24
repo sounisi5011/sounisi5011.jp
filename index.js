@@ -175,7 +175,6 @@ Metalsmith(__dirname)
       .use(
         postcss({
           dependenciesKey: 'dependencies',
-          pattern: ['**/*.scss', '!**/_*', '!**/_*/**'],
         }),
       )
       .use(mergePreloadDependencies())
