@@ -1135,6 +1135,13 @@
     "@types/glob" "*"
     "@types/node" "*"
 
+"@types/sass@1.16.0":
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/@types/sass/-/sass-1.16.0.tgz#b41ac1c17fa68ffb57d43e2360486ef526b3d57d"
+  integrity sha512-2XZovu4NwcqmtZtsBR5XYLw18T8cBCnU2USFHTnYLLHz9fkhnoEMoDsqShJIOFsFhn5aJHjweiUUdTrDGujegA==
+  dependencies:
+    "@types/node" "*"
+
 "@types/semver@^5.5.0":
   version "5.5.0"
   resolved "https://registry.yarnpkg.com/@types/semver/-/semver-5.5.0.tgz#146c2a29ee7d3bae4bf2fcb274636e264c813c45"
@@ -6320,6 +6327,20 @@ metalsmith-collections@^0.9.0:
     read-metadata "^1.0.0"
     uniq "^1.0.1"
 
+metalsmith-dart-sass@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/metalsmith-dart-sass/-/metalsmith-dart-sass-1.0.1.tgz#63c7fbe42526315295f44b7551118e2c1248ef9f"
+  integrity sha512-E14zf2gSPRoYHUELN79I6sVg34plf2U+VYMD1xa2cGNrwyOKxlFCAT0kgOe/SfOr0V0f6CUuQrjExdA/dqTLgw==
+  dependencies:
+    "@types/metalsmith" "2.3.0"
+    "@types/sass" "1.16.0"
+    debug "4.1.1"
+    deep-freeze-strict "1.1.1"
+    import-cwd "3.0.0"
+    is-path-inside "3.0.2"
+    multimatch "4.0.0"
+    sass "1.23.1"
+
 metalsmith-directory-metadata@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/metalsmith-directory-metadata/-/metalsmith-directory-metadata-1.0.0.tgz#7c9025817bb038a5ba80f6e10a53ba1dd259f7d0"
@@ -8518,6 +8539,13 @@ safe-regex@^1.1.0:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
+
+sass@1.23.1:
+  version "1.23.1"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.23.1.tgz#0e5b72ba2bd9f0229a637d33f8dd5bf2d810beb3"
+  integrity sha512-zQzJ3UETUWOMd/pJJGH/zvRsBVO97m11RcpfUhcQUHEXf0yHUBgOIE/Nw8aK0m1XyVJPeq228iIK7gVxsJ/Puw==
+  dependencies:
+    chokidar ">=2.0.0 <4.0.0"
 
 sass@^1.16.1:
   version "1.23.0"
