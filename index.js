@@ -166,16 +166,13 @@ Metalsmith(__dirname)
       .use(commentFrontmatter())
       .use(
         sass({
+          dependenciesKey: 'dependencies',
           sassOptions: {
             includePaths: ['node_modules'],
           },
         }),
       )
-      .use(
-        postcss({
-          dependenciesKey: 'dependencies',
-        }),
-      )
+      .use(postcss())
       .use(mergePreloadDependencies())
       .use(ignore('**/*.scss')),
   )
