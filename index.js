@@ -165,12 +165,13 @@ Metalsmith(__dirname)
     anotherSource('./src/styles')
       .use(commentFrontmatter())
       .use(
-        sass({
+        sass((_files, _metalsmith, defaultOptions) => ({
           dependenciesKey: 'dependencies',
+          pattern: [...defaultOptions.pattern, '!**/_*/**'],
           sassOptions: {
             includePaths: ['node_modules'],
           },
-        }),
+        })),
       )
       .use(postcss())
       .use(mergePreloadDependencies())
