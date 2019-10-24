@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "_mixins";
 @import "_fontawesome/solid";
 @import "_fontawesome/brands";
@@ -103,7 +104,7 @@ footer.page {
 
       &:hover,
       &:focus {
-        background-color: lighten($button-bg-color, 10%);
+        background-color: color.adjust($button-bg-color, $lightness: 10%);
       }
 
       &:before {
@@ -154,7 +155,7 @@ footer.page {
 
           &:hover,
           &:focus {
-            background-color: lighten($bg-color, 10%);
+            background-color: color.adjust($bg-color, $lightness: 10%);
           }
 
           &:before {
@@ -208,7 +209,10 @@ footer.page {
 
           &:hover,
           &:focus {
-            background-color: darken($button-text-color, 10%);
+            background-color: color.adjust(
+              $button-text-color,
+              $lightness: -10%
+            );
           }
 
           &:before {

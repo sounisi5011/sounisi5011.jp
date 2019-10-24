@@ -4,6 +4,7 @@
 //   - /images/icon-qiita.png
 // ---
 
+@use "sass:color";
 @import "_mixins";
 @import "_fontawesome/brands";
 
@@ -120,7 +121,7 @@ h2 {
 
       &:hover,
       &:focus {
-        background-color: lighten($bg-color, 10%);
+        background-color: color.adjust($bg-color, $lightness: 10%);
       }
 
       &[href^='https://twitter.com/'] {
@@ -132,7 +133,7 @@ h2 {
 
         &:hover,
         &:focus {
-          background-color: lighten($bg-color, 10%);
+          background-color: color.adjust($bg-color, $lightness: 10%);
         }
 
         &:before {
@@ -182,7 +183,7 @@ h2 {
 
         &:hover,
         &:focus {
-          background-color: darken($bg-color, 10%);
+          background-color: color.adjust($bg-color, $lightness: -10%);
         }
 
         &:before {
@@ -207,7 +208,7 @@ h2 {
 
         &:hover,
         &:focus {
-          background-color: darken($bg-color, 10%);
+          background-color: color.adjust($bg-color, $lightness: -10%);
         }
 
         &:before {

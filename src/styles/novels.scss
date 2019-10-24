@@ -5,6 +5,7 @@
 //   - setClasses
 // ---
 
+@use "sass:color";
 @import "_mixins";
 
 html {
@@ -22,7 +23,7 @@ h1 {
 
 a {
   $focus-color: #fff;
-  $text-color: darken($focus-color, 40%);
+  $text-color: color.adjust($focus-color, $lightness: -40%);
 
   &:link,
   &:visited {
