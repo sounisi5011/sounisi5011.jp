@@ -6,7 +6,7 @@
 // ---
 
 @use "sass:color";
-@import "_mixins";
+@use "mixins";
 
 html {
   // see https://github.com/sounisi5011/original-characters/blob/v1.4/assets/default.css#L12-L23
@@ -71,7 +71,7 @@ abbr[title] {
 .modernizr--ruby ruby rp {
   display: inline;
   position: absolute;
-  @include invisible-text;
+  @include mixins.invisible-text;
 }
 
 .bold {
@@ -181,7 +181,7 @@ abbr[title] {
 
         &[aria-hidden="true"]:empty {
           &:before {
-            @include repeat-content("\a", $lines);
+            @include mixins.repeat-content("\a", $lines);
             white-space: pre;
           }
         }

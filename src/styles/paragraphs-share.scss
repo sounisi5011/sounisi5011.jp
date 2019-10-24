@@ -1,5 +1,5 @@
 @use "sass:color";
-@import "_mixins";
+@use "mixins";
 @import "_fontawesome/solid";
 @import "_fontawesome/brands";
 
@@ -354,7 +354,7 @@ dialog.share-dialog {
             margin-left: 0.5em;
 
             span {
-              @include invisible-text;
+              @include mixins.invisible-text;
             }
           }
         }

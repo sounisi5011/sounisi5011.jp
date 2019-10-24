@@ -5,7 +5,7 @@
 // ---
 
 @use "sass:color";
-@import "_mixins";
+@use "mixins";
 @import "_fontawesome/brands";
 
 html {
@@ -144,7 +144,7 @@ h2 {
         }
 
         & .service-name {
-          @include invisible-text;
+          @include mixins.invisible-text;
         }
       }
 
@@ -170,7 +170,7 @@ h2 {
         }
 
         & .service-name {
-          @include invisible-text;
+          @include mixins.invisible-text;
         }
       }
 
@@ -187,7 +187,7 @@ h2 {
         }
 
         &:before {
-          @include pseudo-image-resize(url("/images/icon-pixiv.png"));
+          @include mixins.pseudo-image-resize(url("/images/icon-pixiv.png"));
           min-width: 24px;
           min-height: 24px;
           vertical-align: top;
@@ -195,7 +195,7 @@ h2 {
         }
 
         & .service-name {
-          @include invisible-text;
+          @include mixins.invisible-text;
         }
       }
 
@@ -212,12 +212,12 @@ h2 {
         }
 
         &:before {
-          @include pseudo-image-resize(url("/images/icon-qiita.png"));
+          @include mixins.pseudo-image-resize(url("/images/icon-qiita.png"));
           margin-right: $icon-right-space;
         }
 
         & .service-name {
-          @include invisible-text;
+          @include mixins.invisible-text;
         }
       }
 
