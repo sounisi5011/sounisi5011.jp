@@ -6,6 +6,7 @@
 // ---
 
 @use "sass:color";
+@use "fn";
 @use "mixins";
 
 html {
@@ -181,7 +182,7 @@ abbr[title] {
 
         &[aria-hidden="true"]:empty {
           &:before {
-            @include mixins.repeat-content("\a", $lines);
+            content: fn.repeat("\a", $lines);
             white-space: pre;
           }
         }

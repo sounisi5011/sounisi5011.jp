@@ -1,12 +1,3 @@
-/* see https://stackoverflow.com/a/38713737/4907315 */
-@mixin repeat-content($str, $n) {
-  $c: "";
-  @for $i from 1 through $n {
-    $c: $c + $str;
-  }
-  content: $c;
-}
-
 @mixin invisible-text {
   font-size: 0;
   line-height: 0;
