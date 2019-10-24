@@ -1,3 +1,5 @@
+map:
+  inline: false
 plugins:
   autoprefixer:
     remove: false
