@@ -45,7 +45,6 @@
   "dependencies": {
     "@babel/core": "^7.2.0",
     "@babel/preset-env": "^7.5.5",
-    "@csstools/postcss-sass": "^4.0.0",
     "@fortawesome/fontawesome-free": "^5.9.0",
     "@sounisi5011/metalsmith-netlify-published-date": "0.2.0",
     "autoprefixer": "^9.6.1",
@@ -59,7 +58,6 @@
     "image-size": "^0.7.4",
     "is-url": "^1.2.4",
     "keyv-file": "^0.1.13",
-    "less": "^3.9.0",
     "metalsmith": "^2.3.0",
     "metalsmith-assets-convention": "^2.1.1",
     "metalsmith-babel": "^5.1.0",
@@ -80,7 +78,6 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^7.0.17",
     "postcss-clean": "^1.1.0",
-    "postcss-scss": "^2.0.0",
     "qrcode": "^1.3.3",
     "sitemap": "^4.0.2",
     "strict-uri-encode": "^2.0.0",
