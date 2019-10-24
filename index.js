@@ -169,6 +169,7 @@ Metalsmith(__dirname)
           sassOptions: {
             includePaths: ['node_modules'],
             sourceMap: true,
+            sourceMapContents: true,
           },
         }),
       )
