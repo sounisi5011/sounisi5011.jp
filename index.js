@@ -5,12 +5,13 @@ const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
 const babel = require('metalsmith-babel');
 const collections = require('metalsmith-collections');
+const sass = require('metalsmith-dart-sass');
 const directoryMetadata = require('metalsmith-directory-metadata');
 const excerpts = require('metalsmith-excerpts');
 const htmlValidator = require('metalsmith-html-validator');
 const ignore = require('metalsmith-ignore');
 const permalinks = require('metalsmith-permalinks');
-const postcss = require('metalsmith-postcss');
+const postcss = require('metalsmith-postcss2');
 const {
   compile: pugCompile,
   render: pugRender,
@@ -28,7 +29,6 @@ const childPages = require('./src/plugins/child-pages');
 const commentFrontmatter = require('./src/plugins/comment-matters');
 const copyConvention = require('./src/plugins/copy-convention');
 const downloadConvention = require('./src/plugins/download-convention');
-const less = require('./src/plugins/less');
 const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
 const modernizr = require('./src/plugins/modernizr');
 const mustache = require('./src/plugins/mustache');
@@ -164,19 +164,18 @@ Metalsmith(__dirname)
   .use(
     anotherSource('./src/styles')
       .use(commentFrontmatter())
-      .use(less({ sourceMap: false }))
       .use(
-        postcss({
-          // Source Mapのファイル名が<input css>になってしまうため無効化
-          map: false,
-          plugins: [
-            { autoprefixer: { remove: false } },
-            { 'postcss-clean': { level: 2 } },
-          ],
-        }),
+        sass((_files, _metalsmith, defaultOptions) => ({
+          dependenciesKey: 'dependencies',
+          pattern: [...defaultOptions.pattern, '!**/_*/**'],
+          sassOptions: {
+            includePaths: ['node_modules'],
+          },
+        })),
       )
+      .use(postcss())
       .use(mergePreloadDependencies())
-      .use(ignore('**/*.less')),
+      .use(ignore('**/*.scss')),
   )
   .use(
     anotherSource('./src/scripts')

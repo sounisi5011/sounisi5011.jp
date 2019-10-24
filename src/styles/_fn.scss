@@ -1,0 +1,8 @@
+/* see https://stackoverflow.com/a/38713737/4907315 */
+@function repeat($str, $count) {
+  $result: "";
+  @for $_ from 1 through $count {
+    $result: $result + $str;
+  }
+  @return $result;
+}

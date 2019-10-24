@@ -19,7 +19,16 @@ function stripIndent(text) {
 
 module.exports = opts => {
   const options = {
-    '**/*.less': text => {
+    '**/*.pug': text => {
+      const match = /^\/\/-(?:\r\n?|\n)((?:(?:| +[^\r\n]*)(?:\r\n?|\n|$))+)/.exec(
+        text,
+      );
+      if (match) {
+        const commentText = match[1];
+        return stripIndent(commentText);
+      }
+    },
+    '**/*.{scss,less}': text => {
       /*
        * 複数行コメントを処理
        */
@@ -40,15 +49,6 @@ module.exports = opts => {
         const commentText = inineMatch[0]
           // 各行の行頭の"//"を削除
           .replace(/(^|\r\n?|\n)\/\//g, '$1');
-        return stripIndent(commentText);
-      }
-    },
-    '**/*.pug': text => {
-      const match = /^\/\/-(?:\r\n?|\n)((?:(?:| +[^\r\n]*)(?:\r\n?|\n|$))+)/.exec(
-        text,
-      );
-      if (match) {
-        const commentText = match[1];
         return stripIndent(commentText);
       }
     },
