@@ -1,8 +1,9 @@
-@import "_mixins";
+@use "sass:color";
+@use "mixins";
 @import "_fontawesome/solid";
-@import "_fontawesome";
+@import "_fontawesome/brands";
 
-.bottom-fixed-box() {
+@mixin bottom-fixed-box {
   position: absolute;
   left: 0;
   right: 0;
@@ -15,8 +16,8 @@
 }
 
 .share-open.paragraph-share {
-  html&,
-  & body {
+  @at-root html#{&},
+    & body {
     scroll-behavior: smooth;
   }
 }
@@ -51,22 +52,22 @@
 }
 
 footer.page {
-  @share-area-height: 5em;
+  $share-area-height: 5em;
 
-  margin-bottom: @share-area-height;
+  margin-bottom: $share-area-height;
 
   @supports not (position: fixed) {
     margin-bottom: 0;
   }
 
   @supports (position: sticky) {
-    margin-top: @share-area-height;
+    margin-top: $share-area-height;
     margin-bottom: 0;
   }
 
   & > .share-area {
-    @button-bg-color: #000;
-    @button-text-color: #fff;
+    $button-bg-color: #000;
+    $button-text-color: #fff;
 
     position: fixed;
     bottom: 0;
@@ -96,18 +97,18 @@ footer.page {
       border: solid 1px currentColor;
       padding: 0.5em;
       white-space: nowrap;
-      background-color: @button-bg-color;
-      color: @button-text-color;
+      background-color: $button-bg-color;
+      color: $button-text-color;
       font-size: medium;
       transition: background-color 0.2s;
 
       &:hover,
       &:focus {
-        background-color: lighten(@button-bg-color, 10%);
+        background-color: color.adjust($button-bg-color, $lightness: 10%);
       }
 
       &:before {
-        &:extend(.fa-icon);
+        @extend %fa-icon;
         margin-right: 0.3em;
       }
     }
@@ -125,12 +126,12 @@ footer.page {
     }
 
     & > .left-menu {
-      @button-gap: 10px;
+      $button-gap: 10px;
 
       left: 0;
       max-width: 100%; // JSを使用して動的に上書きする
       display: none;
-      margin-left: -@button-gap;
+      margin-left: -$button-gap;
       text-align: left;
 
       .share-open & {
@@ -138,7 +139,7 @@ footer.page {
       }
 
       .share-button {
-        margin-left: @button-gap;
+        margin-left: $button-gap;
         font-size: x-small;
 
         &:before {
@@ -147,18 +148,19 @@ footer.page {
 
         &.twitter-share {
           /* see https://about.twitter.com/ja/company/brand-resources.html */
-          @bg-color: $background-color;
+          $bg-color: #1da1f2;
 
-          background-color: #1da1f2;
+          background-color: $bg-color;
           color: #ffffff;
 
           &:hover,
           &:focus {
-            background-color: lighten(@bg-color, 10%);
+            background-color: color.adjust($bg-color, $lightness: 10%);
           }
 
-          &:before:extend(.fab) {
-            content: @fa-var-twitter;
+          &:before {
+            @extend .fab;
+            content: fa-content($fa-var-twitter);
             display: block;
           }
         }
@@ -173,15 +175,17 @@ footer.page {
             background-color: #02a52f;
           }
 
-          &:before:extend(.fab) {
-            content: @fa-var-line;
+          &:before {
+            @extend .fab;
+            content: fa-content($fa-var-line);
             display: block;
           }
         }
 
         &.other-share {
-          &:before:extend(.fas) {
-            content: @fa-var-share-alt;
+          &:before {
+            @extend .fas;
+            content: fa-content($fa-var-share-alt);
             display: block;
           }
         }
@@ -194,27 +198,32 @@ footer.page {
       .share-button.toggle-menu {
         transition-property: color, background-color;
 
-        &:before:extend(.fas) {
-          content: @fa-var-share-alt;
+        &:before {
+          @extend .fas;
+          content: fa-content($fa-var-share-alt);
         }
 
         .share-open & {
-          background-color: @button-text-color;
-          color: @button-bg-color;
+          background-color: $button-text-color;
+          color: $button-bg-color;
 
           &:hover,
           &:focus {
-            background-color: darken(@button-text-color, 10%);
+            background-color: color.adjust(
+              $button-text-color,
+              $lightness: -10%
+            );
           }
 
-          &:before:extend(.fas) {
-            content: @fa-var-times;
+          &:before {
+            @extend .fas;
+            content: fa-content($fa-var-times);
           }
         }
       }
 
       .paragraph-share-area {
-        .bottom-fixed-box();
+        @include bottom-fixed-box;
         display: none;
 
         .share-open & {
@@ -237,8 +246,9 @@ footer.page {
                 transform: rotateY(180deg);
               }
 
-              &:before:extend(.fas) {
-                content: @fa-var-bookmark;
+              &:before {
+                @extend .fas;
+                content: fa-content($fa-var-bookmark);
               }
             }
 
@@ -251,8 +261,9 @@ footer.page {
                 transform: rotateY(0);
               }
 
-              &:before:extend(.fas) {
-                content: @fa-var-scroll;
+              &:before {
+                @extend .fas;
+                content: fa-content($fa-var-scroll);
               }
             }
           }
@@ -278,16 +289,16 @@ dialog.share-dialog {
     position: absolute;
   }
 
-  .backdrop() {
+  @mixin backdrop {
     background-color: rgba(0, 0, 0, 0.5);
   }
 
   &::backdrop {
-    .backdrop();
+    @include backdrop;
   }
 
   & + .backdrop {
-    .backdrop();
+    @include backdrop;
   }
 
   input,
@@ -343,7 +354,7 @@ dialog.share-dialog {
             margin-left: 0.5em;
 
             span {
-              .invisible-text();
+              @include mixins.invisible-text;
             }
           }
         }
@@ -364,14 +375,14 @@ dialog.share-dialog {
       .copy-area {
         & > .copy-button {
           &:before {
-            &:extend(.fa-icon);
-            &:extend(.fas);
-            content: @fa-var-clipboard;
+            @extend %fa-icon;
+            @extend .fas;
+            content: fa-content($fa-var-clipboard);
           }
 
           &.copy-success {
             &:before {
-              content: @fa-var-clipboard-check;
+              content: fa-content($fa-var-clipboard-check);
             }
           }
         }

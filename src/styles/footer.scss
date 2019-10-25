@@ -11,9 +11,9 @@ footer.page {
   }
 
   & > * {
-    @margin-v: 0.5em;
-    margin-top: @margin-v;
-    margin-bottom: @margin-v;
+    $margin-v: 0.5em;
+    margin-top: $margin-v;
+    margin-bottom: $margin-v;
   }
 
   small {

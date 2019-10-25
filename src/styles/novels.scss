@@ -5,7 +5,9 @@
 //   - setClasses
 // ---
 
-@import "_mixins";
+@use "sass:color";
+@use "fn";
+@use "mixins";
 
 html {
   // see https://github.com/sounisi5011/original-characters/blob/v1.4/assets/default.css#L12-L23
@@ -21,18 +23,18 @@ h1 {
 }
 
 a {
-  @focus-color: #fff;
-  @text-color: darken(@focus-color, 40%);
+  $focus-color: #fff;
+  $text-color: color.adjust($focus-color, $lightness: -40%);
 
   &:link,
   &:visited {
-    color: @text-color;
+    color: $text-color;
     text-decoration: underline;
 
     &:hover,
     &:active,
     &:focus {
-      color: @focus-color;
+      color: $focus-color;
     }
   }
 }
@@ -70,7 +72,7 @@ abbr[title] {
 .modernizr--ruby ruby rp {
   display: inline;
   position: absolute;
-  .invisible-text;
+  @include mixins.invisible-text;
 }
 
 .bold {
@@ -126,14 +128,14 @@ abbr[title] {
 }
 
 .pagination {
-  @pagination-gap: 1em;
+  $pagination-gap: 1em;
 
   display: flex;
   justify-content: center;
 
   & > a {
-    margin-left: @pagination-gap / 2;
-    margin-right: @pagination-gap / 2;
+    margin-left: $pagination-gap / 2;
+    margin-right: $pagination-gap / 2;
 
     &[rel="prev"],
     &.prev {
@@ -155,75 +157,80 @@ abbr[title] {
   }
 }
 
-.spacing-loop (@lines) when (1 < @lines) {
-  .spacing-loop((@lines - 1));
+@for $lines from 2 through 30 {
+  $default-lh: 1.5;
+  $default-hr-margin: 0.5em;
+  $spacing: $lines * $default-lh;
 
-  @default-lh: 1.5;
-  @default-hr-margin: 0.5em;
-  @spacing: @lines * @default-lh;
+  .spacing-#{$lines} {
+    @at-root {
+      p#{&},
+      span#{&}[role="presentation"] {
+        margin-top: $spacing * 1em;
+        margin-bottom: $spacing * 1em;
 
-  .spacing-@{lines} {
-    p&,
-    span&[role="presentation"] {
-      margin-top: @spacing * 1em;
-      margin-bottom: @spacing * 1em;
-
-      @supports (margin-top: 3lh) {
-        margin-top: ~"@{lines}lh";
-        margin-bottom: ~"@{lines}lh";
+        @supports (margin-top: 3lh) {
+          margin-top: #{$lines}lh;
+          margin-bottom: #{$lines}lh;
+        }
       }
-    }
 
-    span&[role="presentation"] {
-      display: block;
-    }
+      span#{&} {
+        &[role="presentation"] {
+          display: block;
+        }
 
-    span&[aria-hidden="true"]:empty {
-      &:before {
-        .repeat-content("\a", @lines);
-        white-space: pre;
+        &[aria-hidden="true"]:empty {
+          &:before {
+            content: fn.repeat("\a", $lines);
+            white-space: pre;
+          }
+        }
       }
-    }
 
-    hr& {
-      margin-top: @spacing + @default-hr-margin;
-      margin-bottom: @spacing + @default-hr-margin;
+      hr#{&} {
+        margin-top: $spacing + $default-hr-margin;
+        margin-bottom: $spacing + $default-hr-margin;
 
-      @supports (margin-top: 3lh) {
-        margin-top: calc(~"@{lines}lh" + @default-hr-margin);
-        margin-bottom: calc(~"@{lines}lh" + @default-hr-margin);
+        @supports (margin-top: 3lh) {
+          margin-top: calc(#{$lines}lh + #{$default-hr-margin});
+          margin-bottom: calc(#{$lines}lh + #{$default-hr-margin});
+        }
       }
     }
   }
 }
-.spacing-loop(30);
 
 .spacing-vh {
-  @default-hr-margin: 0.5em;
-  @spacing: 100vh;
+  $default-hr-margin: 0.5em;
+  $spacing: 100vh;
 
-  p&,
-  span&[role="presentation"] {
-    margin-top: @spacing;
-    margin-bottom: @spacing;
-  }
-
-  span&[role="presentation"],
-  span&[aria-hidden="true"] {
-    display: block;
-  }
-
-  span&[aria-hidden="true"]:empty {
-    margin-top: @spacing;
-
-    &:before,
-    &:after {
-      content: "";
+  @at-root {
+    p#{&},
+    span#{&}[role="presentation"] {
+      margin-top: $spacing;
+      margin-bottom: $spacing;
     }
-  }
 
-  hr& {
-    margin-top: calc(@spacing + @default-hr-margin);
-    margin-bottom: calc(@spacing + @default-hr-margin);
+    span#{&} {
+      &[role="presentation"],
+      &[aria-hidden="true"] {
+        display: block;
+      }
+
+      &[aria-hidden="true"]:empty {
+        margin-top: $spacing;
+
+        &:before,
+        &:after {
+          content: "";
+        }
+      }
+    }
+
+    hr#{&} {
+      margin-top: calc(#{$spacing} + #{$default-hr-margin});
+      margin-bottom: calc(#{$spacing} + #{$default-hr-margin});
+    }
   }
 }

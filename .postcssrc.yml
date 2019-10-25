@@ -1,0 +1,5 @@
+plugins:
+  autoprefixer:
+    remove: false
+  postcss-clean:
+    level: 2
