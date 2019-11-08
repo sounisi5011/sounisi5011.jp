@@ -331,7 +331,11 @@ Metalsmith(__dirname)
       ],
     }),
   )
-  .use(htmlValidator())
+  .use(
+    htmlValidator((files, metalsmith, defaultOptions) => ({
+      pattern: [].concat(defaultOptions.pattern, '!_fragment-anchors/**'),
+    })),
+  )
   .use(
     sitemap({
       hostname(files, metalsmith) {
