@@ -1,7 +1,42 @@
+@use "default_vars" as default;
+
+$margin-v: 0.5em;
+// prettier-ignore
+$grid-template:
+  "last-mod last-mod last-mod last-mod" auto
+  "sp1 license copyright sp2" auto
+  / 1fr auto auto 1fr;
+
+@mixin supports-grid-layout() {
+  @supports (
+    (display: grid) and (grid-template: $grid-template) and
+      (grid-area: last-mod)
+  ) {
+    @content;
+  }
+}
+
+@mixin supports-grid-gap() {
+  @include supports-grid-layout {
+    @supports (gap: $margin-v) {
+      @content;
+    }
+  }
+}
+
+// see https://stackoverflow.com/a/45599428/4907315
+@mixin centering {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// ----- ----- ----- ----- ----- //
+
 footer.page {
+  margin: 0 default.$body-lr-spasing * -1;
   border-top: solid 1px;
-  text-align: right;
-  font-size: smaller;
+  padding: 0 $margin-v;
 
   @supports (position: sticky) {
     position: sticky;
@@ -10,10 +45,14 @@ footer.page {
     z-index: 1;
   }
 
-  & > * {
-    $margin-v: 0.5em;
-    margin-top: $margin-v;
-    margin-bottom: $margin-v;
+  @include supports-grid-layout {
+    display: grid;
+    grid-template: $grid-template;
+    padding: $margin-v;
+  }
+
+  @include supports-grid-gap {
+    gap: $margin-v;
   }
 
   small {
@@ -24,11 +63,56 @@ footer.page {
     vertical-align: middle;
   }
 
-  .license {
-    text-align: center;
-  }
+  & > * {
+    margin-top: $margin-v;
+    margin-bottom: $margin-v;
+    text-align: right;
+    font-size: smaller;
 
-  .copyright {
-    text-align: center;
+    @include supports-grid-gap {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+      padding-bottom: $margin-v;
+
+      @include supports-grid-layout {
+        padding-bottom: 0;
+      }
+    }
+
+    &.last-modified {
+      @include supports-grid-layout {
+        grid-area: last-mod;
+        margin-top: 0;
+      }
+    }
+
+    &.license {
+      text-align: center;
+
+      @include supports-grid-layout {
+        grid-area: license;
+        @include centering;
+        margin: 0;
+      }
+    }
+
+    &.copyright {
+      text-align: center;
+
+      @include supports-grid-layout {
+        grid-area: copyright;
+        @include centering;
+        margin-top: 0;
+        margin-left: $margin-v;
+      }
+
+      @include supports-grid-gap {
+        margin: 0;
+      }
+    }
   }
 }
