@@ -1,7 +1,6 @@
 footer.page {
+  margin: 0 -0.5em;
   border-top: solid 1px;
-  text-align: right;
-  font-size: smaller;
 
   @supports (position: sticky) {
     position: sticky;
@@ -14,6 +13,8 @@ footer.page {
     $margin-v: 0.5em;
     margin-top: $margin-v;
     margin-bottom: $margin-v;
+    text-align: right;
+    font-size: smaller;
   }
 
   small {
