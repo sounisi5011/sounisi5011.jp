@@ -1,6 +1,7 @@
 const { URL } = require('url');
 
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
+const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
 const babel = require('metalsmith-babel');
@@ -41,6 +42,19 @@ const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
 const tweetableParagraphs = require('./src/plugins/tweetable-paragraphs');
 const templateFuncs = require('./src/utils/template-functions');
+
+if (
+  process.env.NETLIFY_API_ACCESS_TOKEN &&
+  debug.enabled(
+    '@sounisi5011/metalsmith-netlify-published-date:netlify-api:request',
+  )
+) {
+  // Note: このログの出力にはNetlifyのアクセストークンが表示されるため、常にこのログを除外する。
+  const oldDebug = debug.disable();
+  const newDebug = `${oldDebug},-@sounisi5011/metalsmith-netlify-published-date:netlify-api:request`;
+  debug.enable(newDebug);
+  console.log(`Overwrite env.DEBUG: "${oldDebug}" → "${newDebug}"`);
+}
 
 Metalsmith(__dirname)
   .metadata({
@@ -280,6 +294,7 @@ Metalsmith(__dirname)
   )
   .use(
     netlifyPublishedDate({
+      accessToken: process.env.NETLIFY_API_ACCESS_TOKEN,
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
       metadataUpdater: setPublishedDate,
