@@ -1,3 +1,39 @@
+$margin-v: 0.5em;
+// prettier-ignore
+$grid-template:
+  "last-mod last-mod last-mod last-mod" max-content
+  "sp1 license copyright sp2" max-content
+  #{" / "} 1fr min-content auto 1fr;
+// Note: SCSSはスラッシュの前後の空白文字を消してしまう。
+//       空白文字が消された場合、autoprefixerは、スラッシュの直前のmax-contentキーワードにベンダープレフィックスを追加しない。
+//       よって、スラッシュの前後の空白文字を維持させるためのハックを使用する。
+
+@mixin supports-grid-layout() {
+  @supports (
+    (display: grid) and (grid-template: $grid-template) and
+      (grid-area: last-mod)
+  ) {
+    @content;
+  }
+}
+
+@mixin supports-grid-gap() {
+  @include supports-grid-layout {
+    @supports (gap: $margin-v) {
+      @content;
+    }
+  }
+}
+
+// see https://stackoverflow.com/a/45599428/4907315
+@mixin centering {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+// ----- ----- ----- ----- ----- //
+
 footer.page {
   margin: 0 -0.5em;
   border-top: solid 1px;
@@ -9,16 +45,34 @@ footer.page {
     z-index: 1;
   }
 
+  @include supports-grid-layout {
+    display: grid;
+    grid-template: $grid-template;
+  }
+
+  @include supports-grid-gap {
+    gap: $margin-v;
+    padding: $margin-v;
+  }
+
   & > * {
-    $margin-v: 0.5em;
     margin-top: $margin-v;
     margin-bottom: $margin-v;
     text-align: right;
     font-size: smaller;
 
+    @include supports-grid-gap {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
     &:last-child {
       margin-bottom: 0;
       padding-bottom: $margin-v;
+
+      @include supports-grid-gap {
+        padding-bottom: 0;
+      }
     }
   }
 
@@ -30,11 +84,33 @@ footer.page {
     vertical-align: middle;
   }
 
+  & > p {
+    @include supports-grid-layout {
+      grid-area: last-mod;
+    }
+  }
+
   .license {
     text-align: center;
+
+    @include supports-grid-layout {
+      grid-area: license;
+      max-width: min-content;
+      @include centering;
+      margin: $margin-v;
+    }
+
+    @include supports-grid-gap {
+      margin: 0;
+    }
   }
 
   .copyright {
     text-align: center;
+
+    @include supports-grid-layout {
+      grid-area: copyright;
+      @include centering;
+    }
   }
 }
