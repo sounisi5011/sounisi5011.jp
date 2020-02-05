@@ -68,27 +68,34 @@ function processFileEntries({
         equalsPath(path, sourceFilepath),
       );
 
-      if (fileEntry) {
-        const destPath = getFilename(metalsmith, currentFilename, destFilepath);
+      if (!fileEntry) {
+        throw new Error(
+          [
+            `The source path "${sourceFilepath}" does not exist in the downloaded data:`,
+            ...fileEntryList.map(fileEntry => `  * ${fileEntry.path}`).sort(),
+          ].join('\n'),
+        );
+      }
 
-        switch (fileEntry.type) {
-          case 'file':
-            pluginKit.addFile(files, destPath, fileEntry.data, {
-              /**
-               * @see https://github.com/segmentio/metalsmith/blob/v2.3.0/lib/index.js#L296
-               * @see https://github.com/kevva/decompress/blob/v4.2.0/index.js#L46
-               */
-              mode: statModeToOctal(fileEntry.mode & ~process.umask()),
-            });
-            break;
-          case 'directory':
-            // TODO
-            break;
-          case 'symlink':
-          case 'link':
-            // TODO
-            break;
-        }
+      const destPath = getFilename(metalsmith, currentFilename, destFilepath);
+
+      switch (fileEntry.type) {
+        case 'file':
+          pluginKit.addFile(files, destPath, fileEntry.data, {
+            /**
+             * @see https://github.com/segmentio/metalsmith/blob/v2.3.0/lib/index.js#L296
+             * @see https://github.com/kevva/decompress/blob/v4.2.0/index.js#L46
+             */
+            mode: statModeToOctal(fileEntry.mode & ~process.umask()),
+          });
+          break;
+        case 'directory':
+          // TODO
+          break;
+        case 'symlink':
+        case 'link':
+          // TODO
+          break;
       }
     },
   );
@@ -131,6 +138,11 @@ module.exports = opts => {
       const rawData = await download(sourceURL, {
         cache: store,
         extract: extractMode,
+      }).catch(error => {
+        if (error.name === 'HTTPError') {
+          error.message = `Download failed with HTTP ${error.statusCode} ${error.statusMessage}: ${error.url}`;
+        }
+        throw error;
       });
 
       if (extractMode) {
