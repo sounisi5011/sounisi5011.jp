@@ -1,7 +1,7 @@
 // ---
 // preloadDependencies:
 //   - /images/icon-pixiv.png
-//   - /images/icon-qiita.png
+//   - /images/logo-qiita.png
 // ---
 
 @use "sass:color";
@@ -212,7 +212,14 @@ h2 {
         }
 
         &:before {
-          @include mixins.pseudo-image-resize(url("/images/icon-qiita.png"));
+          $width-ratio: 825px / 312px;
+          @include mixins.pseudo-image-resize(
+            url("/images/logo-qiita.png"),
+            $width: 1em * $width-ratio
+          );
+          min-width: 24px * $width-ratio;
+          min-height: 24px;
+          vertical-align: top;
           margin-right: $icon-right-space;
         }
 
