@@ -4,3 +4,4 @@ publish = './public/'
 
 [dev]
 publish = './public/'
+autoLaunch = false
