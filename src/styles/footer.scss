@@ -84,7 +84,7 @@ footer.page {
     vertical-align: middle;
   }
 
-  & > p {
+  .last-modified {
     @include supports-grid-layout {
       grid-area: last-mod;
     }

@@ -17,7 +17,7 @@ include _mixin
     },
   ];
 footer.page
-  p
+  p.last-modified
     | 最終更新日：
     time(datetime=formatDate(modified || generated, '%<time>', 0)
          itemprop=(modified ? "dateModified" : null))
