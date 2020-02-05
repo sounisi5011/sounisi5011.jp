@@ -1,6 +1,7 @@
 const path = require('path');
 
 const download = require('download');
+const got = require('got');
 const isUrl = require('is-url');
 const KeyvFile = require('keyv-file');
 const pluginKit = require('metalsmith-plugin-kit');
@@ -131,6 +132,11 @@ module.exports = opts => {
       const rawData = await download(sourceURL, {
         cache: store,
         extract: extractMode,
+      }).catch(error => {
+        if (!(error instanceof got.HTTPError)) {
+          error.message = `Download failed with HTTP ${error.statusCode} ${error.statusMessage}: ${error.url}`;
+        }
+        throw error;
       });
 
       if (extractMode) {
