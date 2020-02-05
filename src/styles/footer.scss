@@ -1,12 +1,9 @@
 $margin-v: 0.5em;
 // prettier-ignore
 $grid-template:
-  "last-mod last-mod last-mod last-mod" max-content
-  "sp1 license copyright sp2" max-content
-  #{" / "} 1fr min-content auto 1fr;
-// Note: SCSSはスラッシュの前後の空白文字を消してしまう。
-//       空白文字が消された場合、autoprefixerは、スラッシュの直前のmax-contentキーワードにベンダープレフィックスを追加しない。
-//       よって、スラッシュの前後の空白文字を維持させるためのハックを使用する。
+  "last-mod last-mod last-mod last-mod" auto
+  "sp1 license copyright sp2" auto
+  / 1fr auto auto 1fr;
 
 @mixin supports-grid-layout() {
   @supports (
@@ -96,7 +93,6 @@ footer.page {
 
       @include supports-grid-layout {
         grid-area: license;
-        max-width: min-content;
         @include centering;
         margin: 0;
       }
