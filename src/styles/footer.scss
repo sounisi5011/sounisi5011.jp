@@ -1,3 +1,5 @@
+@use "default_vars" as default;
+
 $margin-v: 0.5em;
 // prettier-ignore
 $grid-template:
@@ -32,7 +34,7 @@ $grid-template:
 // ----- ----- ----- ----- ----- //
 
 footer.page {
-  margin: 0 -0.5em;
+  margin: 0 default.$body-lr-spasing * -1;
   border-top: solid 1px;
   padding: 0 $margin-v;
 
