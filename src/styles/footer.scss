@@ -15,6 +15,11 @@ footer.page {
     margin-bottom: $margin-v;
     text-align: right;
     font-size: smaller;
+
+    &:last-child {
+      margin-bottom: 0;
+      padding-bottom: $margin-v;
+    }
   }
 
   small {
