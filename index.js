@@ -280,6 +280,7 @@ Metalsmith(__dirname)
   )
   .use(
     netlifyPublishedDate({
+      accessToken: process.env.NETLIFY_API_ACCESS_TOKEN,
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
       metadataUpdater: setPublishedDate,
