@@ -55,6 +55,14 @@ footer.page {
     padding: $margin-v;
   }
 
+  small {
+    font-size: 100%;
+  }
+
+  img {
+    vertical-align: middle;
+  }
+
   & > * {
     margin-top: $margin-v;
     margin-bottom: $margin-v;
@@ -74,43 +82,35 @@ footer.page {
         padding-bottom: 0;
       }
     }
-  }
 
-  small {
-    font-size: 100%;
-  }
-
-  img {
-    vertical-align: middle;
-  }
-
-  .last-modified {
-    @include supports-grid-layout {
-      grid-area: last-mod;
-    }
-  }
-
-  .license {
-    text-align: center;
-
-    @include supports-grid-layout {
-      grid-area: license;
-      max-width: min-content;
-      @include centering;
-      margin: $margin-v;
+    &.last-modified {
+      @include supports-grid-layout {
+        grid-area: last-mod;
+      }
     }
 
-    @include supports-grid-gap {
-      margin: 0;
+    &.license {
+      text-align: center;
+
+      @include supports-grid-layout {
+        grid-area: license;
+        max-width: min-content;
+        @include centering;
+        margin: $margin-v;
+      }
+
+      @include supports-grid-gap {
+        margin: 0;
+      }
     }
-  }
 
-  .copyright {
-    text-align: center;
+    &.copyright {
+      text-align: center;
 
-    @include supports-grid-layout {
-      grid-area: copyright;
-      @include centering;
+      @include supports-grid-layout {
+        grid-area: copyright;
+        @include centering;
+      }
     }
   }
 }
