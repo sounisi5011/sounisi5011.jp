@@ -9,6 +9,12 @@
 @use "fn";
 @use "mixins";
 
+@mixin supports-text-emphasis() {
+  @supports (text-emphasis-style: dot filled) {
+    @content;
+  }
+}
+
 html {
   // see https://github.com/sounisi5011/original-characters/blob/v1.4/assets/default.css#L12-L23
   -webkit-font-smoothing: antialiased;
@@ -55,9 +61,49 @@ hr,
 }
 
 em:lang(ja) {
-  @supports (text-emphasis-style: dot filled) {
+  @include supports-text-emphasis {
     text-emphasis-style: dot filled;
     font-style: normal;
+  }
+}
+
+em.quot {
+  font-style: normal;
+
+  @include supports-text-emphasis {
+    text-emphasis-style: none;
+  }
+
+  &:before {
+    content: "\201C";
+  }
+
+  &:after {
+    content: "\201D";
+  }
+}
+
+em.voice {
+  font-style: normal;
+
+  @include supports-text-emphasis {
+    text-emphasis-style: none;
+  }
+
+  &:before {
+    content: "「";
+  }
+
+  &:after {
+    content: "」";
+  }
+}
+
+em.point {
+  font-style: normal;
+
+  @include supports-text-emphasis {
+    text-emphasis-style: dot filled;
   }
 }
 

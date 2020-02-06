@@ -339,6 +339,28 @@ Metalsmith(__dirname)
                   }
                 }
               }
+
+              if ($elem.is('em')) {
+                let openQuote, closeQuote;
+                if ($elem.is('.voice')) {
+                  openQuote = '「';
+                  closeQuote = '」';
+                } else if ($elem.is('.quot')) {
+                  openQuote = '\u{201C}';
+                  closeQuote = '\u{201D}';
+                }
+                if (openQuote && closeQuote) {
+                  const firstChildTextData = textData;
+                  const lastChildTextData =
+                    childTextDataList[childTextDataList.length - 1];
+
+                  firstChildTextData.rawText =
+                    openQuote + firstChildTextData.rawText;
+                  firstChildTextData.text = openQuote + firstChildTextData.text;
+                  lastChildTextData.rawText += closeQuote;
+                  lastChildTextData.text += closeQuote;
+                }
+              }
             }
             return childTextDataList;
           },
