@@ -60,6 +60,9 @@ typings/
 # direnv environment variables file
 .envrc
 
+# nodenv
+.node-version
+
 # next.js build output
 .next
 

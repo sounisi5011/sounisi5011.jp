@@ -1,6 +1,7 @@
 ---
-sourceURL: https://help.qiita.com/images/qiita.zip
+# https://help.qiita.com/ja/articles/others-brand-guideline
+sourceURL: https://help.qiita.com/images/qiita-png.zip
 destination:
-  - source: Qiita/png/qiita-favicon.png
-    destination: ./icon-qiita.png
+  - source: qiita-png/logo-background-color.png
+    destination: ./logo-qiita.png
 ---

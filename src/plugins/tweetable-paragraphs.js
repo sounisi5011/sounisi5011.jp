@@ -579,14 +579,14 @@ module.exports = opts => {
           redirectsFiledata = files['_redirects'];
         }
         redirectsFiledata.contents = Buffer.from(
-          String(redirectsFiledata.contents).replace(
-            /^# tweetable-paragraphs rewrite paths #$/m,
-            () =>
-              [
-                `/${ASSETS_DIR}/:id/* /:splat?fragment=:id 301!`,
-                ...redirectsSet,
-                '/* fragment=:id /:splat#:id 301!',
-              ].join('\n'),
+          String(
+            redirectsFiledata.contents,
+          ).replace(/^# tweetable-paragraphs rewrite paths #$/m, () =>
+            [
+              `/${ASSETS_DIR}/:id/* /:splat?fragment=:id 301!`,
+              ...redirectsSet,
+              '/* fragment=:id /:splat#:id 301!',
+            ].join('\n'),
           ),
         );
 

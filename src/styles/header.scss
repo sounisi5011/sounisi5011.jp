@@ -1,9 +1,11 @@
+@use "default_vars" as default;
+
 $header-bottom-border: 1px;
 $margin-v: 0.5em;
 $url-font-size: 0.8em;
 
 header.page {
-  margin: 0 -0.5em;
+  margin: 0 default.$body-lr-spasing * -1;
   border-bottom: solid $header-bottom-border;
   padding: inherit;
 
