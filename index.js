@@ -293,7 +293,20 @@ Metalsmith(__dirname)
     }),
   )
   .use(
-    netlifyPublishedDate({
+    (options =>
+      Object.keys(process.env).some(env => /^SKIP_NETLIFY_PUB_DATE$/i.test(env))
+        ? [
+            (files, metalsmith, done) => {
+              const now = new Date();
+              Object.values(files).forEach(file => {
+                if (!file.published) file.published = now;
+                if (!file.modified) file.modified = now;
+              });
+              done();
+            },
+            ...options.plugins,
+          ]
+        : netlifyPublishedDate(options))({
       accessToken: process.env.NETLIFY_API_ACCESS_TOKEN,
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
