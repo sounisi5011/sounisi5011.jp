@@ -1,6 +1,7 @@
 if ogpType && Array.isArray(ogpImageList) && 1 <= ogpImageList.length
   meta(property="og:title" content=(ogpTitle ? ogpTitle : title))
-  meta(property="og:description" content=(ogpDescription ? ogpDescription : description))
+  if description || ogpDescription
+    meta(property="og:description" content=(ogpDescription ? ogpDescription : description))
   meta(property="og:type" content=ogpType)
   meta(property="og:url" content=canonicalURL(rootURL, path))
   each imageData in ogpImageList

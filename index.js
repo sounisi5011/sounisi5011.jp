@@ -293,7 +293,20 @@ Metalsmith(__dirname)
     }),
   )
   .use(
-    netlifyPublishedDate({
+    (options =>
+      Object.keys(process.env).some(env => /^SKIP_NETLIFY_PUB_DATE$/i.test(env))
+        ? [
+            (files, metalsmith, done) => {
+              const now = new Date();
+              Object.values(files).forEach(file => {
+                if (!file.published) file.published = now;
+                if (!file.modified) file.modified = now;
+              });
+              done();
+            },
+            ...options.plugins,
+          ]
+        : netlifyPublishedDate(options))({
       accessToken: process.env.NETLIFY_API_ACCESS_TOKEN,
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
@@ -339,6 +352,28 @@ Metalsmith(__dirname)
                   }
                 }
               }
+
+              if ($elem.is('em')) {
+                let openQuote, closeQuote;
+                if ($elem.is('.voice')) {
+                  openQuote = '「';
+                  closeQuote = '」';
+                } else if ($elem.is('.quot')) {
+                  openQuote = '\u{201C}';
+                  closeQuote = '\u{201D}';
+                }
+                if (openQuote && closeQuote) {
+                  const firstChildTextData = textData;
+                  const lastChildTextData =
+                    childTextDataList[childTextDataList.length - 1];
+
+                  firstChildTextData.rawText =
+                    openQuote + firstChildTextData.rawText;
+                  firstChildTextData.text = openQuote + firstChildTextData.text;
+                  lastChildTextData.rawText += closeQuote;
+                  lastChildTextData.text += closeQuote;
+                }
+              }
             }
             return childTextDataList;
           },
@@ -346,7 +381,11 @@ Metalsmith(__dirname)
       ],
     }),
   )
-  .use(htmlValidator())
+  .use(
+    htmlValidator((files, metalsmith, defaultOptions) => ({
+      pattern: [].concat(defaultOptions.pattern, '!_fragment-anchors/**'),
+    })),
+  )
   .use(
     sitemap({
       hostname(files, metalsmith) {
