@@ -46,6 +46,7 @@
     "@babel/core": "^7.2.0",
     "@babel/preset-env": "^7.5.5",
     "@fortawesome/fontawesome-free": "^5.9.0",
+    "@sounisi5011/metalsmith-asciidoctor": "file:metalsmith-local-plugins/asciidoctor",
     "@sounisi5011/metalsmith-netlify-published-date": "0.2.0",
     "autoprefixer": "^9.6.1",
     "babel-preset-minify": "^0.5.1",

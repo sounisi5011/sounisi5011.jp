@@ -1,0 +1,8 @@
+{
+  "name": "@sounisi5011/metalsmith-asciidoctor",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@asciidoctor/core": "^2.1.1"
+  }
+}
