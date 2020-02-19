@@ -1,5 +1,6 @@
 const { URL } = require('url');
 
+const asciidoc = require('@sounisi5011/metalsmith-asciidoctor');
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
@@ -18,6 +19,7 @@ const {
   render: pugRender,
 } = require('metalsmith-pug-extra');
 
+const asciidocExtensions = require('./asciidoctor-extensions');
 const {
   ignoreContentsEquals,
   showContentsDifference,
@@ -137,6 +139,11 @@ Metalsmith(__dirname)
     });
     done();
   })
+  .use(
+    asciidoc({
+      extensions: asciidocExtensions,
+    }),
+  )
   .use(
     pugCompile({
       copyFileData: true,
