@@ -19,7 +19,7 @@ const {
   render: pugRender,
 } = require('metalsmith-pug-extra');
 
-const asciidocExtensions = require('./asciidoctor-extensions');
+const asciidocExtensions = require('./plugins/asciidoctor/extensions');
 const {
   ignoreContentsEquals,
   showContentsDifference,
