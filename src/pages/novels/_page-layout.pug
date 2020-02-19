@@ -33,11 +33,6 @@ mixin pagination-next
 prepend vars
   -
     {
-      const titlePrefix = `${parentPage().title} / `;
-      if (!title.startsWith(titlePrefix)) {
-        title = titlePrefix + title;
-      }
-
       let getPagination$retVal;
       function getPagination() {
         if (!getPagination$retVal) {
@@ -71,6 +66,19 @@ prepend preload
     link(rel="prev" href=canonicalURL(rootURL, getPagination().previous.path))
   if getPagination().next
     link(rel="next" href=canonicalURL(rootURL, getPagination().next.path))
+
+block novel-title
+  h1.novel-title
+    - { const titlePrefix = `${parentPage().title} / `;
+    if titleHTML
+      if !titleHTML.startsWith(titlePrefix)
+        = titlePrefix
+      != titleHTML
+    else
+      if !title.startsWith(titlePrefix)
+        = titlePrefix
+      = title
+    - }
 
 block novel-header
   p.pagination
