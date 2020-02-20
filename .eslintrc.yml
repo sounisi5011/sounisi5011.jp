@@ -12,7 +12,6 @@ parserOptions:
 rules:
   no-console: off
   sort-imports: error
-  sort-keys: error
   import/order:
     - error
     - newlines-between: always

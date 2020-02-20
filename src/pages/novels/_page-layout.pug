@@ -72,6 +72,16 @@ prepend preload
   if getPagination().next
     link(rel="next" href=canonicalURL(rootURL, getPagination().next.path))
 
+block novel-title
+  h1.novel-title
+    if titleHTML
+      - const titlePrefix = `${parentPage().title} / `;
+      if !titleHTML.startsWith(titlePrefix)
+        = titlePrefix
+      != titleHTML
+    else
+      = title
+
 block novel-header
   p.pagination
     block head-pagination

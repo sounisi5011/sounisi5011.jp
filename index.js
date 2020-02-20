@@ -1,5 +1,6 @@
 const { URL } = require('url');
 
+const asciidoc = require('@sounisi5011/metalsmith-asciidoctor');
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
@@ -18,6 +19,11 @@ const {
   render: pugRender,
 } = require('metalsmith-pug-extra');
 
+const asciidocExtensions = require('./plugins/asciidoctor/extensions');
+const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
+const {
+  compile: pugLayoutsCompile,
+} = require('./plugins/metalsmith/pug-layouts');
 const {
   ignoreContentsEquals,
   showContentsDifference,
@@ -41,6 +47,7 @@ const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
 const tweetableParagraphs = require('./src/plugins/tweetable-paragraphs');
+const { propSort } = require('./src/utils');
 const templateFuncs = require('./src/utils/template-functions');
 
 if (
@@ -83,7 +90,28 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use(fixHFSPlusNormalization())
   .use(directoryMetadata({ pattern: '**/.metadata.*' }))
+  /*
+   * AsciiDocファイルの変換とレイアウトの適用
+   */
+  .use(
+    asciidoc({
+      extensions: asciidocExtensions,
+      asciidoctorOptions: {
+        backend: 'html5s',
+      },
+    }),
+  )
+  .use(
+    pugLayoutsCompile({
+      pattern: '**/*.html',
+      directory: 'layouts',
+    }),
+  )
+  /*
+   * 依存関係のメタデータを更新
+   */
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
     if (!metadata.hasOwnProperty('preloadDependencies')) {
@@ -137,6 +165,9 @@ Metalsmith(__dirname)
     });
     done();
   })
+  /*
+   * Pugテンプレートのコンパイル
+   */
   .use(
     pugCompile({
       copyFileData: true,
@@ -153,17 +184,17 @@ Metalsmith(__dirname)
       characters: {
         pattern: ['characters/*.html', 'characters/*/*.html'],
         refer: false,
-        sortBy: 'sortOrder',
+        sortBy: propSort('sortOrder', 'path'),
       },
       novels: {
         pattern: ['novels/*.html', 'novels/*/index.html'],
         refer: false,
-        sortBy: 'sortOrder',
+        sortBy: propSort('sortOrder', 'path'),
       },
       novelsPages: {
         pattern: ['novels/*/*.html', '!novels/*/index.html'],
         refer: false,
-        sortBy: 'sortOrder',
+        sortBy: propSort('sortOrder', 'path'),
       },
     }),
   )

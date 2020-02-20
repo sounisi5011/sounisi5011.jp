@@ -33,20 +33,24 @@ block content
         footer
           p.novel-date
             -
+              {
+              const novelsPublished = minDate(novelData.published, ...pages.map(page => page.published));
+              const novelsModified = maxDate(novelData.modified, ...pages.map(page => page.modified));
               const { publishedDateFormat, modifiedDateFormat } = (
-                getDateFormat(novelData.published, novelData.modified, timezone)
+                getDateFormat(novelsPublished, novelsModified, timezone)
               );
             span.novel-published
-              time(itemprop="datePublished" datetime=formatDate(novelData.published, '%<time>', 0))
-                = formatDate(novelData.published, publishedDateFormat, timezone*60)
+              time(itemprop="datePublished" datetime=formatDate(novelsPublished, '%<time>', 0))
+                = formatDate(novelsPublished, publishedDateFormat, timezone*60)
               | 公開
             if modifiedDateFormat
               |
               | /
               |
               span.novel-modified(class={ 'short-date': modifiedDateFormat !== publishedDateFormat })
-                time(itemprop="dateModified" datetime=formatDate(novelData.modified, '%<time>', 0))
-                  = formatDate(novelData.modified, modifiedDateFormat, timezone*60)
+                time(itemprop="dateModified" datetime=formatDate(novelsModified, '%<time>', 0))
+                  = formatDate(novelsModified, modifiedDateFormat, timezone*60)
                 | 更新
+            - }
     else
       p まだ無いよ
