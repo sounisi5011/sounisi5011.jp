@@ -95,6 +95,9 @@ Metalsmith(__dirname)
   .use(
     asciidoc({
       extensions: asciidocExtensions,
+      asciidoctorOptions: {
+        backend: 'html5s',
+      },
     }),
   )
   .use(
