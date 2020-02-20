@@ -1,3 +1,7 @@
+/**
+ * @param {string} value
+ * @returns {string}
+ */
 function escapeAttrValue(value) {
   return (
     value
@@ -6,8 +10,12 @@ function escapeAttrValue(value) {
       .replace(/"/g, '&#34;')
   ); // "
 }
-Object.assign(exports, { escapeAttrValue });
+exports.escapeAttrValue = escapeAttrValue;
 
+/**
+ * @param {string} value
+ * @returns {string}
+ */
 function wrapAttrValue(value) {
   const hasQuot = value.includes(`"`);
   const hasApos = value.includes(`'`);
@@ -15,8 +23,12 @@ function wrapAttrValue(value) {
   if (!hasApos) return `'${value}'`;
   return `"${escapeAttrValue(value)}"`;
 }
-Object.assign(exports, { wrapAttrValue });
+exports.wrapAttrValue = wrapAttrValue;
 
+/**
+ * @param {[string, string][]|Object.<string, string>} attrs
+ * @returns {string}
+ */
 function attrs2htmlText(attrs) {
   return (Array.isArray(attrs) ? attrs : Object.entries(attrs))
     .map(
@@ -25,4 +37,4 @@ function attrs2htmlText(attrs) {
     )
     .join('');
 }
-Object.assign(exports, { attrs2htmlText });
+exports.attrs2htmlText = attrs2htmlText;

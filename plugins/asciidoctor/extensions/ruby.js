@@ -1,4 +1,5 @@
 /**
+ * ルビ用のマクロ
  * @see https://asciidoctor-docs.netlify.com/asciidoctor.js/extend/extensions/inline-macro-processor/
  * @see https://github.com/asciidoctor/asciidoctor-extensions-lab/tree/master/lib/emoji-inline-macro
  * @see https://github.com/asciidoctor/asciidoctor.js/blob/master/packages/core/spec/share/extensions/emoji-inline-macro.js

@@ -1,4 +1,5 @@
 /**
+ * metalsmith-layoutsのようなことをmetalsmith-pug-extraに対応した感じでやるやつ
  * @see https://github.com/sounisi5011/metalsmith-pug-extra/blob/v1.1.3/src/compile.ts
  */
 
