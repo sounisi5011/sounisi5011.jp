@@ -20,6 +20,7 @@ const {
 } = require('metalsmith-pug-extra');
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
+const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
 const {
   compile: pugLayoutsCompile,
 } = require('./plugins/metalsmith/pug-layouts');
@@ -89,6 +90,7 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
+  .use(fixHFSPlusNormalization())
   .use(directoryMetadata({ pattern: '**/.metadata.*' }))
   /*
    * AsciiDocファイルの変換とレイアウトの適用
