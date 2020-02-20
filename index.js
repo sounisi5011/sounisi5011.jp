@@ -46,6 +46,7 @@ const svg2ico = require('./src/plugins/svg-to-ico');
 const svg2png = require('./src/plugins/svg-to-png');
 const svgo = require('./src/plugins/svgo');
 const tweetableParagraphs = require('./src/plugins/tweetable-paragraphs');
+const { propSort } = require('./src/utils');
 const templateFuncs = require('./src/utils/template-functions');
 
 if (
@@ -181,17 +182,17 @@ Metalsmith(__dirname)
       characters: {
         pattern: ['characters/*.html', 'characters/*/*.html'],
         refer: false,
-        sortBy: 'sortOrder',
+        sortBy: propSort('sortOrder', 'path'),
       },
       novels: {
         pattern: ['novels/*.html', 'novels/*/index.html'],
         refer: false,
-        sortBy: 'sortOrder',
+        sortBy: propSort('sortOrder', 'path'),
       },
       novelsPages: {
         pattern: ['novels/*/*.html', '!novels/*/index.html'],
         refer: false,
-        sortBy: 'sortOrder',
+        sortBy: propSort('sortOrder', 'path'),
       },
     }),
   )
