@@ -89,6 +89,23 @@ Metalsmith(__dirname)
   .destination('./public')
   .clean(false)
   .use(directoryMetadata({ pattern: '**/.metadata.*' }))
+  /*
+   * AsciiDocファイルの変換とレイアウトの適用
+   */
+  .use(
+    asciidoc({
+      extensions: asciidocExtensions,
+    }),
+  )
+  .use(
+    pugLayoutsCompile({
+      pattern: '**/*.html',
+      directory: 'layouts',
+    }),
+  )
+  /*
+   * 依存関係のメタデータを更新
+   */
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
     if (!metadata.hasOwnProperty('preloadDependencies')) {
@@ -142,11 +159,9 @@ Metalsmith(__dirname)
     });
     done();
   })
-  .use(
-    asciidoc({
-      extensions: asciidocExtensions,
-    }),
-  )
+  /*
+   * Pugテンプレートのコンパイル
+   */
   .use(
     pugCompile({
       copyFileData: true,
@@ -156,12 +171,6 @@ Metalsmith(__dirname)
         '!**/_*',
         '!**/_*/**',
       ],
-    }),
-  )
-  .use(
-    pugLayoutsCompile({
-      pattern: '**/*.html',
-      directory: 'layouts',
     }),
   )
   .use(
