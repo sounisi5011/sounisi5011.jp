@@ -540,3 +540,21 @@ function formatDate(
   );
 }
 Object.assign(exports, { formatDate });
+
+/**
+ * @param {...Date} dates
+ * @returns {Date}
+ */
+function minDate(...dates) {
+  return dates.reduce((d1, d2) => (d1.getTime() > d2.getTime() ? d2 : d1));
+}
+exports.minDate = minDate;
+
+/**
+ * @param {...Date} dates
+ * @returns {Date}
+ */
+function maxDate(...dates) {
+  return dates.reduce((d1, d2) => (d1.getTime() < d2.getTime() ? d2 : d1));
+}
+exports.maxDate = maxDate;
