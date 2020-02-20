@@ -21,6 +21,9 @@ const {
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
 const {
+  compile: pugLayoutsCompile,
+} = require('./plugins/metalsmith/pug-layouts');
+const {
   ignoreContentsEquals,
   showContentsDifference,
   setPublishedDate,
@@ -153,6 +156,12 @@ Metalsmith(__dirname)
         '!**/_*',
         '!**/_*/**',
       ],
+    }),
+  )
+  .use(
+    pugLayoutsCompile({
+      pattern: '**/*.html',
+      directory: 'layouts',
     }),
   )
   .use(
