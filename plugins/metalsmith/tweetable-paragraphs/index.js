@@ -242,17 +242,17 @@ module.exports = opts => {
     Object.getOwnPropertyDescriptors(opts),
   );
 
-  let redirectsList = [];
-  let warningList = [];
+  const redirectsList = [];
+  const warningList = [];
   /** @type {{filepath: string, message: string;}[][]} */
-  let errorListList = [];
+  const errorListList = [];
 
   return pluginKit.middleware({
     match: options.pattern,
     before() {
-      redirectsList = [];
-      warningList = [];
-      errorListList = [];
+      redirectsList.length = 0;
+      warningList.length = 0;
+      errorListList.length = 0;
     },
     async each(filename, filedata, files, metalsmith) {
       if (!options.filter(filename, filedata, metalsmith, files)) {
