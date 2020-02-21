@@ -78,7 +78,6 @@
     "metalsmith-excerpts": "^1.2.0",
     "metalsmith-html-validator": "^1.1.0",
     "metalsmith-ignore": "^1.0.0",
-    "metalsmith-in-place": "^4.4.0",
     "metalsmith-permalinks": "^2.2.0",
     "metalsmith-postcss2": "^1.0.0",
     "metalsmith-pug-extra": "^1.0.1",
