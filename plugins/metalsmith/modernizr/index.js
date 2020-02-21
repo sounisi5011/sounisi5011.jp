@@ -1,5 +1,6 @@
 const path = require('path');
 
+const modernizrVersion = require('modernizr/package.json').version;
 const sha1 = require('@sounisi5011/sha1');
 const modernizr = require('modernizr');
 const multimatch = require('multimatch');
@@ -24,7 +25,14 @@ async function buildModernizr(config) {
 }
 
 function getModernizrFilename(modernizrSource) {
-  return `${sha1(modernizrSource)}.js`;
+  /** @see https://github.com/Modernizr/Modernizr/blob/v3.9.1/lib/generate-banner.js */
+  const bannerRegExp = /^\n*(?:\/\*(?:(?!\*\/).)*\*\/\n*)+/s;
+  const modernizrJsCode = modernizrSource
+    .replace(bannerRegExp, '')
+    .replace(/(["'`])(\d+\.\d+\.\d+)\1/g, (matchdText, quot, version) =>
+      version === modernizrVersion ? `${quot}0.0.0${quot}` : matchdText,
+    );
+  return `${modernizrVersion}${path.sep}${sha1(modernizrJsCode)}.js`;
 }
 
 module.exports = opts => {
