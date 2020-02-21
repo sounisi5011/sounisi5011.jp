@@ -1,12 +1,19 @@
+const crypto = require('crypto');
 const path = require('path');
 
 const modernizrVersion = require('modernizr/package.json').version;
-const sha1 = require('@sounisi5011/sha1');
 const pluginKit = require('metalsmith-plugin-kit');
 const modernizr = require('modernizr');
 
 function isObject(value) {
   return typeof value === 'object' && value;
+}
+
+function sha1(data) {
+  return crypto
+    .createHash('sha1')
+    .update(data)
+    .digest('hex');
 }
 
 function callbackOptionGetter(filename, filedata, files, metalsmith) {

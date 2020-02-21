@@ -1,8 +1,8 @@
+const crypto = require('crypto');
 const path = require('path');
 const { URL } = require('url');
 const util = require('util');
 
-const sha1 = require('@sounisi5011/sha1');
 const cheerio = require('cheerio');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
@@ -33,6 +33,13 @@ function last(list) {
 
 function unicodeLength(str) {
   return [...str].length;
+}
+
+function sha1(data) {
+  return crypto
+    .createHash('sha1')
+    .update(data)
+    .digest('hex');
 }
 
 /**
