@@ -2,8 +2,8 @@ const path = require('path');
 
 const modernizrVersion = require('modernizr/package.json').version;
 const sha1 = require('@sounisi5011/sha1');
+const pluginKit = require('metalsmith-plugin-kit');
 const modernizr = require('modernizr');
-const multimatch = require('multimatch');
 
 function isObject(value) {
   return typeof value === 'object' && value;
@@ -44,50 +44,40 @@ module.exports = opts => {
     ...opts,
   };
 
-  return (files, metalsmith, done) => {
-    const generatedFileMap = new Map();
-    Promise.all(
-      multimatch(Object.keys(files), options.pattern).map(async filename => {
-        const filedata = files[filename];
-        const getOption = callbackOptionGetter(
-          filename,
-          filedata,
-          files,
-          metalsmith,
-        );
+  const generatedFileMap = new Map();
+  return pluginKit.middleware({
+    match: options.pattern,
+    async each(filename, filedata, files, metalsmith) {
+      const getOption = callbackOptionGetter(
+        filename,
+        filedata,
+        files,
+        metalsmith,
+      );
 
-        const config = getOption(options.config);
+      const config = getOption(options.config);
 
-        if (isObject(config)) {
-          const outputDir = getOption(options.outputDir);
+      if (isObject(config)) {
+        const outputDir = getOption(options.outputDir);
 
-          const modernizrSource = await buildModernizr(config);
-          const modernizrFilename = getModernizrFilename(modernizrSource);
-          const modernizrFilepath =
-            typeof outputDir === 'string' && outputDir
-              ? path.join(outputDir, modernizrFilename)
-              : modernizrFilename;
+        const modernizrSource = await buildModernizr(config);
+        const modernizrFilename = getModernizrFilename(modernizrSource);
+        const modernizrFilepath =
+          typeof outputDir === 'string' && outputDir
+            ? path.join(outputDir, modernizrFilename)
+            : modernizrFilename;
 
-          const outputProp = getOption(options.outputProp, modernizrFilepath);
-          if (typeof outputProp === 'string') {
-            filedata[outputProp] = modernizrFilepath;
-          }
-          generatedFileMap.set(modernizrFilepath, modernizrSource);
+        const outputProp = getOption(options.outputProp, modernizrFilepath);
+        if (typeof outputProp === 'string') {
+          filedata[outputProp] = modernizrFilepath;
         }
-      }),
-    )
-      .then(() => {
-        generatedFileMap.forEach((modernizrSource, modernizrFilepath) => {
-          files[modernizrFilepath] = {
-            contents: Buffer.from(modernizrSource, 'utf8'),
-            mode: '0644',
-          };
-        });
-
-        done();
-      })
-      .catch(error => {
-        done(error);
-      });
-  };
+        generatedFileMap.set(modernizrFilepath, modernizrSource);
+      }
+    },
+    after(files) {
+      generatedFileMap.forEach((modernizrSource, modernizrFilepath) =>
+        pluginKit.addFile(files, modernizrFilepath, modernizrSource),
+      );
+    },
+  });
 };

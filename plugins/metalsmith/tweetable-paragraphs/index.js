@@ -6,7 +6,6 @@ const sha1 = require('@sounisi5011/sha1');
 const cheerio = require('cheerio');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
-const multimatch = require('multimatch');
 const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
@@ -233,258 +232,288 @@ module.exports = opts => {
     ...opts,
   };
 
-  return (files, metalsmith, done) => {
-    const redirectsSet = new Set();
-    const warningList = [];
-    Promise.all(
-      multimatch(Object.keys(files), options.pattern).map(async filename => {
-        const filedata = files[filename];
-        if (!options.filter(filename, filedata, metalsmith, files)) {
-          return;
-        }
+  const redirectsSet = new Set();
+  const warningList = [];
+  /** @type {{filepath: string, message: string;}[][]} */
+  const errorListList = [];
 
-        debug(`processing file: ${util.inspect(filename)}`);
+  return pluginKit.middleware({
+    match: options.pattern,
+    async each(filename, filedata, files, metalsmith) {
+      if (!options.filter(filename, filedata, metalsmith, files)) {
+        return;
+      }
 
-        let $;
-        try {
-          $ = cheerio.load(filedata.contents.toString());
-        } catch (err) {
-          return;
-        }
+      debug(`processing file: ${util.inspect(filename)}`);
 
-        const newErrorList = [];
-        let isUpdated = false;
-        const idList = [];
+      let $;
+      try {
+        $ = cheerio.load(filedata.contents.toString());
+      } catch (err) {
+        return;
+      }
 
-        const pageURL = getURL($);
-        if (!pageURL) {
-          newErrorList.push({
-            filepath: filename,
-            message:
-              'ページの絶対URLを取得できませんでした。OGPのmeta要素、正規URLを指定するlink要素、または、絶対URLが記述されたbase要素が必要です',
+      const newErrorList = [];
+      let isUpdated = false;
+      const idList = [];
+
+      const pageURL = getURL($);
+      if (!pageURL) {
+        newErrorList.push({
+          filepath: filename,
+          message:
+            'ページの絶対URLを取得できませんでした。OGPのmeta要素、正規URLを指定するlink要素、または、絶対URLが記述されたbase要素が必要です',
+        });
+      } else {
+        $(options.rootSelector).each((i, elem) => {
+          const $root = $(elem);
+          const dataList = readTextContents($, $root, {
+            ignoreElems: options.ignoreElems,
+            replacer: options.textContentsReplacer,
           });
-        } else {
-          $(options.rootSelector).each((i, elem) => {
-            const $root = $(elem);
-            const dataList = readTextContents($, $root, {
-              ignoreElems: options.ignoreElems,
-              replacer: options.textContentsReplacer,
-            });
 
-            const usedIdMap = new Map();
-            dataList.forEach(({ id, idNode, text }) => {
-              if (!idNode) {
-                newErrorList.push({
-                  filepath: filename,
-                  message:
-                    'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
-                });
-                return;
-              }
+          const usedIdMap = new Map();
+          dataList.forEach(({ id, idNode, text }) => {
+            if (!idNode) {
+              newErrorList.push({
+                filepath: filename,
+                message:
+                  'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
+              });
+              return;
+            }
 
-              if (id === '') {
-                newErrorList.push({
-                  filepath: filename,
-                  message: 'id属性は空文字列を許可していません',
-                });
-                return;
-              }
+            if (id === '') {
+              newErrorList.push({
+                filepath: filename,
+                message: 'id属性は空文字列を許可していません',
+              });
+              return;
+            }
 
-              if (HTML_WS_REGEXP.test(id)) {
-                newErrorList.push({
-                  filepath: filename,
-                  message: `id属性値にASCIIホワイトスペース文字を含めることはできません: ${util.inspect(
-                    id,
-                  )}`,
-                });
-                return;
-              }
+            if (HTML_WS_REGEXP.test(id)) {
+              newErrorList.push({
+                filepath: filename,
+                message: `id属性値にASCIIホワイトスペース文字を含めることはできません: ${util.inspect(
+                  id,
+                )}`,
+              });
+              return;
+            }
 
-              if (usedIdMap.has(id)) {
-                if (usedIdMap.get(id) !== idNode) {
-                  newErrorList.push({
-                    filepath: `${filename}#${id}`,
-                    message:
-                      'id属性が重複しています。idの値はユニークでなければなりません',
-                  });
-                }
-              } else {
-                usedIdMap.set(id, idNode);
-              }
-
-              const fragmentPageURL = options.generateFragmentPageURL(
-                pageURL,
-                id,
-              );
-              const validTweetLength = getValidTweetLength(
-                text,
-                '\u{0020}' + fragmentPageURL,
-              );
-
-              if (validTweetLength) {
-                const lengthOutText = text.substring(validTweetLength);
-                const outLen = unicodeLength(lengthOutText);
+            if (usedIdMap.has(id)) {
+              if (usedIdMap.get(id) !== idNode) {
                 newErrorList.push({
                   filepath: `${filename}#${id}`,
                   message:
-                    `テキストが長すぎます。以下のテキストを削除し、あと${outLen}文字減らしてください:\n\n` +
-                    lengthOutText.replace(/^/gm, '  > '),
-                });
-                return;
-              }
-
-              if (/(?:\s*\n){3,}/.test(text)) {
-                warningList.push({
-                  filename,
-                  id,
-                  message:
-                    '2行以上の空行はTwitterでは無視されます。空行の間にid属性を追加し、個別のツイートに分離することを推奨します:',
-                  text,
+                    'id属性が重複しています。idの値はユニークでなければなりません',
                 });
               }
-
-              const $idElem = $(idNode);
-              $idElem.attr('data-share-url', fragmentPageURL);
-              $idElem.attr('data-share-text', text);
-
-              idList.push({ fragmentPageURL, id });
-
-              isUpdated = true;
-            });
-
-            $root.find(options.ignoreElems.join(', ')).each((i, elem) => {
-              const $elem = $(elem);
-              $elem.attr('data-share-ignore', '');
-            });
-          });
-        }
-
-        if (newErrorList.length >= 1) {
-          return newErrorList;
-        }
-
-        if (isUpdated) {
-          filedata.contents = Buffer.from($.html());
-          debug(`contents updated: ${util.inspect(filename)}`);
-
-          /**
-           * @see https://developers.facebook.com/docs/sharing/best-practices#images
-           */
-          const ogpQrWidth = 400;
-          /**
-           * @see https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/summary
-           */
-          const twitterCardQrWidth = 144;
-
-          const $root = $(':root');
-          const $head = $('head');
-          let $refreshMeta;
-          let ogpImageElem;
-          const twitterCardImageElems = $head.find(
-            'meta[name="twitter:image"]',
-          );
-          const twitterCardImageFound = Boolean(
-            twitterCardImageElems >= 1 && twitterCardImageElems.attr('content'),
-          );
-
-          $root.attr('data-canonical-url', pageURL);
-
-          for (const { id, fragmentPageURL } of idList) {
-            $root.attr('data-jump-id', id);
-
-            /**
-             * クロールを禁止するrobotsメタタグを追加
-             * @see https://developers.google.com/search/reference/robots_meta_tag?hl=ja
-             */
-            const $metaRobots = $head.find('meta[name=robots]');
-            if ($metaRobots.length >= 1) {
-              $metaRobots.each((i, elem) => {
-                const $meta = $(elem);
-                if (i === 0) {
-                  $meta.attr('content', 'noindex');
-                } else {
-                  $meta.remove();
-                }
-              });
             } else {
-              $head.append('<meta name="robots" content="noindex">');
+              usedIdMap.set(id, idNode);
             }
 
-            /*
-             * OGPタグのURLを上書き
-             */
-            $head.find('meta[property="og:url"]').each((i, elem) => {
+            const fragmentPageURL = options.generateFragmentPageURL(
+              pageURL,
+              id,
+            );
+            const validTweetLength = getValidTweetLength(
+              text,
+              '\u{0020}' + fragmentPageURL,
+            );
+
+            if (validTweetLength) {
+              const lengthOutText = text.substring(validTweetLength);
+              const outLen = unicodeLength(lengthOutText);
+              newErrorList.push({
+                filepath: `${filename}#${id}`,
+                message:
+                  `テキストが長すぎます。以下のテキストを削除し、あと${outLen}文字減らしてください:\n\n` +
+                  lengthOutText.replace(/^/gm, '  > '),
+              });
+              return;
+            }
+
+            if (/(?:\s*\n){3,}/.test(text)) {
+              warningList.push({
+                filename,
+                id,
+                message:
+                  '2行以上の空行はTwitterでは無視されます。空行の間にid属性を追加し、個別のツイートに分離することを推奨します:',
+                text,
+              });
+            }
+
+            const $idElem = $(idNode);
+            $idElem.attr('data-share-url', fragmentPageURL);
+            $idElem.attr('data-share-text', text);
+
+            idList.push({ fragmentPageURL, id });
+
+            isUpdated = true;
+          });
+
+          $root.find(options.ignoreElems.join(', ')).each((i, elem) => {
+            const $elem = $(elem);
+            $elem.attr('data-share-ignore', '');
+          });
+        });
+      }
+
+      if (newErrorList.length >= 1) {
+        errorListList.push(newErrorList);
+        return;
+      }
+
+      if (isUpdated) {
+        filedata.contents = Buffer.from($.html());
+        debug(`contents updated: ${util.inspect(filename)}`);
+
+        /**
+         * @see https://developers.facebook.com/docs/sharing/best-practices#images
+         */
+        const ogpQrWidth = 400;
+        /**
+         * @see https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/summary
+         */
+        const twitterCardQrWidth = 144;
+
+        const $root = $(':root');
+        const $head = $('head');
+        let $refreshMeta;
+        let ogpImageElem;
+        const twitterCardImageElems = $head.find('meta[name="twitter:image"]');
+        const twitterCardImageFound = Boolean(
+          twitterCardImageElems >= 1 && twitterCardImageElems.attr('content'),
+        );
+
+        $root.attr('data-canonical-url', pageURL);
+
+        for (const { id, fragmentPageURL } of idList) {
+          $root.attr('data-jump-id', id);
+
+          /**
+           * クロールを禁止するrobotsメタタグを追加
+           * @see https://developers.google.com/search/reference/robots_meta_tag?hl=ja
+           */
+          const $metaRobots = $head.find('meta[name=robots]');
+          if ($metaRobots.length >= 1) {
+            $metaRobots.each((i, elem) => {
               const $meta = $(elem);
               if (i === 0) {
-                $meta.attr('content', fragmentPageURL);
+                $meta.attr('content', 'noindex');
               } else {
                 $meta.remove();
               }
             });
+          } else {
+            $head.append('<meta name="robots" content="noindex">');
+          }
 
-            const encodedID = strictUriEncode(id);
-            const urlWithFragment = pageURL + '#' + encodedID;
-            const qrCodeBasename = sha1(`${encodedID}/${filename}`);
-
-            /*
-             * スクリプトが機能しない環境向けのリダイレクトタグを追加
-             */
-            if (!$refreshMeta) {
-              const $meta = $('<meta http-equiv="refresh">');
-              const $noscript = $('<noscript></noscript>');
-              $noscript.append($meta);
-
-              const $charset = $head.find('meta[charset]').first();
-              if ($charset.length >= 1) {
-                $charset.after($noscript);
-              } else {
-                $head.prepend($noscript);
-              }
-
-              $refreshMeta = $meta;
+          /*
+           * OGPタグのURLを上書き
+           */
+          $head.find('meta[property="og:url"]').each((i, elem) => {
+            const $meta = $(elem);
+            if (i === 0) {
+              $meta.attr('content', fragmentPageURL);
+            } else {
+              $meta.remove();
             }
-            $refreshMeta.attr('content', `0; url=${urlWithFragment}`);
+          });
 
-            await Promise.all(
-              [
-                async () => {
-                  /*
-                   * OGPの画像に、QRコードを追加する
-                   */
+          const encodedID = strictUriEncode(id);
+          const urlWithFragment = pageURL + '#' + encodedID;
+          const qrCodeBasename = sha1(`${encodedID}/${filename}`);
 
-                  if (!ogpImageElem) {
-                    ogpImageElem = $('<meta property="og:image">');
+          /*
+           * スクリプトが機能しない環境向けのリダイレクトタグを追加
+           */
+          if (!$refreshMeta) {
+            const $meta = $('<meta http-equiv="refresh">');
+            const $noscript = $('<noscript></noscript>');
+            $noscript.append($meta);
 
-                    $head
-                      .find(
-                        'meta[property="og:image"], meta[property^="og:image:"]',
-                      )
-                      .first()
-                      .before(
-                        ogpImageElem,
-                        '<meta property="og:image:type" content="image/png">',
-                        `<meta property="og:image:width" content="${ogpQrWidth}">`,
-                        `<meta property="og:image:height" content="${ogpQrWidth}">`,
-                      );
-                  }
+            const $charset = $head.find('meta[charset]').first();
+            if ($charset.length >= 1) {
+              $charset.after($noscript);
+            } else {
+              $head.prepend($noscript);
+            }
 
+            $refreshMeta = $meta;
+          }
+          $refreshMeta.attr('content', `0; url=${urlWithFragment}`);
+
+          await Promise.all(
+            [
+              async () => {
+                /*
+                 * OGPの画像に、QRコードを追加する
+                 */
+
+                if (!ogpImageElem) {
+                  ogpImageElem = $('<meta property="og:image">');
+
+                  $head
+                    .find(
+                      'meta[property="og:image"], meta[property^="og:image:"]',
+                    )
+                    .first()
+                    .before(
+                      ogpImageElem,
+                      '<meta property="og:image:type" content="image/png">',
+                      `<meta property="og:image:width" content="${ogpQrWidth}">`,
+                      `<meta property="og:image:height" content="${ogpQrWidth}">`,
+                    );
+                }
+
+                /*
+                 * ページのURLを示すQRコードを生成
+                 */
+                const qrFilename = path.join(
+                  path.dirname(filename),
+                  `${qrCodeBasename}.${ogpQrWidth}x${ogpQrWidth}.png`,
+                );
+
+                /*
+                 * QRコードの画像ファイルを生成
+                 */
+                pluginKit.addFile(
+                  files,
+                  qrFilename,
+                  await QRCode.toBuffer(urlWithFragment, {
+                    type: 'png',
+                    width: ogpQrWidth,
+                  }),
+                );
+                debug(`file generated: ${util.inspect(qrFilename)}`);
+
+                const qrFileURL = new URL(pageURL);
+                qrFileURL.pathname = qrFilename;
+                qrFileURL.search = '';
+                qrFileURL.hash = '';
+
+                ogpImageElem.attr('content', String(qrFileURL));
+              },
+              async () => {
+                /*
+                 * Twitter Cardの画像が未定義の場合は、URLを示すQRコードを指定する
+                 */
+                if (!twitterCardImageFound) {
                   /*
                    * ページのURLを示すQRコードを生成
                    */
                   const qrFilename = path.join(
                     path.dirname(filename),
-                    `${qrCodeBasename}.${ogpQrWidth}x${ogpQrWidth}.png`,
+                    `${qrCodeBasename}.${twitterCardQrWidth}x${twitterCardQrWidth}.png`,
                   );
-
-                  /*
-                   * QRコードの画像ファイルを生成
-                   */
                   pluginKit.addFile(
                     files,
                     qrFilename,
                     await QRCode.toBuffer(urlWithFragment, {
                       type: 'png',
-                      width: ogpQrWidth,
+                      width: twitterCardQrWidth,
                     }),
                   );
                   debug(`file generated: ${util.inspect(qrFilename)}`);
@@ -494,140 +523,100 @@ module.exports = opts => {
                   qrFileURL.search = '';
                   qrFileURL.hash = '';
 
-                  ogpImageElem.attr('content', String(qrFileURL));
-                },
-                async () => {
-                  /*
-                   * Twitter Cardの画像が未定義の場合は、URLを示すQRコードを指定する
-                   */
-                  if (!twitterCardImageFound) {
-                    /*
-                     * ページのURLを示すQRコードを生成
-                     */
-                    const qrFilename = path.join(
-                      path.dirname(filename),
-                      `${qrCodeBasename}.${twitterCardQrWidth}x${twitterCardQrWidth}.png`,
+                  const twitterCardImageElem = $head.find(
+                    'meta[name="twitter:image"]',
+                  );
+                  if (twitterCardImageElem.length < 1) {
+                    const twitterCardImageElem = $(
+                      '<meta name="twitter:image">',
                     );
-                    pluginKit.addFile(
-                      files,
-                      qrFilename,
-                      await QRCode.toBuffer(urlWithFragment, {
-                        type: 'png',
-                        width: twitterCardQrWidth,
-                      }),
-                    );
-                    debug(`file generated: ${util.inspect(qrFilename)}`);
-
-                    const qrFileURL = new URL(pageURL);
-                    qrFileURL.pathname = qrFilename;
-                    qrFileURL.search = '';
-                    qrFileURL.hash = '';
-
-                    const twitterCardImageElem = $head.find(
-                      'meta[name="twitter:image"]',
-                    );
-                    if (twitterCardImageElem.length < 1) {
-                      const twitterCardImageElem = $(
-                        '<meta name="twitter:image">',
-                      );
-                      twitterCardImageElem.attr('content', String(qrFileURL));
-                      $head.append(twitterCardImageElem);
-                    } else {
-                      twitterCardImageElem.attr('content', String(qrFileURL));
-                    }
+                    twitterCardImageElem.attr('content', String(qrFileURL));
+                    $head.append(twitterCardImageElem);
+                  } else {
+                    twitterCardImageElem.attr('content', String(qrFileURL));
                   }
-                },
-              ].map(fn => fn()),
-            );
-
-            /*
-             * ファイルを生成
-             */
-            const newFilename = path.join(ASSETS_DIR, id, filename);
-            pluginKit.addFile(files, newFilename, $.html());
-
-            /*
-             * metalsmith-sitemapプラグインが生成するsitemap.xmlにファイルを含めない
-             */
-            files[newFilename].private = true;
-
-            debug(`file generated: ${util.inspect(newFilename)}`);
-
-            /*
-             * リライトのルールを追加
-             * @see https://mottox2.com/posts/119
-             */
-            const filenameURL = filepath2RootRelativeURL(filename);
-            const newFilenameURL = filepath2RootRelativeURL(newFilename);
-            redirectsSet.add(
-              `${filenameURL} fragment=${id} ${newFilenameURL} 200!`,
-            );
-            redirectsSet.add(
-              [
-                `${filenameURL.replace(/\/index.html$/, '')} fragment=${id}`,
-                newFilenameURL.replace(/\/index.html$/, ''),
-                `200!`,
-              ].join(' '),
-            );
-          }
-        }
-      }),
-    )
-      .then(errorListList => {
-        const errorList = [].concat(...errorListList).filter(Boolean);
-
-        warningList.forEach(({ filename, id, message, text }) => {
-          console.warn(
-            [
-              `${filename}#${id}: ${message}`,
-              '',
-              text.replace(/^/gm, '  > '),
-              '',
-            ]
-              .join('\n')
-              .replace(/^(?=[^\r\n])/gm, '  '),
+                }
+              },
+            ].map(fn => fn()),
           );
-        });
-        if (errorList.length >= 1) {
-          throw new Error(
+
+          /*
+           * ファイルを生成
+           */
+          const newFilename = path.join(ASSETS_DIR, id, filename);
+          pluginKit.addFile(files, newFilename, $.html());
+
+          /*
+           * metalsmith-sitemapプラグインが生成するsitemap.xmlにファイルを含めない
+           */
+          files[newFilename].private = true;
+
+          debug(`file generated: ${util.inspect(newFilename)}`);
+
+          /*
+           * リライトのルールを追加
+           * @see https://mottox2.com/posts/119
+           */
+          const filenameURL = filepath2RootRelativeURL(filename);
+          const newFilenameURL = filepath2RootRelativeURL(newFilename);
+          redirectsSet.add(
+            `${filenameURL} fragment=${id} ${newFilenameURL} 200!`,
+          );
+          redirectsSet.add(
             [
-              '以下のファイルでエラーが発生しました：',
-              '',
-              ...errorList.map(({ filepath, message }) =>
-                `${filepath}: ${message}\n`.replace(/^(?=[^\r\n])/gm, '  '),
-              ),
-            ].join('\n'),
+              `${filenameURL.replace(/\/index.html$/, '')} fragment=${id}`,
+              newFilenameURL.replace(/\/index.html$/, ''),
+              `200!`,
+            ].join(' '),
           );
         }
+      }
+    },
+    after(files) {
+      const errorList = [].concat(...errorListList).filter(Boolean);
 
-        /*
-         * _redirectsファイルに書き込む
-         */
-        let redirectsFiledata = files['_redirects'];
-        if (!redirectsFiledata) {
-          pluginKit.addFile(
-            files,
-            '_redirects',
-            '# tweetable-paragraphs rewrite paths #\n',
-          );
-          redirectsFiledata = files['_redirects'];
-        }
-        redirectsFiledata.contents = Buffer.from(
-          String(
-            redirectsFiledata.contents,
-          ).replace(/^# tweetable-paragraphs rewrite paths #$/m, () =>
-            [
-              `/${ASSETS_DIR}/:id/* /:splat?fragment=:id 301!`,
-              ...redirectsSet,
-              '/* fragment=:id /:splat#:id 301!',
-            ].join('\n'),
-          ),
+      warningList.forEach(({ filename, id, message, text }) => {
+        console.warn(
+          [`${filename}#${id}: ${message}`, '', text.replace(/^/gm, '  > '), '']
+            .join('\n')
+            .replace(/^(?=[^\r\n])/gm, '  '),
         );
-
-        done();
-      })
-      .catch(error => {
-        done(error);
       });
-  };
+      if (errorList.length >= 1) {
+        throw new Error(
+          [
+            '以下のファイルでエラーが発生しました：',
+            '',
+            ...errorList.map(({ filepath, message }) =>
+              `${filepath}: ${message}\n`.replace(/^(?=[^\r\n])/gm, '  '),
+            ),
+          ].join('\n'),
+        );
+      }
+
+      /*
+       * _redirectsファイルに書き込む
+       */
+      let redirectsFiledata = files['_redirects'];
+      if (!redirectsFiledata) {
+        pluginKit.addFile(
+          files,
+          '_redirects',
+          '# tweetable-paragraphs rewrite paths #\n',
+        );
+        redirectsFiledata = files['_redirects'];
+      }
+      redirectsFiledata.contents = Buffer.from(
+        String(
+          redirectsFiledata.contents,
+        ).replace(/^# tweetable-paragraphs rewrite paths #$/m, () =>
+          [
+            `/${ASSETS_DIR}/:id/* /:splat?fragment=:id 301!`,
+            ...redirectsSet,
+            '/* fragment=:id /:splat#:id 301!',
+          ].join('\n'),
+        ),
+      );
+    },
+  });
 };
