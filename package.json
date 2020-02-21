@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "author": "sounisi5011",
   "scripts": {
-    "build": "npm-run-all show-envs clean:public --parallel build:*",
+    "build": "npm-run-all show-envs --parallel build:*",
     "build:pages": "node ./index.js",
     "clean": "run-p clean:*",
     "clean:cache": "del ./cache/",

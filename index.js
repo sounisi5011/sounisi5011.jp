@@ -4,6 +4,7 @@ const addFileMeta = require('@sounisi5011/metalsmith-add-file-metadata');
 const anotherSource = require('@sounisi5011/metalsmith-another-source');
 const asciidoc = require('@sounisi5011/metalsmith-asciidoctor');
 const blankshield = require('@sounisi5011/metalsmith-blankshield');
+const clean = require('@sounisi5011/metalsmith-clean');
 const commentFrontmatter = require('@sounisi5011/metalsmith-comment-matters');
 const copyConvention = require('@sounisi5011/metalsmith-copy-convention');
 const downloadConvention = require('@sounisi5011/metalsmith-download-convention');
@@ -433,6 +434,7 @@ Metalsmith(__dirname)
       modifiedProperty: 'modified',
     }),
   )
+  .use(clean())
   .build(err => {
     if (err) {
       if (err.stack && !err.stack.includes(err.message)) {
