@@ -1,7 +1,21 @@
 const { URL } = require('url');
 
+const addFileMeta = require('@sounisi5011/metalsmith-add-file-metadata');
+const anotherSource = require('@sounisi5011/metalsmith-another-source');
 const asciidoc = require('@sounisi5011/metalsmith-asciidoctor');
+const blankshield = require('@sounisi5011/metalsmith-blankshield');
+const commentFrontmatter = require('@sounisi5011/metalsmith-comment-matters');
+const copyConvention = require('@sounisi5011/metalsmith-copy-convention');
+const downloadConvention = require('@sounisi5011/metalsmith-download-convention');
+const modernizr = require('@sounisi5011/metalsmith-modernizr');
+const mustache = require('@sounisi5011/metalsmith-mustache');
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
+const pageQrCodeGenerator = require('@sounisi5011/metalsmith-page-qr-code-gen');
+const sitemap = require('@sounisi5011/metalsmith-sitemap');
+const svg2ico = require('@sounisi5011/metalsmith-svg-to-ico');
+const svg2png = require('@sounisi5011/metalsmith-svg-to-png');
+const svgo = require('@sounisi5011/metalsmith-svgo');
+const tweetableParagraphs = require('@sounisi5011/metalsmith-tweetable-paragraphs');
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
@@ -20,28 +34,14 @@ const {
 } = require('metalsmith-pug-extra');
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
-const addFileMeta = require('./plugins/metalsmith/add-file-metadata');
-const anotherSource = require('./plugins/metalsmith/another-source');
-const blankshield = require('./plugins/metalsmith/blankshield');
 const childPages = require('./plugins/metalsmith/child-pages');
-const commentFrontmatter = require('./plugins/metalsmith/comment-matters');
-const copyConvention = require('./plugins/metalsmith/copy-convention');
-const downloadConvention = require('./plugins/metalsmith/download-convention');
 const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
 const mergePreloadDependencies = require('./plugins/metalsmith/merge-preload-dependencies');
-const modernizr = require('./plugins/metalsmith/modernizr');
-const mustache = require('./plugins/metalsmith/mustache');
 const netlifyMetadata = require('./plugins/metalsmith/netlifyMetadata');
-const pageQrCodeGenerator = require('./plugins/metalsmith/page-qr-code-gen');
 const preloadList = require('./plugins/metalsmith/preload-list');
 const {
   compile: pugLayoutsCompile,
 } = require('./plugins/metalsmith/pug-layouts');
-const sitemap = require('./plugins/metalsmith/sitemap');
-const svg2ico = require('./plugins/metalsmith/svg-to-ico');
-const svg2png = require('./plugins/metalsmith/svg-to-png');
-const svgo = require('./plugins/metalsmith/svgo');
-const tweetableParagraphs = require('./plugins/metalsmith/tweetable-paragraphs');
 const {
   ignoreContentsEquals,
   showContentsDifference,
