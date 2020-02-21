@@ -11,8 +11,6 @@ const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
-const { rootRrelativeURL } = require('../../../src/utils/template-functions');
-
 const debug = logger(require('./package.json').name);
 
 const ASSETS_DIR = '_fragment-anchors';
@@ -36,6 +34,21 @@ function last(list) {
 
 function unicodeLength(str) {
   return [...str].length;
+}
+
+/**
+ * @param {string} filepath
+ * @returns {string}
+ * Note: WHATWG URL APIは以下の問題があるため使用しない:
+ *       - バックスラッシュをスラッシュに置換してしまう。Unixでは、バックスラッシュもファイル名の一部
+ *       - 連続するスラッシュを省略しない。
+ */
+function filepath2RootRelativeURL(filepath) {
+  const normalizedRootPath = path.join(path.sep, filepath);
+  return normalizedRootPath
+    .split(path.sep)
+    .map(strictUriEncode)
+    .join('/');
 }
 
 function getURL($) {
@@ -533,17 +546,17 @@ module.exports = opts => {
              * リライトのルールを追加
              * @see https://mottox2.com/posts/119
              */
+            const filenameURL = filepath2RootRelativeURL(filename);
+            const newFilenameURL = filepath2RootRelativeURL(newFilename);
             redirectsSet.add(
-              `${rootRrelativeURL(filename)} fragment=${id} ${rootRrelativeURL(
-                newFilename,
-              )} 200!`,
+              `${filenameURL} fragment=${id} ${newFilenameURL} 200!`,
             );
             redirectsSet.add(
-              `${rootRrelativeURL(
-                filename.replace(/\/index.html$/, ''),
-              )} fragment=${id} ${rootRrelativeURL(
-                newFilename.replace(/\/index.html$/, ''),
-              )} 200!`,
+              [
+                `${filenameURL.replace(/\/index.html$/, '')} fragment=${id}`,
+                newFilenameURL.replace(/\/index.html$/, ''),
+                `200!`,
+              ].join(' '),
             );
           }
         }
