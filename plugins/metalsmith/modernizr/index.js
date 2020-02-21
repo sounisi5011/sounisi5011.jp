@@ -54,6 +54,9 @@ module.exports = opts => {
   const generatedFileMap = new Map();
   return pluginKit.middleware({
     match: options.pattern,
+    before() {
+      generatedFileMap.clear();
+    },
     async each(filename, filedata, files, metalsmith) {
       const getOption = callbackOptionGetter(
         filename,
