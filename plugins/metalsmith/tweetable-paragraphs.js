@@ -12,8 +12,8 @@ const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
-const { sha1 } = require('../utils/hash');
-const { rootRrelativeURL } = require('../utils/template-functions');
+const { sha1 } = require('../../src/utils/hash');
+const { rootRrelativeURL } = require('../../src/utils/template-functions');
 
 const ASSETS_DIR = '_fragment-anchors';
 

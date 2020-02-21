@@ -20,33 +20,33 @@ const {
 } = require('metalsmith-pug-extra');
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
+const addFileMeta = require('./plugins/metalsmith/add-file-metadata');
+const anotherSource = require('./plugins/metalsmith/another-source');
+const blankshield = require('./plugins/metalsmith/blankshield');
+const childPages = require('./plugins/metalsmith/child-pages');
+const commentFrontmatter = require('./plugins/metalsmith/comment-matters');
+const copyConvention = require('./plugins/metalsmith/copy-convention');
+const downloadConvention = require('./plugins/metalsmith/download-convention');
 const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
+const mergePreloadDependencies = require('./plugins/metalsmith/merge-preload-dependencies');
+const modernizr = require('./plugins/metalsmith/modernizr');
+const mustache = require('./plugins/metalsmith/mustache');
+const netlifyMetadata = require('./plugins/metalsmith/netlifyMetadata');
+const pageQrCodeGenerator = require('./plugins/metalsmith/page-qr-code-gen');
+const preloadList = require('./plugins/metalsmith/preload-list');
 const {
   compile: pugLayoutsCompile,
 } = require('./plugins/metalsmith/pug-layouts');
+const sitemap = require('./plugins/metalsmith/sitemap');
+const svg2ico = require('./plugins/metalsmith/svg-to-ico');
+const svg2png = require('./plugins/metalsmith/svg-to-png');
+const svgo = require('./plugins/metalsmith/svgo');
+const tweetableParagraphs = require('./plugins/metalsmith/tweetable-paragraphs');
 const {
   ignoreContentsEquals,
   showContentsDifference,
   setPublishedDate,
 } = require('./src/plugin-options/netlify-published-date');
-const addFileMeta = require('./src/plugins/add-file-metadata');
-const anotherSource = require('./src/plugins/another-source');
-const blankshield = require('./src/plugins/blankshield');
-const childPages = require('./src/plugins/child-pages');
-const commentFrontmatter = require('./src/plugins/comment-matters');
-const copyConvention = require('./src/plugins/copy-convention');
-const downloadConvention = require('./src/plugins/download-convention');
-const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
-const modernizr = require('./src/plugins/modernizr');
-const mustache = require('./src/plugins/mustache');
-const netlifyMetadata = require('./src/plugins/netlifyMetadata');
-const pageQrCodeGenerator = require('./src/plugins/page-qr-code-gen');
-const preloadList = require('./src/plugins/preload-list');
-const sitemap = require('./src/plugins/sitemap');
-const svg2ico = require('./src/plugins/svg-to-ico');
-const svg2png = require('./src/plugins/svg-to-png');
-const svgo = require('./src/plugins/svgo');
-const tweetableParagraphs = require('./src/plugins/tweetable-paragraphs');
 const { propSort } = require('./src/utils');
 const templateFuncs = require('./src/utils/template-functions');
 
