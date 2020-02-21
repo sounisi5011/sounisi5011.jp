@@ -222,15 +222,18 @@ function readTextContents($, elem, opts = {}, prevIdNode = null) {
 }
 
 module.exports = opts => {
-  const options = {
-    filter: (filename, filedata, metalsmith, files) => true,
-    generateFragmentPageURL: (url, id) => url + '#' + strictUriEncode(id),
-    ignoreElems: ['style', 'script', 'template'],
-    pattern: '**/*.html',
-    rootSelector: 'body',
-    textContentsReplacer: ($elem, childTextDataList) => childTextDataList,
-    ...opts,
-  };
+  const options = Object.defineProperties(
+    {
+      filter: (filename, filedata, metalsmith, files) => true,
+      generateFragmentPageURL: (url, id) => url + '#' + strictUriEncode(id),
+      ignoreElems: ['style', 'script', 'template'],
+      pattern: '**/*.html',
+      rootSelector: 'body',
+      textContentsReplacer: ($elem, childTextDataList) => childTextDataList,
+      allowWarning: true,
+    },
+    Object.getOwnPropertyDescriptors(opts),
+  );
 
   const redirectsSet = new Set();
   const warningList = [];
@@ -575,13 +578,20 @@ module.exports = opts => {
     after(files) {
       const errorList = [].concat(...errorListList).filter(Boolean);
 
-      warningList.forEach(({ filename, id, message, text }) => {
-        console.warn(
-          [`${filename}#${id}: ${message}`, '', text.replace(/^/gm, '  > '), '']
-            .join('\n')
-            .replace(/^(?=[^\r\n])/gm, '  '),
-        );
-      });
+      if (options.allowWarning) {
+        warningList.forEach(({ filename, id, message, text }) => {
+          console.warn(
+            [
+              `${filename}#${id}: ${message}`,
+              '',
+              text.replace(/^/gm, '  > '),
+              '',
+            ]
+              .join('\n')
+              .replace(/^(?=[^\r\n])/gm, '  '),
+          );
+        });
+      }
       if (errorList.length >= 1) {
         throw new Error(
           [

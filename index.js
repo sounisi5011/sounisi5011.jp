@@ -342,7 +342,7 @@ Metalsmith(__dirname)
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
       metadataUpdater: setPublishedDate,
-      plugins: [
+      plugins: (({ allowWarning = true } = {}) => [
         pugRender({
           locals: {
             env: process.env,
@@ -408,8 +408,15 @@ Metalsmith(__dirname)
             }
             return childTextDataList;
           },
+          get allowWarning() {
+            return allowWarning;
+          },
         }),
-      ],
+        (files, metalsmith, done) => {
+          allowWarning = false;
+          done();
+        },
+      ])(),
     }),
   )
   .use(
