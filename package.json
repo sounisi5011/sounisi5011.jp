@@ -50,6 +50,7 @@
     "@sounisi5011/metalsmith-another-source": "file:plugins/metalsmith/another-source",
     "@sounisi5011/metalsmith-asciidoctor": "file:plugins/metalsmith/asciidoctor",
     "@sounisi5011/metalsmith-blankshield": "file:plugins/metalsmith/blankshield",
+    "@sounisi5011/metalsmith-clean": "file:plugins/metalsmith/clean",
     "@sounisi5011/metalsmith-comment-matters": "file:plugins/metalsmith/comment-matters",
     "@sounisi5011/metalsmith-copy-convention": "file:plugins/metalsmith/copy-convention",
     "@sounisi5011/metalsmith-download-convention": "file:plugins/metalsmith/download-convention",
