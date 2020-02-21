@@ -1,0 +1,14 @@
+{
+  "name": "@sounisi5011/metalsmith-sitemap",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "lodash.get": "^4.4.2",
+    "multimatch": "^4.0.0",
+    "sitemap": "^5.1.0",
+    "strict-uri-encode": "^2.0.0"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

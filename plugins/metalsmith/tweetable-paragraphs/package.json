@@ -1,0 +1,17 @@
+{
+  "name": "@sounisi5011/metalsmith-tweetable-paragraphs",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "debug": "^4.1.1",
+    "metalsmith-plugin-kit": "^1.0.1",
+    "multimatch": "^4.0.0",
+    "qrcode": "^1.4.4",
+    "strict-uri-encode": "^2.0.0",
+    "twitter-text": "^3.0.1"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

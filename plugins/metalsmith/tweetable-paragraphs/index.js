@@ -2,18 +2,18 @@ const path = require('path');
 const { URL } = require('url');
 const util = require('util');
 
-const debug = require('debug')(
-  `metalsmith---${path.relative(process.cwd(), __filename)}`,
-);
 const cheerio = require('cheerio');
+const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
 const multimatch = require('multimatch');
 const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
-const { sha1 } = require('../../src/utils/hash');
-const { rootRrelativeURL } = require('../../src/utils/template-functions');
+const { sha1 } = require('../../../src/utils/hash');
+const { rootRrelativeURL } = require('../../../src/utils/template-functions');
+
+const debug = logger(require('./package.json').name);
 
 const ASSETS_DIR = '_fragment-anchors';
 

@@ -1,0 +1,13 @@
+{
+  "name": "@sounisi5011/metalsmith-comment-matters",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "gray-matter": "^4.0.2",
+    "is-utf8": "^0.2.1",
+    "metalsmith-plugin-kit": "^1.0.1"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

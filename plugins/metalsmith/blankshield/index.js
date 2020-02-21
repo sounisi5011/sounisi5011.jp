@@ -1,10 +1,8 @@
-const path = require('path');
-
-const debug = require('debug')(
-  `metalsmith-${path.relative(process.cwd(), __filename)}`,
-);
 const cheerio = require('cheerio');
+const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
+
+const debug = logger(require('./package.json').name);
 
 module.exports = opts => {
   const options = {

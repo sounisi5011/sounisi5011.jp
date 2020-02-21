@@ -1,0 +1,12 @@
+{
+  "name": "@sounisi5011/metalsmith-modernizr",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "modernizr": "^3.9.1",
+    "multimatch": "^4.0.0"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

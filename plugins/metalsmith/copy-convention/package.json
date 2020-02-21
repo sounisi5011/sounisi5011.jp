@@ -1,0 +1,11 @@
+{
+  "name": "@sounisi5011/metalsmith-copy-convention",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "metalsmith-plugin-kit": "^1.0.1"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}
