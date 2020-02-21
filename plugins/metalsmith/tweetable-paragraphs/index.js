@@ -235,6 +235,7 @@ module.exports = opts => {
 
   return (files, metalsmith, done) => {
     const redirectsSet = new Set();
+    const warningList = [];
     Promise.all(
       multimatch(Object.keys(files), options.pattern).map(async filename => {
         const filedata = files[filename];
@@ -330,6 +331,16 @@ module.exports = opts => {
                     lengthOutText.replace(/^/gm, '  > '),
                 });
                 return;
+              }
+
+              if (/(?:\s*\n){3,}/.test(text)) {
+                warningList.push({
+                  filename,
+                  id,
+                  message:
+                    '2行以上の空行はTwitterでは無視されます。空行の間にid属性を追加し、個別のツイートに分離することを推奨します:',
+                  text,
+                });
               }
 
               const $idElem = $(idNode);
@@ -564,6 +575,19 @@ module.exports = opts => {
     )
       .then(errorListList => {
         const errorList = [].concat(...errorListList).filter(Boolean);
+
+        warningList.forEach(({ filename, id, message, text }) => {
+          console.warn(
+            [
+              `${filename}#${id}: ${message}`,
+              '',
+              text.replace(/^/gm, '  > '),
+              '',
+            ]
+              .join('\n')
+              .replace(/^(?=[^\r\n])/gm, '  '),
+          );
+        });
         if (errorList.length >= 1) {
           done(
             new Error(
