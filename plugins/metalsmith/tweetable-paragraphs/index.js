@@ -242,7 +242,7 @@ module.exports = opts => {
     Object.getOwnPropertyDescriptors(opts),
   );
 
-  const redirectsSet = new Set();
+  const redirectsList = [];
   const warningList = [];
   /** @type {{filepath: string, message: string;}[][]} */
   const errorListList = [];
@@ -569,15 +569,22 @@ module.exports = opts => {
            */
           const filenameURL = filepath2RootRelativeURL(filename);
           const newFilenameURL = filepath2RootRelativeURL(newFilename);
-          redirectsSet.add(
-            `${filenameURL} fragment=${id} ${newFilenameURL} 200!`,
-          );
-          redirectsSet.add(
+          redirectsList.push(
             [
-              `${filenameURL.replace(/\/index.html$/, '')} fragment=${id}`,
-              newFilenameURL.replace(/\/index.html$/, ''),
-              `200!`,
-            ].join(' '),
+              ...new Set([
+                `${filenameURL} fragment=${id} ${newFilenameURL} 200!`,
+                [
+                  filenameURL
+                    .replace(/\/index.html$/, '')
+                    .padEnd(filenameURL.length),
+                  `fragment=${id}`,
+                  newFilenameURL
+                    .replace(/\/index.html$/, '')
+                    .padEnd(newFilenameURL.length),
+                  `200!`,
+                ].join(' '),
+              ]),
+            ].join('\n'),
           );
         }
       }
@@ -629,7 +636,7 @@ module.exports = opts => {
         ).replace(/^# tweetable-paragraphs rewrite paths #$/m, () =>
           [
             `/${ASSETS_DIR}/:id/* /:splat?fragment=:id 301!`,
-            ...redirectsSet,
+            ...redirectsList.sort(),
             '/* fragment=:id /:splat#:id 301!',
           ].join('\n'),
         ),
