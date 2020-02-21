@@ -89,7 +89,5 @@ module.exports = opts => {
       .catch(error => {
         done(error);
       });
-
-    done();
   };
 };

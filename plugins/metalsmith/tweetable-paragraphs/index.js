@@ -589,18 +589,15 @@ module.exports = opts => {
           );
         });
         if (errorList.length >= 1) {
-          done(
-            new Error(
-              [
-                '以下のファイルでエラーが発生しました：',
-                '',
-                ...errorList.map(({ filepath, message }) =>
-                  `${filepath}: ${message}\n`.replace(/^(?=[^\r\n])/gm, '  '),
-                ),
-              ].join('\n'),
-            ),
+          throw new Error(
+            [
+              '以下のファイルでエラーが発生しました：',
+              '',
+              ...errorList.map(({ filepath, message }) =>
+                `${filepath}: ${message}\n`.replace(/^(?=[^\r\n])/gm, '  '),
+              ),
+            ].join('\n'),
           );
-          return;
         }
 
         /*
