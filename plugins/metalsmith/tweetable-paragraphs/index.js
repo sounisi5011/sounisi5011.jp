@@ -579,8 +579,15 @@ module.exports = opts => {
               ...new Set([
                 `${filenameURL} fragment=${id} ${newFilenameURL} 200!`,
                 [
-                  `${filenameURL.replace(/\/index.html$/, '')} fragment=${id}`,
-                  newFilenameURL.replace(/\/index.html$/, ''),
+                  `${filenameURL.replace(
+                    /\/index.html$/,
+                    '',
+                  )} fragment=${id}`.padEnd(
+                    `${filenameURL} fragment=${id}`.length,
+                  ),
+                  newFilenameURL
+                    .replace(/\/index.html$/, '')
+                    .padEnd(newFilenameURL.length),
                   `200!`,
                 ].join(' '),
               ]),
