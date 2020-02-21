@@ -1,0 +1,13 @@
+{
+  "name": "@sounisi5011/metalsmith-page-qr-code-gen",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "image-size": "^0.8.3",
+    "metalsmith-plugin-kit": "^1.0.1",
+    "qrcode": "^1.4.4"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

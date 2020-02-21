@@ -1,0 +1,14 @@
+{
+  "name": "@sounisi5011/metalsmith-download-convention",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "download": "^7.1.0",
+    "is-url": "^1.2.4",
+    "keyv-file": "^0.1.13",
+    "metalsmith-plugin-kit": "^1.0.1"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

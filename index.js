@@ -1,7 +1,26 @@
 const { URL } = require('url');
 
+const addFileMeta = require('@sounisi5011/metalsmith-add-file-metadata');
+const anotherSource = require('@sounisi5011/metalsmith-another-source');
 const asciidoc = require('@sounisi5011/metalsmith-asciidoctor');
+const blankshield = require('@sounisi5011/metalsmith-blankshield');
+const clean = require('@sounisi5011/metalsmith-clean');
+const commentFrontmatter = require('@sounisi5011/metalsmith-comment-matters');
+const copyConvention = require('@sounisi5011/metalsmith-copy-convention');
+const downloadConvention = require('@sounisi5011/metalsmith-download-convention');
+const modernizr = require('@sounisi5011/metalsmith-modernizr');
+const mustache = require('@sounisi5011/metalsmith-mustache');
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
+const pageQrCodeGenerator = require('@sounisi5011/metalsmith-page-qr-code-gen');
+const preloadList = require('@sounisi5011/metalsmith-preload-list');
+const {
+  compile: pugLayoutsCompile,
+} = require('@sounisi5011/metalsmith-pug-layouts');
+const sitemap = require('@sounisi5011/metalsmith-sitemap');
+const svg2ico = require('@sounisi5011/metalsmith-svg-to-ico');
+const svg2png = require('@sounisi5011/metalsmith-svg-to-png');
+const svgo = require('@sounisi5011/metalsmith-svgo');
+const tweetableParagraphs = require('@sounisi5011/metalsmith-tweetable-paragraphs');
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
@@ -20,33 +39,15 @@ const {
 } = require('metalsmith-pug-extra');
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
+const childPages = require('./plugins/metalsmith/child-pages');
 const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
-const {
-  compile: pugLayoutsCompile,
-} = require('./plugins/metalsmith/pug-layouts');
+const mergePreloadDependencies = require('./plugins/metalsmith/merge-preload-dependencies');
+const netlifyMetadata = require('./plugins/metalsmith/netlifyMetadata');
 const {
   ignoreContentsEquals,
   showContentsDifference,
   setPublishedDate,
 } = require('./src/plugin-options/netlify-published-date');
-const addFileMeta = require('./src/plugins/add-file-metadata');
-const anotherSource = require('./src/plugins/another-source');
-const blankshield = require('./src/plugins/blankshield');
-const childPages = require('./src/plugins/child-pages');
-const commentFrontmatter = require('./src/plugins/comment-matters');
-const copyConvention = require('./src/plugins/copy-convention');
-const downloadConvention = require('./src/plugins/download-convention');
-const mergePreloadDependencies = require('./src/plugins/merge-preload-dependencies');
-const modernizr = require('./src/plugins/modernizr');
-const mustache = require('./src/plugins/mustache');
-const netlifyMetadata = require('./src/plugins/netlifyMetadata');
-const pageQrCodeGenerator = require('./src/plugins/page-qr-code-gen');
-const preloadList = require('./src/plugins/preload-list');
-const sitemap = require('./src/plugins/sitemap');
-const svg2ico = require('./src/plugins/svg-to-ico');
-const svg2png = require('./src/plugins/svg-to-png');
-const svgo = require('./src/plugins/svgo');
-const tweetableParagraphs = require('./src/plugins/tweetable-paragraphs');
 const { propSort } = require('./src/utils');
 const templateFuncs = require('./src/utils/template-functions');
 
@@ -342,7 +343,7 @@ Metalsmith(__dirname)
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
       metadataUpdater: setPublishedDate,
-      plugins: [
+      plugins: (({ allowWarning = true } = {}) => [
         pugRender({
           locals: {
             env: process.env,
@@ -408,8 +409,15 @@ Metalsmith(__dirname)
             }
             return childTextDataList;
           },
+          get allowWarning() {
+            return allowWarning;
+          },
         }),
-      ],
+        (files, metalsmith, done) => {
+          allowWarning = false;
+          done();
+        },
+      ])(),
     }),
   )
   .use(
@@ -426,6 +434,7 @@ Metalsmith(__dirname)
       modifiedProperty: 'modified',
     }),
   )
+  .use(clean())
   .build(err => {
     if (err) {
       if (err.stack && !err.stack.includes(err.message)) {

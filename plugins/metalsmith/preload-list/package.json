@@ -1,0 +1,11 @@
+{
+  "name": "@sounisi5011/metalsmith-preload-list",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "mime": "^2.4.4"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

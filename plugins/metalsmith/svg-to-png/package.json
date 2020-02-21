@@ -1,0 +1,12 @@
+{
+  "name": "@sounisi5011/metalsmith-svg-to-png",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "convert-svg-to-png": "^0.5.0",
+    "metalsmith-plugin-kit": "^1.0.1"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

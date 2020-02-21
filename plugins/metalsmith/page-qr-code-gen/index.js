@@ -1,10 +1,16 @@
+const crypto = require('crypto');
 const path = require('path');
 
 const sizeOf = require('image-size');
 const pluginKit = require('metalsmith-plugin-kit');
 const QRCode = require('qrcode');
 
-const { sha1 } = require('../utils/hash');
+function sha1(data) {
+  return crypto
+    .createHash('sha1')
+    .update(data)
+    .digest('hex');
+}
 
 module.exports = opts => {
   const options = {

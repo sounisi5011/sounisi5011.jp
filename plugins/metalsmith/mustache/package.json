@@ -1,0 +1,12 @@
+{
+  "name": "@sounisi5011/metalsmith-mustache",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "metalsmith-plugin-kit": "^1.0.1",
+    "mustache": "^4.0.0"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}

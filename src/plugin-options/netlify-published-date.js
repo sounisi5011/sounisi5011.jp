@@ -103,6 +103,25 @@ exports.ignoreContentsEquals = contents => {
       isUpdated = true;
     });
 
+  // modernizrのバージョンの差を無視する
+  $('link[rel=preload][href^="/modernizr/"], script[src^="/modernizr/"]').each(
+    (i, elem) => {
+      const $elem = $(elem);
+      const attrName = $elem.is('link') ? 'href' : 'src';
+      const filepath = $elem.attr(attrName);
+      if (!filepath) return;
+
+      const replacedFilepath = filepath.replace(
+        /\d+\.\d+\.\d+(?=\/[0-9a-f]+\.js$)/i,
+        '[REPLACED]',
+      );
+      if (filepath === replacedFilepath) return;
+
+      $elem.attr(attrName, replacedFilepath);
+      isUpdated = true;
+    },
+  );
+
   getCanonicalURLList($).forEach(canonicalURL => {
     const canonicalURLPath = new URL(canonicalURL).pathname;
 
