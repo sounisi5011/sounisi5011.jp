@@ -2,14 +2,16 @@
   "name": "@sounisi5011/metalsmith-tweetable-paragraphs",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "postinstall": "npm install --no-save twitter-text@3.x"
+  },
   "dependencies": {
     "@sounisi5011/sha1": "file:../../utils/sha1",
     "cheerio": "^1.0.0-rc.3",
     "debug": "^4.1.1",
     "metalsmith-plugin-kit": "^1.0.1",
     "qrcode": "^1.4.4",
-    "strict-uri-encode": "^2.0.0",
-    "twitter-text": "^3.0.1"
+    "strict-uri-encode": "^2.0.0"
   },
   "peerDependencies": {
     "metalsmith": "^2.3.0"
