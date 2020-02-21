@@ -2,6 +2,7 @@ const path = require('path');
 const { URL } = require('url');
 const util = require('util');
 
+const sha1 = require('@sounisi5011/sha1');
 const cheerio = require('cheerio');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
@@ -10,7 +11,6 @@ const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 const twitter = require('twitter-text');
 
-const { sha1 } = require('../../../src/utils/hash');
 const { rootRrelativeURL } = require('../../../src/utils/template-functions');
 
 const debug = logger(require('./package.json').name);

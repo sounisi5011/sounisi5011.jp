@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "@sounisi5011/sha1": "file:../../utils/sha1",
     "modernizr": "^3.9.1",
     "multimatch": "^4.0.0"
   },

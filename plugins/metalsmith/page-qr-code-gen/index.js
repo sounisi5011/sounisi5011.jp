@@ -1,10 +1,9 @@
 const path = require('path');
 
+const sha1 = require('@sounisi5011/sha1');
 const sizeOf = require('image-size');
 const pluginKit = require('metalsmith-plugin-kit');
 const QRCode = require('qrcode');
-
-const { sha1 } = require('../../../src/utils/hash');
 
 module.exports = opts => {
   const options = {

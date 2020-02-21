@@ -1,18 +1,11 @@
-const crypto = require('crypto');
 const path = require('path');
 
+const sha1 = require('@sounisi5011/sha1');
 const modernizr = require('modernizr');
 const multimatch = require('multimatch');
 
 function isObject(value) {
   return typeof value === 'object' && value;
-}
-
-function sha1(data) {
-  return crypto
-    .createHash('sha1')
-    .update(data)
-    .digest('hex');
 }
 
 function callbackOptionGetter(filename, filedata, files, metalsmith) {

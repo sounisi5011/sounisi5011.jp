@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
+    "@sounisi5011/sha1": "file:../../utils/sha1",
     "image-size": "^0.8.3",
     "metalsmith-plugin-kit": "^1.0.1",
     "qrcode": "^1.4.4"
