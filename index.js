@@ -11,6 +11,10 @@ const modernizr = require('@sounisi5011/metalsmith-modernizr');
 const mustache = require('@sounisi5011/metalsmith-mustache');
 const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
 const pageQrCodeGenerator = require('@sounisi5011/metalsmith-page-qr-code-gen');
+const preloadList = require('@sounisi5011/metalsmith-preload-list');
+const {
+  compile: pugLayoutsCompile,
+} = require('@sounisi5011/metalsmith-pug-layouts');
 const sitemap = require('@sounisi5011/metalsmith-sitemap');
 const svg2ico = require('@sounisi5011/metalsmith-svg-to-ico');
 const svg2png = require('@sounisi5011/metalsmith-svg-to-png');
@@ -38,10 +42,6 @@ const childPages = require('./plugins/metalsmith/child-pages');
 const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
 const mergePreloadDependencies = require('./plugins/metalsmith/merge-preload-dependencies');
 const netlifyMetadata = require('./plugins/metalsmith/netlifyMetadata');
-const preloadList = require('./plugins/metalsmith/preload-list');
-const {
-  compile: pugLayoutsCompile,
-} = require('./plugins/metalsmith/pug-layouts');
 const {
   ignoreContentsEquals,
   showContentsDifference,

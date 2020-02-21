@@ -1,0 +1,13 @@
+{
+  "name": "@sounisi5011/metalsmith-pug-layouts",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "gray-matter": "^4.0.2",
+    "pug": "^2.0.4"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0",
+    "metalsmith-pug-extra": "1.0.1 - 1.1.3"
+  }
+}
