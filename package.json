@@ -28,13 +28,13 @@
       "prettier --write",
       "git add"
     ],
-    "*.js": [
-      "eslint --fix",
-      "git add"
-    ],
-    "package.json": [
+    "**/package.json": [
       "prettier-package-json --write",
       "sort-package-json",
+      "git add"
+    ],
+    "*.js": [
+      "eslint --fix",
       "git add"
     ]
   },
