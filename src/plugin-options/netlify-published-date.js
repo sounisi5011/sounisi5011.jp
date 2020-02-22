@@ -1,8 +1,65 @@
 const { URL } = require('url');
 const util = require('util');
 
-const netlifyPublishedDate = require('@sounisi5011/metalsmith-netlify-published-date');
+const chalk = require('chalk');
 const cheerio = require('cheerio');
+const { HtmlDiffer } = require('html-differ'); // eslint-disable-line import/order
+
+const htmlDiffer = new HtmlDiffer({
+  ignoreComments: false,
+  ignoreWhitespaces: false,
+});
+
+const htmlDifferLogger =
+  chalk.supportsColor && chalk.supportsColor.level > 0
+    ? require('html-differ/lib/logger')
+    : {
+        /** @see https://github.com/bem/html-differ/blob/v1.4.0/lib/logger.js#L13-L60 */
+        getDiffText(diff, options) {
+          options = {
+            charsAroundDiff: 40,
+            ...options,
+          };
+
+          let charsAroundDiff = options.charsAroundDiff;
+          let output = '';
+
+          if (charsAroundDiff < 0) {
+            charsAroundDiff = 40;
+          }
+
+          if (diff.length === 1 && !diff[0].added && !diff[0].removed)
+            return output;
+
+          diff.forEach(part => {
+            const index = diff.indexOf(part);
+            const partValue = part.value;
+            let diffEffect;
+
+            if (part.added) diffEffect = text => `[++${text}++]`;
+            if (part.removed) diffEffect = text => `[--${text}--]`;
+
+            if (diffEffect) {
+              output += (index === 0 ? '\n' : '') + diffEffect(partValue);
+              return;
+            }
+
+            if (partValue.length < charsAroundDiff * 2) {
+              output += (index !== 0 ? '' : '\n') + partValue;
+            } else {
+              index !== 0 && (output += partValue.substr(0, charsAroundDiff));
+
+              if (index < diff.length - 1) {
+                output +=
+                  '\n...\n' +
+                  partValue.substr(partValue.length - charsAroundDiff);
+              }
+            }
+          });
+
+          return output;
+        },
+      };
 
 function cmp(a, b) {
   if (a < b) {
@@ -161,42 +218,37 @@ exports.ignoreContentsEquals = contents => {
   return contents;
 };
 
-exports.showContentsDifference =
-  netlifyPublishedDate.defaultOptions.contentsEquals;
+exports.showContentsDifference = ({
+  file,
+  previewPage,
+  metadata: { filename, deploy },
+}) => {
+  const diff = htmlDiffer.diffHtml(String(previewPage), String(file));
+  /** @see https://github.com/bem/html-differ/blob/v1.4.0/lib/index.js#L61 */
+  const isEqual = diff.length === 1 && !diff[0].added && !diff[0].removed;
 
-try {
-  const chalk = require('chalk');
+  if (!isEqual) {
+    const diffText = htmlDifferLogger.getDiffText(diff);
 
-  if (chalk.supportsColor && chalk.supportsColor.level > 0) {
-    const { HtmlDiffer } = require('html-differ');
-    const logger = require('html-differ/lib/logger');
+    console.log(
+      [
+        [
+          chalk.underline(deploy.title.replace(/\n+/g, ' ')),
+          chalk.magenta(deploy.id),
+          chalk.green(
+            deploy.branch +
+              '@' +
+              chalk.underline(deploy.commit_ref.substring(0, 7)),
+          ),
+        ].join(' '),
+        `${chalk.cyan(util.inspect(filename))}の差分:`,
+        diffText.replace(/^[\r\n]+|[\r\n]+$/, '').replace(/^/gm, '> '),
+        '',
+        '',
+      ].join('\n'),
+    );
 
-    const htmlDiffer = new HtmlDiffer({
-      ignoreComments: false,
-      ignoreWhitespaces: false,
-    });
-
-    exports.showContentsDifference = ({
-      file,
-      previewPage,
-      metadata: { filename },
-    }) => {
-      if (!file.equals(previewPage)) {
-        const diff = htmlDiffer.diffHtml(String(previewPage), String(file));
-        const diffText = logger.getDiffText(diff);
-
-        console.log(
-          `${chalk.cyan(util.inspect(filename))}の差分:\n${diffText.replace(
-            /^[\r\n]+|[\r\n]+$/,
-            '',
-          )}\n\n`,
-        );
-
-        return false;
-      }
-      return true;
-    };
+    return false;
   }
-} catch (err) {
-  //
-}
+  return true;
+};

@@ -1,13 +1,11 @@
 {
-  "name": "@sounisi5011/metalsmith-tweetable-paragraphs",
+  "name": "@sounisi5011/metalsmith-url-shortener",
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "cheerio": "^1.0.0-rc.3",
-    "cross-spawn": "^7.0.1",
-    "debug": "^4.1.1",
+    "@tanepiper/easypass-2": "^0.2.1",
     "metalsmith-plugin-kit": "^1.0.1",
-    "qrcode": "^1.4.4",
+    "node-fetch": "^2.6.0",
     "strict-uri-encode": "^2.0.0"
   },
   "peerDependencies": {

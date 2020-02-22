@@ -4,13 +4,33 @@ const { URL } = require('url');
 const util = require('util');
 
 const cheerio = require('cheerio');
+const spawn = require('cross-spawn');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
 const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
-const twitter = require('twitter-text');
 
-const debug = logger(require('./package.json').name);
+const pkg = require('./package.json');
+const debug = logger(pkg.name);
+
+let twitter;
+try {
+  twitter = require('twitter-text');
+} catch (error) {
+  if (!/^Cannot find module /.test(error.message)) throw error;
+
+  const command = 'npm';
+  const args = ['install', '--no-save', 'twitter-text@3.x'];
+  console.error(
+    [
+      `>> ${pkg.name}@${pkg.version} ${__dirname}`,
+      `>> ${command} ${args.join(' ')}`,
+      '',
+    ].join('\n'),
+  );
+  spawn.sync(command, args, { cwd: __dirname, stdio: 'inherit' });
+  twitter = require('twitter-text');
+}
 
 const ASSETS_DIR = '_fragment-anchors';
 
@@ -233,6 +253,10 @@ module.exports = opts => {
     {
       filter: (filename, filedata, metalsmith, files) => true,
       generateFragmentPageURL: (url, id) => url + '#' + strictUriEncode(id),
+      qrCodeBasePageURL: (url, { filename, filedata, files, metalsmith }) =>
+        url,
+      generateQRCodeURL: (url, { filename, filedata, files, metalsmith }) =>
+        url,
       ignoreElems: ['style', 'script', 'template'],
       pattern: '**/*.html',
       rootSelector: 'body',
@@ -438,8 +462,22 @@ module.exports = opts => {
           });
 
           const encodedID = strictUriEncode(id);
-          const urlWithFragment = pageURL + '#' + encodedID;
-          const qrCodeBasename = sha1(`${encodedID}/${filename}`);
+          const [urlWithFragment, qrCodeUrlWithFragment] = [
+            pageURL,
+            options.qrCodeBasePageURL(pageURL, {
+              filename,
+              filedata,
+              files,
+              metalsmith,
+            }),
+          ].map(pageURL => pageURL + '#' + encodedID);
+          const qrCodeURL = options.generateQRCodeURL(qrCodeUrlWithFragment, {
+            filename,
+            filedata,
+            files,
+            metalsmith,
+          });
+          const qrCodeBasename = sha1(qrCodeURL);
 
           /*
            * スクリプトが機能しない環境向けのリダイレクトタグを追加
@@ -497,7 +535,7 @@ module.exports = opts => {
                 pluginKit.addFile(
                   files,
                   qrFilename,
-                  await QRCode.toBuffer(urlWithFragment, {
+                  await QRCode.toBuffer(qrCodeURL, {
                     type: 'png',
                     width: ogpQrWidth,
                   }),
@@ -526,7 +564,7 @@ module.exports = opts => {
                   pluginKit.addFile(
                     files,
                     qrFilename,
-                    await QRCode.toBuffer(urlWithFragment, {
+                    await QRCode.toBuffer(qrCodeURL, {
                       type: 'png',
                       width: twitterCardQrWidth,
                     }),
