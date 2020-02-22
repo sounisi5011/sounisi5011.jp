@@ -81,6 +81,16 @@ function filepath2RootRelativeURL(filepath) {
     .join('/');
 }
 
+function trimRightSlash(urlOrFunc) {
+  if (typeof urlOrFunc === 'function') {
+    return function(...args) {
+      const retval = urlOrFunc.apply(this, args);
+      return typeof retval === 'string' ? retval.replace(/\/+$/, '') : retval;
+    };
+  }
+  return trimRightSlash(() => urlOrFunc)();
+}
+
 /** @type {WeakMap.<Object, {options: Object, encryptKey: Buffer, urlMap: URLMap}>} */
 const optionsMap = new WeakMap();
 
@@ -92,10 +102,12 @@ exports.init = opts => {
     encryptKeyEnvName: 'METALSMITH_URL_SHORTENER_ENCRYPT_KEY',
     /** @see https://docs.netlify.com/configure-builds/environment-variables/#deploy-urls-and-metadata */
     rootURL: process.env.URL,
+    rootURLShrinker: rootURL => rootURL,
     redirectsReplaceLine: '# url-shortener redirect paths #',
     ...opts,
   };
-  options.rootURL = options.rootURL.replace(/\/+$/, '');
+  options.rootURL = trimRightSlash(options.rootURL);
+  options.rootURLShrinker = trimRightSlash(options.rootURLShrinker);
 
   const encryptKeyStr = process.env[options.encryptKeyEnvName];
   if (!encryptKeyStr)
@@ -158,7 +170,9 @@ exports.init = opts => {
           )
             return url;
           const word = createShortWord(url);
-          return rootURL ? filename2url(word, rootURL) : word;
+          return rootURL
+            ? filename2url(word, options.rootURLShrinker(rootURL))
+            : word;
         },
       });
 
