@@ -1,0 +1,14 @@
+{
+  "name": "@sounisi5011/metalsmith-url-shortener",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "easypass": "^1.0.0",
+    "metalsmith-plugin-kit": "^1.0.1",
+    "node-fetch": "^2.6.0",
+    "strict-uri-encode": "^2.0.0"
+  },
+  "peerDependencies": {
+    "metalsmith": "^2.3.0"
+  }
+}
