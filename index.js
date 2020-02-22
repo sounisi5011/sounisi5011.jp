@@ -372,6 +372,9 @@ Metalsmith(__dirname)
             url.searchParams.set('fragment', id);
             return url.href;
           },
+          generateQRCodeURL(url, { metalsmith }) {
+            return metalsmith.metadata().createShortURL(url);
+          },
           ignoreElems: ['style', 'script', 'template', 'aside.message'],
           rootSelector: '.novel-body',
           textContentsReplacer($elem, childTextDataList) {

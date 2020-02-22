@@ -233,6 +233,8 @@ module.exports = opts => {
     {
       filter: (filename, filedata, metalsmith, files) => true,
       generateFragmentPageURL: (url, id) => url + '#' + strictUriEncode(id),
+      generateQRCodeURL: (url, { filename, filedata, files, metalsmith }) =>
+        url,
       ignoreElems: ['style', 'script', 'template'],
       pattern: '**/*.html',
       rootSelector: 'body',
@@ -439,6 +441,12 @@ module.exports = opts => {
 
           const encodedID = strictUriEncode(id);
           const urlWithFragment = pageURL + '#' + encodedID;
+          const qrCodeURL = options.generateQRCodeURL(urlWithFragment, {
+            filename,
+            filedata,
+            files,
+            metalsmith,
+          });
           const qrCodeBasename = sha1(`${encodedID}/${filename}`);
 
           /*
@@ -497,7 +505,7 @@ module.exports = opts => {
                 pluginKit.addFile(
                   files,
                   qrFilename,
-                  await QRCode.toBuffer(urlWithFragment, {
+                  await QRCode.toBuffer(qrCodeURL, {
                     type: 'png',
                     width: ogpQrWidth,
                   }),
@@ -526,7 +534,7 @@ module.exports = opts => {
                   pluginKit.addFile(
                     files,
                     qrFilename,
-                    await QRCode.toBuffer(urlWithFragment, {
+                    await QRCode.toBuffer(qrCodeURL, {
                       type: 'png',
                       width: twitterCardQrWidth,
                     }),
