@@ -321,7 +321,18 @@ Metalsmith(__dirname)
       };
     }),
   )
-  .use(shorturlInit())
+  .use(
+    shorturlInit({
+      rootURLShrinker(rootURL) {
+        const url = new URL(rootURL);
+        // httpsをhttpに短縮
+        url.protocol = url.protocol.replace(/^https/, 'http');
+        // サブドメインwwwを省略
+        url.hostname = url.hostname.replace(/^www\./, '');
+        return url.href;
+      },
+    }),
+  )
   .use(
     pageQrCodeGenerator({
       pageURL(filename, file, files, metalsmith) {
