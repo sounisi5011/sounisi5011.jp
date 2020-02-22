@@ -326,6 +326,9 @@ Metalsmith(__dirname)
       rootURLShrinker(rootURL) {
         const url = new URL(rootURL);
         // httpsをhttpに短縮
+        // Note: 短縮URLでもHTTPSを使うべきか否かについては様々に考えられるが、以下の理由によりHTTPを使用することにした：
+        //       + Bitlyはhttpを採用している
+        //       + 誤り訂正レベルMのQRコードに変換する際に、26文字以下であればBitlyと同様の大きさで生成できる
         url.protocol = url.protocol.replace(/^https/, 'http');
         // サブドメインwwwを省略
         url.hostname = url.hostname.replace(/^www\./, '');
