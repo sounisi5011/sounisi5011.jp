@@ -372,6 +372,9 @@ Metalsmith(__dirname)
             url.searchParams.set('fragment', id);
             return url.href;
           },
+          qrCodeBasePageURL(url, { filedata }) {
+            return filedata.visibleCanonical || url;
+          },
           generateQRCodeURL(url, { metalsmith }) {
             return metalsmith.metadata().createShortURL(url);
           },

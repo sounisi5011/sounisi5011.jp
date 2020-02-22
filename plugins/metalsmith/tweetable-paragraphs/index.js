@@ -233,6 +233,8 @@ module.exports = opts => {
     {
       filter: (filename, filedata, metalsmith, files) => true,
       generateFragmentPageURL: (url, id) => url + '#' + strictUriEncode(id),
+      qrCodeBasePageURL: (url, { filename, filedata, files, metalsmith }) =>
+        url,
       generateQRCodeURL: (url, { filename, filedata, files, metalsmith }) =>
         url,
       ignoreElems: ['style', 'script', 'template'],
@@ -440,8 +442,16 @@ module.exports = opts => {
           });
 
           const encodedID = strictUriEncode(id);
-          const urlWithFragment = pageURL + '#' + encodedID;
-          const qrCodeURL = options.generateQRCodeURL(urlWithFragment, {
+          const [urlWithFragment, qrCodeUrlWithFragment] = [
+            pageURL,
+            options.qrCodeBasePageURL(pageURL, {
+              filename,
+              filedata,
+              files,
+              metalsmith,
+            }),
+          ].map(pageURL => pageURL + '#' + encodedID);
+          const qrCodeURL = options.generateQRCodeURL(qrCodeUrlWithFragment, {
             filename,
             filedata,
             files,
