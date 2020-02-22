@@ -179,17 +179,23 @@ try {
     exports.showContentsDifference = ({
       file,
       previewPage,
-      metadata: { filename },
+      metadata: { filename, deploy },
     }) => {
       if (!file.equals(previewPage)) {
         const diff = htmlDiffer.diffHtml(String(previewPage), String(file));
         const diffText = logger.getDiffText(diff);
 
         console.log(
-          `${chalk.cyan(util.inspect(filename))}の差分:\n${diffText.replace(
-            /^[\r\n]+|[\r\n]+$/,
+          [
+            `${chalk.underline(
+              deploy.title.replace(/\n+/g, ' '),
+            )} ${chalk.magenta(deploy.id)} ${chalk.cyan(
+              util.inspect(filename),
+            )}の差分:`,
+            diffText.replace(/^[\r\n]+|[\r\n]+$/, ''),
             '',
-          )}\n\n`,
+            '',
+          ].join('\n'),
         );
 
         return false;
