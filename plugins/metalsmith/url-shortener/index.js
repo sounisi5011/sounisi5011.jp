@@ -1,6 +1,6 @@
 const path = require('path');
 
-const easypass = require('easypass');
+const easypass = require('@tanepiper/easypass-2');
 const pluginKit = require('metalsmith-plugin-kit');
 const fetch = require('node-fetch');
 const strictUriEncode = require('strict-uri-encode');

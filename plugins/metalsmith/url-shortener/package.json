@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "easypass": "^1.0.0",
+    "@tanepiper/easypass-2": "^0.2.1",
     "metalsmith-plugin-kit": "^1.0.1",
     "node-fetch": "^2.6.0",
     "strict-uri-encode": "^2.0.0"
