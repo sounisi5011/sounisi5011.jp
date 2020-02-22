@@ -34,13 +34,12 @@ module.exports = opts => {
 
   return pluginKit.middleware({
     each: async (filename, file, files, metalsmith) => {
-      const filePath = file.hasOwnProperty('path') ? file.path : filename;
       const pageURL = options.pageURL(filename, file, files, metalsmith);
       if (!pageURL) {
         return;
       }
 
-      const qrCodePrefix = path.join(options.destDir, sha1(filePath));
+      const qrCodePrefix = path.join(options.destDir, sha1(pageURL));
 
       const qrCodeFiles = await Promise.all(
         [

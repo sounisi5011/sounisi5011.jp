@@ -457,7 +457,7 @@ module.exports = opts => {
             files,
             metalsmith,
           });
-          const qrCodeBasename = sha1(`${encodedID}/${filename}`);
+          const qrCodeBasename = sha1(qrCodeURL);
 
           /*
            * スクリプトが機能しない環境向けのリダイレクトタグを追加
