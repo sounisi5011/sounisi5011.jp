@@ -88,7 +88,7 @@ exports.init = opts => {
   const options = {
     wordLength: 4,
     wordPrefix: '',
-    urlListFilename: '.url-shortener-defs',
+    urlListFilename: '_url-shortener-defs',
     encryptKeyEnvName: 'METALSMITH_URL_SHORTENER_ENCRYPT_KEY',
     /** @see https://docs.netlify.com/configure-builds/environment-variables/#deploy-urls-and-metadata */
     rootURL: process.env.URL,
