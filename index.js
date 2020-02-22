@@ -21,6 +21,10 @@ const svg2ico = require('@sounisi5011/metalsmith-svg-to-ico');
 const svg2png = require('@sounisi5011/metalsmith-svg-to-png');
 const svgo = require('@sounisi5011/metalsmith-svgo');
 const tweetableParagraphs = require('@sounisi5011/metalsmith-tweetable-paragraphs');
+const {
+  init: shorturlInit,
+  generate: shorturlGen,
+} = require('@sounisi5011/metalsmith-url-shortener');
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
@@ -317,10 +321,11 @@ Metalsmith(__dirname)
       };
     }),
   )
+  .use(shorturlInit())
   .use(
     pageQrCodeGenerator({
       pageURL(filename, file, files, metalsmith) {
-        return file.visibleCanonical;
+        return metalsmith.metadata().createShortURL(file.visibleCanonical);
       },
     }),
   )
@@ -434,6 +439,7 @@ Metalsmith(__dirname)
       modifiedProperty: 'modified',
     }),
   )
+  .use(shorturlGen())
   .use(clean())
   .build(err => {
     if (err) {
