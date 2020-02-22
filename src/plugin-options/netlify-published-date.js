@@ -187,12 +187,17 @@ try {
 
         console.log(
           [
-            `${chalk.underline(
-              deploy.title.replace(/\n+/g, ' '),
-            )} ${chalk.magenta(deploy.id)} ${chalk.cyan(
-              util.inspect(filename),
-            )}の差分:`,
-            diffText.replace(/^[\r\n]+|[\r\n]+$/, ''),
+            [
+              chalk.underline(deploy.title.replace(/\n+/g, ' ')),
+              chalk.magenta(deploy.id),
+              chalk.green(
+                deploy.branch +
+                  '@' +
+                  chalk.underline(deploy.commit_ref.substring(0, 7)),
+              ),
+            ].join(' '),
+            `${chalk.cyan(util.inspect(filename))}の差分:`,
+            diffText.replace(/^[\r\n]+|[\r\n]+$/, '').replace(/^/gm, '> '),
             '',
             '',
           ].join('\n'),
