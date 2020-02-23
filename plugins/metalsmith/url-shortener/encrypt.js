@@ -19,6 +19,7 @@ const { DataChunk } = require('./binary-file-utils');
 
 /**
  * @see https://tools.ietf.org/html/rfc8103#section-1.1
+ * @see https://tools.ietf.org/html/rfc7539#section-2.4
  */
 const KEY_LENGTH = 256 / 8;
 
@@ -37,8 +38,9 @@ exports.encryptToFileData = (key, data) => {
   /**
    * @see https://nodejs.org/api/crypto.html#crypto_ccm_mode
    * @see https://scrapbox.io/nwtgck/AES-GCM%E3%81%AE%E5%88%9D%E6%9C%9F%E5%8C%96%E3%83%99%E3%82%AF%E3%83%88%E3%83%ABIV%E3%81%AF12%E3%83%90%E3%82%A4%E3%83%88%E3%81%8C%E6%8E%A8%E5%A5%A8
+   * @see https://tools.ietf.org/html/rfc7539#section-2.4
    */
-  const iv = crypto.randomBytes(12);
+  const iv = crypto.randomBytes(96 / 8);
   /**
    * @see https://nodejs.org/api/crypto.html#crypto_ccm_mode
    * @see https://tools.ietf.org/html/rfc8103#section-1.1
