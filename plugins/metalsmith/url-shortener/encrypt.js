@@ -19,6 +19,12 @@ const zlib = require('zlib');
 
 const { DataChunk } = require('./binary-file-utils');
 
+const chunkTypeRecord = {
+  authTag: 0x00,
+  authTagLen: 0x01,
+  compressType: 0x10,
+};
+
 const compresserRecord = {
   deflate: {
     type: 0x01,
@@ -89,12 +95,12 @@ exports.encryptToFileData = async (key, data) => {
   /*
    * 拡張データを作成
    */
-  const extensionData = new DataChunk();
-  extensionData.setInt(0x8c, compresser.type);
-  extensionData.setInt(0xa0, authTagLength);
+  const extensionData = new DataChunk(chunkTypeRecord);
+  extensionData.setInt('compressType', compresser.type);
+  extensionData.setInt('authTagLen', authTagLength);
   try {
     const authTag = cipher.getAuthTag();
-    extensionData.setBuffer(0xa1, authTag);
+    extensionData.setBuffer('authTag', authTag);
   } catch (error) {
     if (
       !(
@@ -161,9 +167,9 @@ exports.decryptFromFileData = async (key, encryptedFileData) => {
   /*
    * 拡張データを読み取る
    */
-  let extensionData = new DataChunk();
+  let extensionData = new DataChunk(chunkTypeRecord);
   if (allowExtension) {
-    extensionData = new DataChunk(encryptedFileData, index);
+    extensionData = new DataChunk(chunkTypeRecord, encryptedFileData, index);
     index += extensionData.toBuffer().length;
   }
 
@@ -177,7 +183,7 @@ exports.decryptFromFileData = async (key, encryptedFileData) => {
    */
   const options = {};
   {
-    const authTagLength = extensionData.getInt(0xa0);
+    const authTagLength = extensionData.getInt('authTagLen');
     if (typeof authTagLength === 'number')
       options.authTagLength = authTagLength;
   }
@@ -187,7 +193,7 @@ exports.decryptFromFileData = async (key, encryptedFileData) => {
    */
   const decipher = crypto.createDecipheriv(algorithm, key, iv, options);
   {
-    const authTag = extensionData.getBuffer(0xa1);
+    const authTag = extensionData.getBuffer('authTag');
     if (authTag) decipher.setAuthTag(authTag);
   }
   const data = Buffer.concat([
@@ -198,7 +204,7 @@ exports.decryptFromFileData = async (key, encryptedFileData) => {
   /*
    * 指定された圧縮アルゴリズムでデータを解凍
    */
-  const compresserType = extensionData.getInt(0x8c);
+  const compresserType = extensionData.getInt('compressType');
   const compresser = Object.values(compresserRecord).find(
     ({ type }) => compresserType === type,
   );

@@ -1,9 +1,13 @@
 class DataChunk {
   /**
+   * @param {Object.<string, number>} chunkTypeRecord
    * @param {Buffer} data
    * @param {number} index
    */
-  constructor(data = null, index = 0) {
+  constructor(chunkTypeRecord, data = null, index = 0) {
+    /** @private */
+    this._chunkTypeMap = this._validateChunkTypeRecord(chunkTypeRecord);
+
     /**
      * @private
      * @type {Map.<number, Buffer>}
@@ -14,7 +18,7 @@ class DataChunk {
       const startIndex = index;
       const { dataList, endIndex } = this._readDataChunks(data, startIndex);
       for (const { chunkType, data } of dataList) {
-        this.appendBuffer(chunkType, data);
+        this._appendBuffer(chunkType, data);
       }
       /** @private */
       this._data = data.subarray(startIndex, endIndex);
@@ -22,46 +26,31 @@ class DataChunk {
   }
 
   /**
-   * @param {number} chunkType
+   * @param {string} chunkType
    * @returns {Buffer|undefined}
    */
   getBuffer(chunkType) {
-    return this._dataMap.get(chunkType);
+    return this._getBuffer(this._getChunkTypeInt(chunkType));
   }
 
   /**
-   * @param {number} chunkType
+   * @param {string} chunkType
    * @param {Buffer} data
    */
   setBuffer(chunkType, data) {
-    if (
-      !(chunkType >= 0x00 && chunkType <= 0xff && Number.isInteger(chunkType))
-    ) {
-      throw new RangeError(
-        `chunkType引数は${0x00}以上${0xff}以下の整数である必要があります`,
-      );
-    }
-    if (data.length < 1) {
-      throw new TypeError(`空のBufferを設定することはできません`);
-    }
-    this._data = null;
-    this._dataMap.set(chunkType, data);
+    this._setBuffer(this._getChunkTypeInt(chunkType), data);
   }
 
   /**
-   * @param {number} chunkType
+   * @param {string} chunkType
    * @param {Buffer} data
    */
   appendBuffer(chunkType, data) {
-    const prevData = this.getBuffer(chunkType);
-    this.setBuffer(
-      chunkType,
-      prevData ? Buffer.concat([prevData, data]) : data,
-    );
+    this._appendBuffer(this._getChunkTypeInt(chunkType), data);
   }
 
   /**
-   * @param {number} chunkType
+   * @param {string} chunkType
    * @returns {number|undefined}
    */
   getInt(chunkType) {
@@ -71,7 +60,7 @@ class DataChunk {
   }
 
   /**
-   * @param {number} chunkType
+   * @param {string} chunkType
    * @param {number} value
    */
   setInt(chunkType, value) {
@@ -99,6 +88,81 @@ class DataChunk {
       );
     }
     return this._data;
+  }
+
+  /**
+   * @private
+   * @param {number} chunkType
+   * @returns {Buffer|undefined}
+   */
+  _getBuffer(chunkType) {
+    return this._dataMap.get(chunkType);
+  }
+
+  /**
+   * @private
+   * @param {number} chunkType
+   * @param {Buffer} data
+   */
+  _setBuffer(chunkType, data) {
+    if (data.length < 1) {
+      throw new TypeError(`空のBufferを設定することはできません`);
+    }
+    this._data = null;
+    this._dataMap.set(chunkType, data);
+  }
+
+  /**
+   * @requires
+   * @param {number} chunkType
+   * @param {Buffer} data
+   */
+  _appendBuffer(chunkType, data) {
+    const prevData = this._getBuffer(chunkType);
+    this._setBuffer(
+      chunkType,
+      prevData ? Buffer.concat([prevData, data]) : data,
+    );
+  }
+
+  /**
+   * @param {Object.<string, number>} chunkTypeRecord
+   * @returns {Map.<string, number>}
+   */
+  _validateChunkTypeRecord(chunkTypeRecord) {
+    /** @type {Map.<number, string>} */
+    const duplicateMap = new Map();
+    const chunkTypeEntries = Object.entries(chunkTypeRecord);
+    for (const [typeName, typeInt] of chunkTypeEntries) {
+      if (!(Number.isInteger(typeInt) && typeInt >= 0x00 && typeInt <= 0xff)) {
+        throw new Error(
+          `chunkType "${typeName}" の値が正しくありません。指定できる値は0以上${0xff}以下の整数です`,
+        );
+      }
+      const existsTypeName = duplicateMap.get(typeInt);
+      if (existsTypeName) {
+        throw new Error(
+          `chunkType "${typeName}" の値が "${existsTypeName}" と重複しています`,
+        );
+      }
+      duplicateMap.set(typeInt, typeName);
+    }
+    return new Map(chunkTypeEntries);
+  }
+
+  /**
+   * @param {string} chunkType
+   * @returns {number}
+   */
+  _getChunkTypeInt(chunkType) {
+    if (typeof chunkType !== 'string') {
+      throw new TypeError(`chunkTypeに指定できる値は文字列のみです`);
+    }
+    const typeInt = this._chunkTypeMap.get(chunkType);
+    if (typeof typeInt !== 'number') {
+      throw new Error(`chunkType "${chunkType}" は定義されていません`);
+    }
+    return typeInt;
   }
 
   /**
