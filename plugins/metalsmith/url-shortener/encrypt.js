@@ -14,8 +14,33 @@
  */
 
 const crypto = require('crypto');
+const util = require('util');
+const zlib = require('zlib');
 
 const { DataChunk } = require('./binary-file-utils');
+
+const compresserRecord = {
+  deflate: {
+    type: 0x01,
+    compress: util.promisify(zlib.deflate),
+    decompress: util.promisify(zlib.inflate),
+  },
+  deflateRaw: {
+    type: 0x02,
+    compress: util.promisify(zlib.deflateRaw),
+    decompress: util.promisify(zlib.inflateRaw),
+  },
+  gzip: {
+    type: 0x03,
+    compress: util.promisify(zlib.gzip),
+    decompress: util.promisify(zlib.gunzip),
+  },
+  brotli: {
+    type: 0x04,
+    compress: util.promisify(zlib.brotliCompress),
+    decompress: util.promisify(zlib.brotliDecompress),
+  },
+};
 
 /**
  * @see https://tools.ietf.org/html/rfc8103#section-1.1
@@ -34,7 +59,7 @@ const algorithm = ['chacha20-poly1305', 'aes-256-gcm'].find(algorithm =>
  * @param {Buffer} key
  * @param {string} data
  */
-exports.encryptToFileData = (key, data) => {
+exports.encryptToFileData = async (key, data) => {
   /**
    * @see https://nodejs.org/api/crypto.html#crypto_ccm_mode
    * @see https://scrapbox.io/nwtgck/AES-GCM%E3%81%AE%E5%88%9D%E6%9C%9F%E5%8C%96%E3%83%99%E3%82%AF%E3%83%88%E3%83%ABIV%E3%81%AF12%E3%83%90%E3%82%A4%E3%83%88%E3%81%8C%E6%8E%A8%E5%A5%A8
@@ -48,16 +73,24 @@ exports.encryptToFileData = (key, data) => {
   const authTagLength = 16;
 
   /*
+   * データを圧縮
+   * ネットワークリクエストの負荷を回避するため、元のデータを圧縮する。
+   */
+  const compresser = compresserRecord.brotli;
+  const compressedData = await compresser.compress(data);
+
+  /*
    * 暗号化
    */
   const cipher = crypto.createCipheriv(algorithm, key, iv, { authTagLength });
-  const encryptedDataPart1 = cipher.update(data);
+  const encryptedDataPart1 = cipher.update(compressedData);
   const encryptedDataPart2 = cipher.final();
 
   /*
    * 拡張データを作成
    */
   const extensionData = new DataChunk();
+  extensionData.setInt(0x8c, compresser.type);
   extensionData.setInt(0xa0, authTagLength);
   try {
     const authTag = cipher.getAuthTag();
@@ -92,7 +125,7 @@ exports.encryptToFileData = (key, data) => {
  * @param {Buffer} key
  * @param {Buffer} encryptedFileData
  */
-exports.decryptFromFileData = (key, encryptedFileData) => {
+exports.decryptFromFileData = async (key, encryptedFileData) => {
   let index = 0;
 
   /*
@@ -157,5 +190,21 @@ exports.decryptFromFileData = (key, encryptedFileData) => {
     const authTag = extensionData.getBuffer(0xa1);
     if (authTag) decipher.setAuthTag(authTag);
   }
-  return Buffer.concat([decipher.update(encryptedData), decipher.final()]);
+  const data = Buffer.concat([
+    decipher.update(encryptedData),
+    decipher.final(),
+  ]);
+
+  /*
+   * 指定された圧縮アルゴリズムでデータを解凍
+   */
+  const compresserType = extensionData.getInt(0x8c);
+  const compresser = Object.values(compresserRecord).find(
+    ({ type }) => compresserType === type,
+  );
+  if (compresser) {
+    return compresser.decompress(data);
+  }
+
+  return data;
 };
