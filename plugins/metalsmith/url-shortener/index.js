@@ -219,6 +219,7 @@ exports.generate = () =>
                 url = url.substring(options.rootURL.length);
               return [filepath2RootRelativeURL(word), url].join(' ');
             })
+            .sort()
             .join('\n');
         }),
       );
