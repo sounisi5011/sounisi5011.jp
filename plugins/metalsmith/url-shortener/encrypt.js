@@ -19,12 +19,20 @@ const zlib = require('zlib');
 
 const { DataChunk } = require('./binary-file-utils');
 
+/*
+ * 拡張データのチャンクタイプを定義
+ * Note: 後方互換性を維持するため、既存の値は編集しないでください。
+ */
 const chunkTypeRecord = {
   authTag: 0x00,
   authTagLen: 0x01,
   compressType: 0x10,
 };
 
+/*
+ * 圧縮アルゴリズムの一覧を定義
+ * Note: 後方互換性を維持するため、既存の値は編集しないでください。
+ */
 const compresserRecord = {
   deflate: {
     type: 0x01,
@@ -56,6 +64,10 @@ const KEY_LENGTH = 256 / 8;
 
 exports.KEY_LENGTH = KEY_LENGTH;
 
+/*
+ * 使用する暗号化アルゴリズムを定義
+ * 認証付き暗号を使用する。
+ */
 const supportedAlgorithmList = crypto.getCiphers();
 const algorithm = ['chacha20-poly1305', 'aes-256-gcm'].find(algorithm =>
   supportedAlgorithmList.includes(algorithm),
