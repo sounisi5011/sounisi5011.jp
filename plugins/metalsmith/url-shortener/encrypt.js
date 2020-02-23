@@ -25,7 +25,7 @@ exports.encryptToFileData = (
 ) => {
   const cipher = crypto.createCipheriv(algorithm, key, iv);
 
-  const algorithmData = Buffer.from(ALGORITHM);
+  const algorithmData = Buffer.from(algorithm);
   const encryptedFileData = Buffer.concat([
     Buffer.from([algorithmData.length, iv.length]),
     algorithmData,
