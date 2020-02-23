@@ -64,16 +64,20 @@ class DataChunk {
    * @param {number} value
    */
   setInt(chunkType, value) {
-    if (!(Number.isInteger(value) && value <= 0xffffffff)) {
+    if (!(Number.isInteger(value) && value >= 0x00 && value <= 0xffffffff)) {
       throw new TypeError(
-        `value引数は${0xffffffff}以下の整数である必要があります`,
+        `value引数は0以上${0xffffffff}以下の整数である必要があります`,
       );
     }
     const intList = [];
-    let int = value;
-    while (int) {
-      intList.push(int & 0xff);
-      int = int >>> 8;
+    if (value <= 0xff) {
+      intList.push(value);
+    } else {
+      let int = value;
+      while (int) {
+        intList.push(int & 0xff);
+        int = int >>> 8;
+      }
     }
     this.setBuffer(chunkType, Buffer.from(intList));
   }
