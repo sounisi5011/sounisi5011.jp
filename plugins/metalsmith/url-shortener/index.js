@@ -59,8 +59,9 @@ class URLMap {
   }
 }
 
-function filename2url(filename, rootURL) {
-  return new URL(filename, rootURL).href;
+function filename2url(filename, rootURL, getURLObject = false) {
+  const url = new URL(filename, rootURL);
+  return getURLObject ? url : url.href;
 }
 
 /**
@@ -76,6 +77,16 @@ function filepath2RootRelativeURL(filepath) {
     .split(path.sep)
     .map(strictUriEncode)
     .join('/');
+}
+
+function getOrDefineFiledata(files, filename, defaultFiledata = {}) {
+  let filedata = files[filename];
+  if (!filedata) {
+    const { contents = '', ...options } = defaultFiledata;
+    pluginKit.addFile(files, filename, contents, options);
+    filedata = files[filename];
+  }
+  return filedata;
 }
 
 /** @type {WeakMap.<Object, {options: Object, encryptKey: Buffer, urlMap: URLMap}>} */
@@ -161,19 +172,39 @@ exports.generate = () =>
       pluginKit.addFile(files, options.urlListFilename, defsFileData);
 
       /**
+       * _headersファイルに書き込む
+       * @see https://docs.netlify.com/routing/headers/
+       */
+      const headersFiledata = getOrDefineFiledata(files, '_headers');
+      headersFiledata.contents = Buffer.concat([
+        headersFiledata.contents,
+        // TODO: Netlifyの仕様確認用。後で消す
+        ...[
+          Buffer.from(
+            `/${options.urlListFilename}\n  X-XXX-Test: foooooooooooooooo\n`,
+          ),
+          Buffer.from(`/*\n  X-XXX-Xest: hogefuga\n`),
+        ],
+        Buffer.from(
+          (headersFiledata.contents.length === 0 ? [] : [''])
+            .concat([
+              filename2url(options.urlListFilename, options.rootURL, true)
+                .pathname,
+              `  X-Robots-Tag: noindex`,
+              ``,
+            ])
+            .join('\n'),
+        ),
+      ]);
+
+      /**
        * _redirectsファイルに書き込む
        * @see https://docs.netlify.com/routing/redirects/
        * @see https://docs.netlify.com/routing/redirects/redirect-options/
        */
-      let redirectsFiledata = files['_redirects'];
-      if (!redirectsFiledata) {
-        pluginKit.addFile(
-          files,
-          '_redirects',
-          `${options.redirectsReplaceLine}\n`,
-        );
-        redirectsFiledata = files['_redirects'];
-      }
+      const redirectsFiledata = getOrDefineFiledata(files, '_redirects', {
+        contents: `${options.redirectsReplaceLine}\n`,
+      });
       redirectsFiledata.contents = Buffer.from(
         String(redirectsFiledata.contents).replace(/^.+$/gm, line => {
           if (line !== options.redirectsReplaceLine) return line;
