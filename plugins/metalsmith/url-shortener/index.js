@@ -178,13 +178,6 @@ exports.generate = () =>
       const headersFiledata = getOrDefineFiledata(files, '_headers');
       headersFiledata.contents = Buffer.concat([
         headersFiledata.contents,
-        // TODO: Netlifyの仕様確認用。後で消す
-        ...[
-          Buffer.from(
-            `/${options.urlListFilename}\n  X-XXX-Test: foooooooooooooooo\n`,
-          ),
-          Buffer.from(`/*\n  X-XXX-Xest: hogefuga\n`),
-        ],
         Buffer.from(
           (headersFiledata.contents.length === 0 ? [] : [''])
             .concat([
