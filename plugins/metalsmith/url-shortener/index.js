@@ -5,11 +5,8 @@ const pluginKit = require('metalsmith-plugin-kit');
 const fetch = require('node-fetch');
 const strictUriEncode = require('strict-uri-encode');
 
-const {
-  encryptToFileData,
-  decryptFromFileData,
-  KEY_LENGTH,
-} = require('./encrypt');
+const { encryptToFileData, decryptFromFileData } = require('./encrypt');
+const { initOptions } = require('./options');
 
 class URLMap {
   constructor(files) {
@@ -81,44 +78,11 @@ function filepath2RootRelativeURL(filepath) {
     .join('/');
 }
 
-function trimRightSlash(urlOrFunc) {
-  if (typeof urlOrFunc === 'function') {
-    return function(...args) {
-      const retval = urlOrFunc.apply(this, args);
-      return typeof retval === 'string' ? retval.replace(/\/+$/, '') : retval;
-    };
-  }
-  return trimRightSlash(() => urlOrFunc)();
-}
-
 /** @type {WeakMap.<Object, {options: Object, encryptKey: Buffer, urlMap: URLMap}>} */
 const optionsMap = new WeakMap();
 
 exports.init = opts => {
-  const options = {
-    wordLength: 4,
-    wordPrefix: '',
-    urlListFilename: '_url-shortener-defs',
-    encryptKeyEnvName: 'METALSMITH_URL_SHORTENER_ENCRYPT_KEY',
-    /** @see https://docs.netlify.com/configure-builds/environment-variables/#deploy-urls-and-metadata */
-    rootURL: process.env.URL,
-    rootURLShrinker: rootURL => rootURL,
-    redirectsReplaceLine: '# url-shortener redirect paths #',
-    ...opts,
-  };
-  options.rootURL = trimRightSlash(options.rootURL);
-  options.rootURLShrinker = trimRightSlash(options.rootURLShrinker);
-
-  const encryptKeyStr = process.env[options.encryptKeyEnvName];
-  if (!encryptKeyStr)
-    throw new Error(`環境変数 ${options.encryptKeyEnvName} を設定してください`);
-  const encryptKey = ['hex', 'base64']
-    .map(encoding => Buffer.from(encryptKeyStr, encoding))
-    .find(buf => buf.length === KEY_LENGTH);
-  if (!encryptKey)
-    throw new Error(
-      `環境変数 ${options.encryptKeyEnvName} の値は${KEY_LENGTH}bytesのバイナリデータをHexまたはBase64で表した値である必要があります`,
-    );
+  const { options, encryptKey } = initOptions(opts);
 
   return pluginKit.middleware({
     async before(files, metalsmith) {
