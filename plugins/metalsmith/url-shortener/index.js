@@ -5,11 +5,8 @@ const pluginKit = require('metalsmith-plugin-kit');
 const fetch = require('node-fetch');
 const strictUriEncode = require('strict-uri-encode');
 
-const {
-  encryptToFileData,
-  decryptFromFileData,
-  KEY_LENGTH,
-} = require('./encrypt');
+const { encryptToFileData, decryptFromFileData } = require('./encrypt');
+const { initOptions } = require('./options');
 
 class URLMap {
   constructor(files) {
@@ -62,8 +59,9 @@ class URLMap {
   }
 }
 
-function filename2url(filename, rootURL) {
-  return new URL(filename, rootURL).href;
+function filename2url(filename, rootURL, getURLObject = false) {
+  const url = new URL(filename, rootURL);
+  return getURLObject ? url : url.href;
 }
 
 /**
@@ -81,44 +79,21 @@ function filepath2RootRelativeURL(filepath) {
     .join('/');
 }
 
-function trimRightSlash(urlOrFunc) {
-  if (typeof urlOrFunc === 'function') {
-    return function(...args) {
-      const retval = urlOrFunc.apply(this, args);
-      return typeof retval === 'string' ? retval.replace(/\/+$/, '') : retval;
-    };
+function getOrDefineFiledata(files, filename, defaultFiledata = {}) {
+  let filedata = files[filename];
+  if (!filedata) {
+    const { contents = '', ...options } = defaultFiledata;
+    pluginKit.addFile(files, filename, contents, options);
+    filedata = files[filename];
   }
-  return trimRightSlash(() => urlOrFunc)();
+  return filedata;
 }
 
 /** @type {WeakMap.<Object, {options: Object, encryptKey: Buffer, urlMap: URLMap}>} */
 const optionsMap = new WeakMap();
 
 exports.init = opts => {
-  const options = {
-    wordLength: 4,
-    wordPrefix: '',
-    urlListFilename: '_url-shortener-defs',
-    encryptKeyEnvName: 'METALSMITH_URL_SHORTENER_ENCRYPT_KEY',
-    /** @see https://docs.netlify.com/configure-builds/environment-variables/#deploy-urls-and-metadata */
-    rootURL: process.env.URL,
-    rootURLShrinker: rootURL => rootURL,
-    redirectsReplaceLine: '# url-shortener redirect paths #',
-    ...opts,
-  };
-  options.rootURL = trimRightSlash(options.rootURL);
-  options.rootURLShrinker = trimRightSlash(options.rootURLShrinker);
-
-  const encryptKeyStr = process.env[options.encryptKeyEnvName];
-  if (!encryptKeyStr)
-    throw new Error(`環境変数 ${options.encryptKeyEnvName} を設定してください`);
-  const encryptKey = ['hex', 'base64']
-    .map(encoding => Buffer.from(encryptKeyStr, encoding))
-    .find(buf => buf.length === KEY_LENGTH);
-  if (!encryptKey)
-    throw new Error(
-      `環境変数 ${options.encryptKeyEnvName} の値は${KEY_LENGTH}bytesのバイナリデータをHexまたはBase64で表した値である必要があります`,
-    );
+  const { options, encryptKey } = initOptions(opts);
 
   return pluginKit.middleware({
     async before(files, metalsmith) {
@@ -197,19 +172,35 @@ exports.generate = () =>
       pluginKit.addFile(files, options.urlListFilename, defsFileData);
 
       /**
+       * _headersファイルに書き込む
+       * @see https://docs.netlify.com/routing/headers/
+       */
+      const headersFiledata = getOrDefineFiledata(files, '_headers');
+      const isEmptyOrLFEnd =
+        headersFiledata.contents.length === 0 ||
+        headersFiledata.contents.subarray(-1).equals(Buffer.from('\n'));
+      headersFiledata.contents = Buffer.concat([
+        headersFiledata.contents,
+        Buffer.from(
+          (isEmptyOrLFEnd ? [] : [''])
+            .concat([
+              filename2url(options.urlListFilename, options.rootURL, true)
+                .pathname,
+              `  X-Robots-Tag: noindex`,
+              ``,
+            ])
+            .join('\n'),
+        ),
+      ]);
+
+      /**
        * _redirectsファイルに書き込む
        * @see https://docs.netlify.com/routing/redirects/
        * @see https://docs.netlify.com/routing/redirects/redirect-options/
        */
-      let redirectsFiledata = files['_redirects'];
-      if (!redirectsFiledata) {
-        pluginKit.addFile(
-          files,
-          '_redirects',
-          `${options.redirectsReplaceLine}\n`,
-        );
-        redirectsFiledata = files['_redirects'];
-      }
+      const redirectsFiledata = getOrDefineFiledata(files, '_redirects', {
+        contents: `${options.redirectsReplaceLine}\n`,
+      });
       redirectsFiledata.contents = Buffer.from(
         String(redirectsFiledata.contents).replace(/^.+$/gm, line => {
           if (line !== options.redirectsReplaceLine) return line;

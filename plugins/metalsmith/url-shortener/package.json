@@ -2,6 +2,9 @@
   "name": "@sounisi5011/metalsmith-url-shortener",
   "version": "0.0.0",
   "private": true,
+  "bin": {
+    "fetch-shorturl-defs": "./bin/fetch-shorturl-defs.js"
+  },
   "dependencies": {
     "@tanepiper/easypass-2": "^0.2.1",
     "metalsmith-plugin-kit": "^1.0.1",
