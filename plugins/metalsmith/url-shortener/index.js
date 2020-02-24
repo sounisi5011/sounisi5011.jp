@@ -176,10 +176,13 @@ exports.generate = () =>
        * @see https://docs.netlify.com/routing/headers/
        */
       const headersFiledata = getOrDefineFiledata(files, '_headers');
+      const isEmptyOrLFEnd =
+        headersFiledata.contents.length === 0 ||
+        headersFiledata.contents.subarray(-1).equals(Buffer.from('\n'));
       headersFiledata.contents = Buffer.concat([
         headersFiledata.contents,
         Buffer.from(
-          (headersFiledata.contents.length === 0 ? [] : [''])
+          (isEmptyOrLFEnd ? [] : [''])
             .concat([
               filename2url(options.urlListFilename, options.rootURL, true)
                 .pathname,
