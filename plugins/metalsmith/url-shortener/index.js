@@ -130,7 +130,7 @@ exports.init = opts => {
         filename2url(options.urlListFilename, options.rootURL),
       );
       if (res.ok) {
-        const defsFileData = decryptFromFileData(
+        const defsFileData = await decryptFromFileData(
           encryptKey,
           await res.buffer(),
         );
@@ -193,7 +193,7 @@ exports.generate = () =>
       const defsFileText = [...urlMap]
         .map(({ url, word }) => `${word} ${url}`)
         .join('\n');
-      const defsFileData = encryptToFileData(encryptKey, defsFileText);
+      const defsFileData = await encryptToFileData(encryptKey, defsFileText);
       pluginKit.addFile(files, options.urlListFilename, defsFileData);
 
       /**
@@ -219,6 +219,7 @@ exports.generate = () =>
                 url = url.substring(options.rootURL.length);
               return [filepath2RootRelativeURL(word), url].join(' ');
             })
+            .sort()
             .join('\n');
         }),
       );
