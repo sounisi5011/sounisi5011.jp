@@ -460,6 +460,7 @@ Metalsmith(__dirname)
           rollupNodeResolve(),
           rollupCommonjs(),
           rollupBabel({
+            exclude: 'node_modules/**',
             comments: false,
             presets: [
               [
