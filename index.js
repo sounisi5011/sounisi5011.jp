@@ -16,6 +16,7 @@ const preloadList = require('@sounisi5011/metalsmith-preload-list');
 const {
   compile: pugLayoutsCompile,
 } = require('@sounisi5011/metalsmith-pug-layouts');
+const scriptModuleBundler = require('@sounisi5011/metalsmith-script-module-bundler');
 const sitemap = require('@sounisi5011/metalsmith-sitemap');
 const svg2ico = require('@sounisi5011/metalsmith-svg-to-ico');
 const svg2png = require('@sounisi5011/metalsmith-svg-to-png');
@@ -443,6 +444,16 @@ Metalsmith(__dirname)
           done();
         },
       ])(),
+    }),
+  )
+  .use(
+    scriptModuleBundler({
+      jsDirectory: 'src/scripts',
+      rollupOptions: {
+        output: {
+          sourcemap: true,
+        },
+      },
     }),
   )
   .use(

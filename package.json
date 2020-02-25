@@ -60,6 +60,7 @@
     "@sounisi5011/metalsmith-page-qr-code-gen": "file:plugins/metalsmith/page-qr-code-gen",
     "@sounisi5011/metalsmith-preload-list": "file:plugins/metalsmith/preload-list",
     "@sounisi5011/metalsmith-pug-layouts": "file:plugins/metalsmith/pug-layouts",
+    "@sounisi5011/metalsmith-script-module-bundler": "file:plugins/metalsmith/script-module-bundler",
     "@sounisi5011/metalsmith-sitemap": "file:plugins/metalsmith/sitemap",
     "@sounisi5011/metalsmith-svg-to-ico": "file:plugins/metalsmith/svg-to-ico",
     "@sounisi5011/metalsmith-svg-to-png": "file:plugins/metalsmith/svg-to-png",
