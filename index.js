@@ -42,6 +42,7 @@ const {
   compile: pugCompile,
   render: pugRender,
 } = require('metalsmith-pug-extra');
+const rollupBabel = require('rollup-plugin-babel');
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
 const childPages = require('./plugins/metalsmith/child-pages');
@@ -453,6 +454,21 @@ Metalsmith(__dirname)
         output: {
           sourcemap: true,
         },
+        plugins: [
+          rollupBabel({
+            comments: false,
+            presets: [
+              [
+                '@babel/preset-env',
+                {
+                  corejs: 3,
+                  useBuiltIns: 'usage',
+                },
+              ],
+              // 'minify',
+            ],
+          }),
+        ],
       },
     }),
   )
