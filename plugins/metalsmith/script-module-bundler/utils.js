@@ -1,7 +1,7 @@
 const fs = require('fs');
 const util = require('util');
 
-const UglifyJS = require('uglify-js');
+const Terser = require('terser');
 
 exports.toJsValue = value =>
   JSON.stringify(value).replace(
@@ -12,7 +12,7 @@ exports.toJsValue = value =>
 exports.readFileAsync = util.promisify(fs.readFile);
 
 exports.minifyJS = (code, options) => {
-  const result = UglifyJS.minify(code, options);
+  const result = Terser.minify(code, options);
   if (result.error) throw result.error;
   return result.code;
 };

@@ -346,9 +346,8 @@ module.exports = opts => {
           const systemJsScriptText = minifyJS(
             [
               `if (!window.supportsDynamicImport) {`,
-              `  (function() {`,
-              `    var systemJsLoaderElem = document.createElement('script');`,
-              `    systemJsLoaderElem.addEventListener('load', function() {`,
+              `  const systemJsLoaderElem = document.createElement('script');`,
+              `  systemJsLoaderElem.addEventListener('load', function() {`,
               systemJsSyncFileList
                 .map((src, i) => {
                   const importCode = `System.import(${toJsValue(src)})`;
@@ -358,12 +357,11 @@ module.exports = opts => {
                 })
                 .join('\n') + ';',
               ...systemJsAsyncFileList.map(
-                src => `      System.import(${toJsValue(src)});`,
+                src => `System.import(${toJsValue(src)});`,
               ),
-              `    });`,
-              `    systemJsLoaderElem.src = '/s.min.js';`,
-              `    document.head.appendChild(systemJsLoaderElem);`,
-              `  })();`,
+              `  });`,
+              `  systemJsLoaderElem.src = '/s.min.js';`,
+              `  document.head.appendChild(systemJsLoaderElem);`,
               `}`,
             ].join('\n'),
           );
