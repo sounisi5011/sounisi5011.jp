@@ -1,5 +1,6 @@
 const { URL } = require('url');
 
+const rollupNodeResolve = require('@rollup/plugin-node-resolve');
 const addFileMeta = require('@sounisi5011/metalsmith-add-file-metadata');
 const anotherSource = require('@sounisi5011/metalsmith-another-source');
 const asciidoc = require('@sounisi5011/metalsmith-asciidoctor');
@@ -455,6 +456,7 @@ Metalsmith(__dirname)
           sourcemap: true,
         },
         plugins: [
+          rollupNodeResolve(),
           rollupBabel({
             comments: false,
             presets: [
