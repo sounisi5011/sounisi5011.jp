@@ -14,7 +14,7 @@ const {
   appendChild,
   createElement,
 } = require('./parse5-utils');
-const { toJsValue, readFileAsync } = require('./utils');
+const { toJsValue, readFileAsync, minifyJS } = require('./utils');
 
 module.exports = opts => {
   const options = {
@@ -306,19 +306,21 @@ module.exports = opts => {
               ({ srcFullpath }) => `/${esmChunkMap.get(srcFullpath).fileName}`,
             );
           // script要素内のJSコードを生成
-          const esmScriptText = [
-            esSyncFileList
-              .map((src, i) =>
-                i === 0
-                  ? `import(${toJsValue(src)})`
-                  : `.then(() => import(${toJsValue(src)}))`,
-              )
-              .join('') + ';',
-            ...esAsyncFileList.map(src => `import(${toJsValue(src)});`),
-            ...(isSupportsDynamicImportInserted
-              ? []
-              : [`window.supportsDynamicImport = 1;`]),
-          ].join('\n');
+          const esmScriptText = minifyJS(
+            [
+              esSyncFileList
+                .map((src, i) =>
+                  i === 0
+                    ? `import(${toJsValue(src)})`
+                    : `.then(() => import(${toJsValue(src)}))`,
+                )
+                .join('') + ';',
+              ...esAsyncFileList.map(src => `import(${toJsValue(src)});`),
+              ...(isSupportsDynamicImportInserted
+                ? []
+                : [`window.supportsDynamicImport = 1;`]),
+            ].join('\n'),
+          );
           // script要素を追加
           appendChild(parentNode, createElement('script', {}, esmScriptText));
           isSupportsDynamicImportInserted = true;
@@ -341,25 +343,30 @@ module.exports = opts => {
                 `/${systemJsChunkMap.get(srcFullpath).fileName}`,
             );
           // script要素内のJSコードを生成
-          const systemJsScriptText = [
-            `if (!window.supportsDynamicImport) {`,
-            `  const systemJsLoaderElem = document.createElement('script');`,
-            `  systemJsLoaderElem.addEventListener('load', () => {`,
-            systemJsSyncFileList
-              .map((src, i) =>
-                i === 0
-                  ? `     System.import(${toJsValue(src)})`
-                  : `       .then(() => System.import(${toJsValue(src)}))`,
-              )
-              .join('\n') + ';',
-            ...systemJsAsyncFileList.map(
-              src => `    System.import(${toJsValue(src)});`,
-            ),
-            `  });`,
-            `  systemJsLoaderElem.src = '/s.min.js';`,
-            `  document.head.appendChild(systemJsLoaderElem);`,
-            `}`,
-          ].join('\n');
+          const systemJsScriptText = minifyJS(
+            [
+              `if (!window.supportsDynamicImport) {`,
+              `  (function() {`,
+              `    var systemJsLoaderElem = document.createElement('script');`,
+              `    systemJsLoaderElem.addEventListener('load', function() {`,
+              systemJsSyncFileList
+                .map((src, i) => {
+                  const importCode = `System.import(${toJsValue(src)})`;
+                  return i === 0
+                    ? importCode
+                    : `.then(function() { return ${importCode}; })`;
+                })
+                .join('\n') + ';',
+              ...systemJsAsyncFileList.map(
+                src => `      System.import(${toJsValue(src)});`,
+              ),
+              `    });`,
+              `    systemJsLoaderElem.src = '/s.min.js';`,
+              `    document.head.appendChild(systemJsLoaderElem);`,
+              `  })();`,
+              `}`,
+            ].join('\n'),
+          );
           // script要素を追加
           appendChild(
             parentNode,
