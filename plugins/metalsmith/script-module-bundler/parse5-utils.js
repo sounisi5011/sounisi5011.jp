@@ -63,9 +63,12 @@ exports.getAttrMap = attrs => {
 exports.appendChild = appendChild;
 
 exports.removeChild = (parentNode, targetNode) => {
-  if (targetNode.parentNode === parentNode) {
-    parentNode.childNodes = parentNode.childNodes.filter(
-      node => node !== targetNode,
-    );
+  if (parentNode) {
+    if (targetNode.parentNode !== parentNode) return;
+  } else {
+    parentNode = targetNode.parentNode;
   }
+  parentNode.childNodes = parentNode.childNodes.filter(
+    node => node !== targetNode,
+  );
 };

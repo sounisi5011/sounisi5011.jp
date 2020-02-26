@@ -21,6 +21,7 @@ module.exports = opts => {
     pattern: ['**/*.html'],
     jsDirectory: '.',
     rollupOptions: {},
+    removePreload: true,
     ...opts,
   };
 
@@ -265,7 +266,10 @@ module.exports = opts => {
        * script要素を置換する
        */
       for (const [, { filedata, htmlAST, scriptNodeMap }] of targetFileMap) {
+        /** @type {Set.<string>} */
+        const removedSrcFullpathSet = new Set();
         let isSupportsDynamicImportInserted = false;
+
         for (const [parentNode, scriptNodeList] of scriptNodeMap) {
           const insertScriptNodeList = scriptNodeList.filter(
             ({ srcFullpath }) =>
@@ -278,6 +282,7 @@ module.exports = opts => {
                * 元のscript要素を削除する
                */
               removeChild(parentNode, node);
+              removedSrcFullpathSet.add(srcFullpath);
 
               /**
                * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-async
@@ -370,6 +375,29 @@ module.exports = opts => {
             parentNode,
             createElement('script', {}, systemJsScriptText),
           );
+        }
+
+        if (options.removePreload) {
+          /*
+           * HTMLに含まれるlink要素のうち、置換したJSのpreloadを除去する
+           */
+          walkParse5(htmlAST, targetNode => {
+            if (targetNode.tagName !== 'link') return;
+
+            const linkElemNode = targetNode;
+            const linkElemAttrs = getAttrMap(linkElemNode.attrs);
+
+            if (linkElemAttrs.get('rel') !== 'preload') return;
+            if (linkElemAttrs.get('as') !== 'script') return;
+
+            const href = linkElemAttrs.get('href');
+            if (!href || !href.startsWith('/')) return;
+            const preloadFileFullpath = path.join(jsRootDirPath, href);
+
+            if (removedSrcFullpathSet.has(preloadFileFullpath)) {
+              removeChild(null, targetNode);
+            }
+          });
         }
 
         /**
