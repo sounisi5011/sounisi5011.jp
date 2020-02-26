@@ -263,6 +263,18 @@ module.exports = opts => {
       );
 
       /*
+       * Promise Polyfillを追加する
+       * SystemJSで必要
+       */
+      pluginKit.addFile(
+        files,
+        'polyfill.min.js',
+        await readFileAsync(
+          require.resolve('promise-polyfill/dist/polyfill.min.js'),
+        ),
+      );
+
+      /*
        * script要素を置換する
        */
       for (const [, { filedata, htmlAST, scriptNodeMap }] of targetFileMap) {
@@ -350,9 +362,9 @@ module.exports = opts => {
           // script要素内のJSコードを生成
           const systemJsScriptText = minifyJS(
             [
-              `if (!window.supportsDynamicImport) {`,
-              `  const systemJsLoaderElem = document.createElement('script');`,
-              `  systemJsLoaderElem.addEventListener('load', function() {`,
+              `
+              if (!window.supportsDynamicImport) {
+                const init = function() {`,
               systemJsSyncFileList
                 .map((src, i) => {
                   const importCode = `System.import(${toJsValue(src)})`;
@@ -364,10 +376,23 @@ module.exports = opts => {
               ...systemJsAsyncFileList.map(
                 src => `System.import(${toJsValue(src)});`,
               ),
-              `  });`,
-              `  systemJsLoaderElem.src = '/s.min.js';`,
-              `  document.head.appendChild(systemJsLoaderElem);`,
-              `}`,
+              `
+                };
+                const importScript = function(jspath, callback) {
+                  const doc = document;
+                  const jsLoaderElem = doc.createElement('script');
+                  jsLoaderElem.addEventListener('load', callback);
+                  jsLoaderElem.src = jspath;
+                  doc.head.appendChild(jsLoaderElem);
+                };
+                if (typeof Promise !== 'function') {
+                  importScript('/polyfill.min.js', function() {
+                    importScript('/s.min.js', init);
+                  });
+                } else {
+                  importScript('/s.min.js', init);
+                }
+              }`,
             ].join('\n'),
           );
           // script要素を追加
