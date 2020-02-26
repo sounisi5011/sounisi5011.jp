@@ -428,6 +428,19 @@ Metalsmith(__dirname)
                 {
                   corejs: 3,
                   useBuiltIns: 'usage',
+                  exclude: [
+                    /*
+                     * IE11でcore-jsが定義するPromise.all内のiterateが動作しないため除外。
+                     * Promiseのpolyfillはmetalsmith-script-module-bundlerが追加するため問題はない。
+                     */
+                    'es.promise',
+                    /*
+                     * iterateを使わないのでIE11の問題とは無関係だが、
+                     * metalsmith-script-module-bundlerが追加するPromiseのpolyfillがサポート済みのため、
+                     * 容量削減の目的で無効化。
+                     */
+                    'es.promise.finally',
+                  ],
                 },
               ],
               // 'minify',
