@@ -202,10 +202,16 @@ module.exports = opts => {
       const systemJsChunkMap = new Map();
       for (const { chunkMap, ...opts } of [
         // ES module用
-        { entryFileNames: '[name].mjs', format: 'esm', chunkMap: esmChunkMap },
+        {
+          entryFileNames: '[name].mjs',
+          chunkFileNames: '[name]-[hash].mjs',
+          format: 'esm',
+          chunkMap: esmChunkMap,
+        },
         // SystemJS用
         {
           entryFileNames: '[name].system.js',
+          chunkFileNames: '[name]-[hash].system.js',
           format: 'system',
           chunkMap: systemJsChunkMap,
         },
