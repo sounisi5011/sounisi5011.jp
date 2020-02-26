@@ -386,7 +386,10 @@ module.exports = opts => {
                   jsLoaderElem.src = jspath;
                   doc.head.appendChild(jsLoaderElem);
                 };
-                if (typeof Promise !== 'function') {
+                if (
+                  typeof Promise !== 'function' ||
+                  typeof Promise.prototype.finally !== 'function'
+                ) {
                   importScript('/${promisePolyfillFilename}', function() {
                     importScript('/s.min.js', init);
                   });
