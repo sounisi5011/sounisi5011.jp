@@ -122,7 +122,9 @@ Metalsmith(__dirname)
    */
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
-    if (!metadata.hasOwnProperty('preloadDependencies')) {
+    if (
+      !Object.prototype.hasOwnProperty.call(metadata, 'preloadDependencies')
+    ) {
       metadata.preloadDependencies = [];
     }
     if (Array.isArray(metadata.preloadDependencies)) {
@@ -139,7 +141,9 @@ Metalsmith(__dirname)
       metadata.preloadDependencies = [...preloadDependenciesSet];
     }
     Object.values(files).forEach(filedata => {
-      if (!filedata.hasOwnProperty('preloadDependencies')) {
+      if (
+        !Object.prototype.hasOwnProperty.call(filedata, 'preloadDependencies')
+      ) {
         filedata.preloadDependencies = [];
       }
 
@@ -243,7 +247,12 @@ Metalsmith(__dirname)
   .use(
     modernizr({
       config(filename, filedata) {
-        if (filedata.hasOwnProperty('modernizr-feature-detects')) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            filedata,
+            'modernizr-feature-detects',
+          )
+        ) {
           return {
             classPrefix: 'modernizr--',
             'feature-detects': filedata['modernizr-feature-detects'] || [],
@@ -266,7 +275,9 @@ Metalsmith(__dirname)
         ...metalsmith.metadata(),
         ...filedata,
       };
-      const path = data.hasOwnProperty('path') ? data.path : filename;
+      const path = Object.prototype.hasOwnProperty.call(data, 'path')
+        ? data.path
+        : filename;
 
       return {
         canonical: templateFuncs.canonicalURL(data.rootURL, path),

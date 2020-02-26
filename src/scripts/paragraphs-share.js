@@ -267,7 +267,7 @@ function addDataAttr(rootNode, currentID = { value: '' }) {
     (obj, node) => {
       const dataset = addDataAttr(node, currentID);
       for (let id in dataset) {
-        if (dataset.hasOwnProperty(id)) {
+        if (Object.prototype.hasOwnProperty.call(dataset, id)) {
           if (obj[id]) {
             each(dataset[id], node => {
               obj[id].push(node);

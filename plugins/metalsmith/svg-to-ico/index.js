@@ -23,7 +23,8 @@ module.exports = opts => {
 
       if (
         options.override ||
-        (filename !== newFilename && !files.hasOwnProperty(newFilename))
+        (filename !== newFilename &&
+          !Object.prototype.hasOwnProperty.call(files, newFilename))
       ) {
         const svgData = file.contents.toString();
 

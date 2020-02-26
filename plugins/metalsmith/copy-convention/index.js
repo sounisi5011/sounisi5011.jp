@@ -22,7 +22,8 @@ module.exports = opts => {
       const newFilename = options.renamer(filename);
       if (
         isValidPath(file.source) &&
-        (options.override || !files.hasOwnProperty(newFilename))
+        (options.override ||
+          !Object.prototype.hasOwnProperty.call(files, newFilename))
       ) {
         const sourceFullpath = metalsmith.path(
           metalsmith.source(),

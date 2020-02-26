@@ -5,7 +5,7 @@ function unique(array) {
 }
 
 function findFilename(files, filepath) {
-  if (files.hasOwnProperty(filepath)) {
+  if (Object.prototype.hasOwnProperty.call(files, filepath)) {
     return filepath;
   }
 
@@ -59,7 +59,7 @@ function assignArrayProps(filedata, ...dependentFiledata) {
 
   dependentMetadataMap.forEach((value, prop) => {
     if (Array.isArray(value)) {
-      if (filedata.hasOwnProperty(prop)) {
+      if (Object.prototype.hasOwnProperty.call(filedata, prop)) {
         const origValue = filedata[prop];
         if (Array.isArray(origValue)) {
           filedata[prop] = unique([...origValue, ...value]);
@@ -93,7 +93,7 @@ function resolvePreload(
   /*
    * [preloadURLsKey]プロパティが未定義の場合は初期化する
    */
-  if (!filedata.hasOwnProperty(preloadURLsKey)) {
+  if (!Object.prototype.hasOwnProperty.call(filedata, preloadURLsKey)) {
     filedata[preloadURLsKey] = [];
   }
 
@@ -107,7 +107,7 @@ function resolvePreload(
   /*
    * [dependenciesKey]プロパティで指定された依存ファイルのメタデータを追加する
    */
-  if (filedata.hasOwnProperty(dependenciesKey)) {
+  if (Object.prototype.hasOwnProperty.call(filedata, dependenciesKey)) {
     const dependentFiles = filedata[dependenciesKey];
     if (dependentFiles) {
       assignArrayProps(filedata, ...Object.values(dependentFiles));
