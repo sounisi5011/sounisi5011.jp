@@ -31,7 +31,6 @@ const {
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
-const babel = require('metalsmith-babel');
 const collections = require('metalsmith-collections');
 const sass = require('metalsmith-dart-sass');
 const directoryMetadata = require('metalsmith-directory-metadata');
@@ -230,56 +229,6 @@ Metalsmith(__dirname)
       .use(postcss())
       .use(mergePreloadDependencies())
       .use(ignore('**/*.scss')),
-  )
-  .use(
-    anotherSource('./src/scripts')
-      .ignore('.eslintrc.*')
-      .use(
-        babel({
-          comments: false,
-          presets: [
-            [
-              '@babel/preset-env',
-              {
-                corejs: 3,
-                exclude: [
-                  /**
-                   * Symbolsは使用しないので、Symbol関係のpolyfillを除外する
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/README.md#ecmascript-string-and-regexp
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.object.to-string.js
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/internals/object-to-string.js
-                   */
-                  'es.string.match',
-                  'es.string.replace',
-                  'es.string.search',
-                  'es.string.split',
-                  'es.object.to-string',
-                  /**
-                   * RegExpのtoStringメソッドの関数名と、RegExpオブジェクトではないオブジェクトがthisだった場合に動作させる修正。
-                   * このような機能に依存した処理を書くつもりは無いため、除外。
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.regexp.to-string.js
-                   */
-                  'es.regexp.to-string',
-                  /**
-                   * RegExp.lastIndexの値と、マッチしなかったグループの値がundefinedではない値になる、IE8のexecメソッドに関するバグ修正。
-                   * こんな絶妙な使い方をすることはおそらく無く、またIE8など眼中に無いため、無効化。
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/internals/regexp-exec.js
-                   */
-                  'es.regexp.exec',
-                  /**
-                   * 不正な形式のDateオブジェクトを文字列化した際に"Invalid Date"を返すpolyfill。
-                   * この値に依存した処理を書くつもりは無いため、除外。
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.date.to-string.js
-                   */
-                  'es.date.to-string',
-                ],
-                useBuiltIns: 'usage',
-              },
-            ],
-            'minify',
-          ],
-        }),
-      ),
   )
   .use(mergePreloadDependencies())
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
