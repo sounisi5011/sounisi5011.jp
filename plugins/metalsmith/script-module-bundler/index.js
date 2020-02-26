@@ -266,9 +266,10 @@ module.exports = opts => {
        * Promise Polyfillを追加する
        * SystemJSで必要
        */
+      const promisePolyfillFilename = 'promise-polyfill.min.js';
       pluginKit.addFile(
         files,
-        'polyfill.min.js',
+        promisePolyfillFilename,
         await readFileAsync(
           require.resolve('promise-polyfill/dist/polyfill.min.js'),
         ),
@@ -386,7 +387,7 @@ module.exports = opts => {
                   doc.head.appendChild(jsLoaderElem);
                 };
                 if (typeof Promise !== 'function') {
-                  importScript('/polyfill.min.js', function() {
+                  importScript('/${promisePolyfillFilename}', function() {
                     importScript('/s.min.js', init);
                   });
                 } else {
