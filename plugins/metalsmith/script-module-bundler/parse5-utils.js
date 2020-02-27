@@ -50,6 +50,24 @@ exports.createElement = (
   return elem;
 };
 
+/**
+ * @param {Object} node
+ * @returns {string}
+ */
+exports.getNodePath = node => {
+  const pathList = [];
+  while (node) {
+    const { parentNode } = node;
+    let nodeName = node.nodeName;
+    if (parentNode) {
+      nodeName += `[${parentNode.childNodes.indexOf(node)}]`;
+    }
+    pathList.unshift(nodeName);
+    node = parentNode;
+  }
+  return pathList.join('/');
+};
+
 exports.getAttrMap = attrs => {
   /** @type {Map.<string, string>} */
   const map = new Map();

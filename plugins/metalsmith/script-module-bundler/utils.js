@@ -5,6 +5,12 @@ const util = require('util');
 const pluginKit = require('metalsmith-plugin-kit');
 const Terser = require('terser');
 
+exports.cmp = (a, b) => {
+  if (a < b) return -1;
+  if (a > b) return 1;
+  return 0;
+};
+
 exports.toJsValue = value =>
   JSON.stringify(value).replace(
     /[\u2028\u2029]/g,
@@ -34,16 +40,23 @@ exports.minifyJS = (code, options) => {
 
 /**
  * @param {Object} metalsmith
+ * @param {string} filepath
+ * @returns {string}
+ */
+function toMetalsmithDestFilename(metalsmith, filepath) {
+  return path.relative(metalsmith.destination(), path.resolve(filepath));
+}
+exports.toMetalsmithDestFilename = toMetalsmithDestFilename;
+
+/**
+ * @param {Object} metalsmith
  * @param {Object.<string, *>} files
  * @param {string} filepath
  * @param {string|Buffer} contents
  * @returns {{filename: string}}
  */
 exports.addMetalsmithFile = (metalsmith, files, filepath, contents) => {
-  const filename = path.relative(
-    metalsmith.destination(),
-    path.resolve(filepath),
-  );
+  const filename = toMetalsmithDestFilename(metalsmith, filepath);
   pluginKit.addFile(files, filename, contents);
   return { filename };
 };

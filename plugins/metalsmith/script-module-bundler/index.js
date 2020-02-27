@@ -3,6 +3,7 @@ const path = require('path');
 const fileExists = require('file-exists');
 const isUrl = require('is-url');
 const pluginKit = require('metalsmith-plugin-kit');
+const { MultikeyMap } = require('multikey-map');
 const parse5 = require('parse5');
 const rollup = require('rollup');
 const walkParse5 = require('walk-parse5');
@@ -13,6 +14,7 @@ const {
   removeChild,
   appendChild,
   createElement,
+  getNodePath,
 } = require('./parse5-utils');
 const {
   toJsValue,
@@ -20,7 +22,16 @@ const {
   minifyJS,
   isSameOrSubPath,
   addMetalsmithFile,
+  toMetalsmithDestFilename,
+  cmp,
 } = require('./utils');
+
+/**
+ * @typedef {{ path: (function(): string), destination: (function(): string) }} Metalsmith
+ * @typedef {Object.<string, MetalsmithFileData>} MetalsmithFiles
+ * @typedef {{ contents: Buffer }} MetalsmithFileData
+ * @typedef {{ nodeName: string, childNodes?: Parse5Node[] }} Parse5Node
+ */
 
 module.exports = opts => {
   const options = {
@@ -32,10 +43,29 @@ module.exports = opts => {
   };
 
   let jsRootDirPath = '';
-  /** @type {Map.<string, {filedata: Object, htmlAST: Object, scriptNodeMap: Map.<Object, { node: Object, attrs: Map.<string, string>, srcFullpath: string }[]>}>} */
+  /** @type {Map.<string, {
+   *           filedata: MetalsmithFileData,
+   *           htmlAST: Parse5Node,
+   *           scriptNodeMap: Map.<Parse5Node, {
+   *             node: Parse5Node,
+   *             attrs: Map.<string, string>,
+   *             srcFullpath: string
+   *           }[]>
+   *        }>}
+   */
   const targetFileMap = new Map();
   /** @type {Set.<string>} */
   const scriptFileFullpathSet = new Set();
+  /**
+   * @typedef {{ dir: string, sourcemap: boolean | 'inline' | 'hidden' }} RollupOutputOptions
+   * @typedef {Map.<string, {filepath: string, chunk: Object}>} ChunkMap
+   * @type {MultikeyMap.<[Metalsmith, MetalsmithFiles, string, string], {
+   *          outputOptions: RollupOutputOptions,
+   *          esm: { filesMap: Map.<string, string | Buffer>, chunkMap: ChunkMap },
+   *          system: { filesMap: Map.<string, string | Buffer>, chunkMap: ChunkMap }
+   *       }>}
+   */
+  const bundleOutputCacheMap = new MultikeyMap();
 
   return pluginKit.middleware({
     match: options.pattern,
@@ -158,121 +188,180 @@ module.exports = opts => {
     },
     async after(files, metalsmith) {
       /*
-       * Rollupのオプションを生成する
+       * バンドル結果のキャッシュ用のキーを生成する
        */
-      const { output: rollupOutputOptions, ...rollupInputOptions } =
-        typeof options.rollupOptions === 'function'
-          ? await options.rollupOptions(files, metalsmith)
-          : options.rollupOptions;
+      const buildID = JSON.stringify(
+        [...targetFileMap]
+          .sort(([a], [b]) => cmp(a, b))
+          .reduce(
+            (obj, [filename, { scriptNodeMap }]) => ({
+              ...obj,
+              [filename]: [...scriptNodeMap]
+                .map(([parentNode, scriptNodeList]) => [
+                  getNodePath(parentNode),
+                  scriptNodeList,
+                ])
+                .sort(([a], [b]) => cmp(a, b))
+                .reduce(
+                  (obj, [parentNodePath, scriptNodeList]) => ({
+                    ...obj,
+                    [parentNodePath]: scriptNodeList
+                      .map(({ srcFullpath }) => srcFullpath)
+                      .sort(),
+                  }),
+                  {},
+                ),
+            }),
+            {},
+          ),
+      );
 
-      /**
-       * RollupのinputOptionsを生成する
-       * @see https://rollupjs.org/guide/en/#inputoptions-object
-       */
-      const entryRecord = {};
-      for (const scriptFileFullpath of scriptFileFullpathSet) {
-        // Note: 本来は、このように事前にファイルの存在を検証するべきではない。処理開始までの間にファイルが削除される可能性が存在するため。
-        // TODO: rollup内での処理時にファイルの存在判定を行い、除外する
-        if (!(await fileExists(scriptFileFullpath))) continue;
-        const entryName = path
-          .relative(jsRootDirPath, scriptFileFullpath)
-          .replace(/\.m?js$/, '');
-        entryRecord[entryName] = scriptFileFullpath;
-      }
-      const inputOptions = {
-        ...rollupInputOptions,
-        input: entryRecord,
-      };
-
-      /*
-       * Rollupのバンドルを生成する
-       */
-      const bundle = await rollup.rollup(inputOptions);
-
-      /**
-       * RollupのoutputOptionsを生成する
-       * @see https://rollupjs.org/guide/en/#outputoptions-object
-       */
       const metalsmithDestDir = metalsmith.destination();
-      const outputOptions = {
-        ...rollupOutputOptions,
-        dir: path.resolve(metalsmithDestDir, rollupOutputOptions.dir || '.'),
-      };
-      if (!isSameOrSubPath(metalsmithDestDir, outputOptions.dir)) {
-        throw new Error(
-          `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${outputOptions.dir}`,
+      let bundleOutputCache = bundleOutputCacheMap.get([
+        metalsmith,
+        files,
+        metalsmithDestDir,
+        buildID,
+      ]);
+
+      if (!bundleOutputCache) {
+        /*
+         * Rollupのオプションを生成する
+         */
+        const { output: rollupOutputOptions, ...rollupInputOptions } =
+          typeof options.rollupOptions === 'function'
+            ? await options.rollupOptions(files, metalsmith)
+            : options.rollupOptions;
+
+        /**
+         * RollupのinputOptionsを生成する
+         * @see https://rollupjs.org/guide/en/#inputoptions-object
+         */
+        /** @type {Object.<string, string>} */
+        const entryRecord = {};
+        for (const scriptFileFullpath of scriptFileFullpathSet) {
+          // Note: 本来は、このように事前にファイルの存在を検証するべきではない。処理開始までの間にファイルが削除される可能性が存在するため。
+          // TODO: rollup内での処理時にファイルの存在判定を行い、除外する
+          if (!(await fileExists(scriptFileFullpath))) continue;
+          const entryName = path
+            .relative(jsRootDirPath, scriptFileFullpath)
+            .replace(/\.m?js$/, '');
+          entryRecord[entryName] = scriptFileFullpath;
+        }
+        const inputOptions = {
+          ...rollupInputOptions,
+          input: entryRecord,
+        };
+
+        /*
+         * Rollupのバンドルを生成する
+         */
+        const bundle = await rollup.rollup(inputOptions);
+
+        /**
+         * RollupのoutputOptionsを生成する
+         * @see https://rollupjs.org/guide/en/#outputoptions-object
+         */
+        /** @type {RollupOutputOptions} */
+        const outputOptions = {
+          ...rollupOutputOptions,
+          dir: path.resolve(metalsmithDestDir, rollupOutputOptions.dir || '.'),
+        };
+        if (!isSameOrSubPath(metalsmithDestDir, outputOptions.dir)) {
+          throw new Error(
+            `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${outputOptions.dir}`,
+          );
+        }
+
+        /*
+         * RollupでJSをビルドする
+         */
+        bundleOutputCache = {
+          outputOptions,
+        };
+        for (const opts of [
+          // ES module用
+          {
+            entryFileNames: '[name].mjs',
+            chunkFileNames: '[name]-[hash].mjs',
+            format: 'esm',
+          },
+          // SystemJS用
+          {
+            entryFileNames: '[name].system.js',
+            chunkFileNames: '[name]-[hash].system.js',
+            format: 'system',
+          },
+        ]) {
+          const { output } = await bundle.generate({
+            ...outputOptions,
+            ...opts,
+          });
+          /** @type {Map.<string, string | Buffer>} */
+          const filesMap = new Map();
+          /** @type {ChunkMap} */
+          const chunkMap = new Map();
+
+          for (const chunkOrAsset of output) {
+            const filepath = path.resolve(
+              outputOptions.dir,
+              chunkOrAsset.fileName,
+            );
+            if (chunkOrAsset.type === 'asset') {
+              const asset = chunkOrAsset;
+              filesMap.set(filepath, asset.source);
+            } else {
+              const chunk = chunkOrAsset;
+              let { code } = chunk;
+
+              /**
+               * SourceMapを生成する
+               * @see https://github.com/rollup/rollup/blob/v1.31.1/src/rollup/index.ts#L427-L438
+               */
+              if (outputOptions.sourcemap && chunk.map) {
+                let sourceMapURL = '';
+                if (outputOptions.sourcemap === 'inline') {
+                  sourceMapURL = chunk.map.toUrl();
+                } else {
+                  sourceMapURL = `${path.basename(filepath)}.map`;
+                  filesMap.set(`${filepath}.map`, chunk.map.toString());
+                }
+                if (outputOptions.sourcemap !== 'hidden') {
+                  code += `//# sourceMappingURL=${sourceMapURL}\n`;
+                }
+              }
+
+              filesMap.set(filepath, code);
+              chunkMap.set(chunk.facadeModuleId, { filepath, chunk });
+            }
+          }
+
+          bundleOutputCache[opts.format] = {
+            filesMap,
+            chunkMap,
+          };
+        }
+
+        bundleOutputCacheMap.set(
+          [metalsmith, files, metalsmithDestDir, buildID],
+          bundleOutputCache,
         );
       }
 
-      /*
-       * RollupでJSをビルドする
-       */
-      /** @type {Map.<string, {filename: string, chunk: Object}>} */
-      const esmChunkMap = new Map();
-      /** @type {Map.<string, {filename: string, chunk: Object}>} */
-      const systemJsChunkMap = new Map();
-      for (const { chunkMap, ...opts } of [
-        // ES module用
-        {
-          entryFileNames: '[name].mjs',
-          chunkFileNames: '[name]-[hash].mjs',
-          format: 'esm',
-          chunkMap: esmChunkMap,
-        },
-        // SystemJS用
-        {
-          entryFileNames: '[name].system.js',
-          chunkFileNames: '[name]-[hash].system.js',
-          format: 'system',
-          chunkMap: systemJsChunkMap,
-        },
+      const { outputOptions } = bundleOutputCache;
+      const esmChunkMap = bundleOutputCache.esm.chunkMap;
+      const systemJsChunkMap = bundleOutputCache.system.chunkMap;
+      for (const { filesMap } of [
+        bundleOutputCache.esm,
+        bundleOutputCache.system,
       ]) {
-        const { output } = await bundle.generate({
-          ...outputOptions,
-          ...opts,
-        });
-        for (const chunkOrAsset of output) {
-          const filepath = path.resolve(
-            outputOptions.dir,
-            chunkOrAsset.fileName,
+        for (const [filepath, contents] of filesMap) {
+          addMetalsmithFile(
+            metalsmith,
+            files,
+            filepath,
+            typeof contents === 'string' ? contents : Buffer.from(contents),
           );
-          if (chunkOrAsset.type === 'asset') {
-            const asset = chunkOrAsset;
-            addMetalsmithFile(metalsmith, files, filepath, asset.source);
-          } else {
-            const chunk = chunkOrAsset;
-            let { code } = chunk;
-
-            /**
-             * SourceMapを生成する
-             * @see https://github.com/rollup/rollup/blob/v1.31.1/src/rollup/index.ts#L427-L438
-             */
-            if (outputOptions.sourcemap && chunk.map) {
-              let sourceMapURL = '';
-              if (outputOptions.sourcemap === 'inline') {
-                sourceMapURL = chunk.map.toUrl();
-              } else {
-                sourceMapURL = `${path.basename(filepath)}.map`;
-                addMetalsmithFile(
-                  metalsmith,
-                  files,
-                  `${filepath}.map`,
-                  chunk.map.toString(),
-                );
-              }
-              if (outputOptions.sourcemap !== 'hidden') {
-                code += `//# sourceMappingURL=${sourceMapURL}\n`;
-              }
-            }
-
-            const { filename } = addMetalsmithFile(
-              metalsmith,
-              files,
-              filepath,
-              code,
-            );
-            chunkMap.set(chunk.facadeModuleId, { filename, chunk });
-          }
         }
       }
 
@@ -339,13 +428,21 @@ module.exports = opts => {
           const esSyncFileList = insertScriptList
             .filter(({ async }) => !async)
             .map(
-              ({ srcFullpath }) => `/${esmChunkMap.get(srcFullpath).filename}`,
+              ({ srcFullpath }) =>
+                `/${toMetalsmithDestFilename(
+                  metalsmith,
+                  esmChunkMap.get(srcFullpath).filepath,
+                )}`,
             );
           // 読み込む順序が不定のJS。async属性指定
           const esAsyncFileList = insertScriptList
             .filter(({ async }) => async)
             .map(
-              ({ srcFullpath }) => `/${esmChunkMap.get(srcFullpath).filename}`,
+              ({ srcFullpath }) =>
+                `/${toMetalsmithDestFilename(
+                  metalsmith,
+                  esmChunkMap.get(srcFullpath).filepath,
+                )}`,
             );
           // script要素内のJSコードを生成
           const esmScriptText = minifyJS(
@@ -375,14 +472,20 @@ module.exports = opts => {
             .filter(({ async, moduleOnly }) => !async && !moduleOnly)
             .map(
               ({ srcFullpath }) =>
-                `/${systemJsChunkMap.get(srcFullpath).filename}`,
+                `/${toMetalsmithDestFilename(
+                  metalsmith,
+                  systemJsChunkMap.get(srcFullpath).filepath,
+                )}`,
             );
           // 読み込む順序が不定のJS。async属性指定
           const systemJsAsyncFileList = insertScriptList
             .filter(({ async, moduleOnly }) => async && !moduleOnly)
             .map(
               ({ srcFullpath }) =>
-                `/${systemJsChunkMap.get(srcFullpath).filename}`,
+                `/${toMetalsmithDestFilename(
+                  metalsmith,
+                  systemJsChunkMap.get(srcFullpath).filepath,
+                )}`,
             );
           // script要素内のJSコードを生成
           const systemJsScriptText = minifyJS(
