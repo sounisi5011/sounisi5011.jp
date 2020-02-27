@@ -323,7 +323,24 @@ Metalsmith(__dirname)
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
       metadataUpdater: setPublishedDate,
-      plugins: (({ allowWarning = true } = {}) => [
+      plugins: (({
+        allowWarning = true,
+        hrstart = null,
+        hrStepStart = null,
+        hrfinish = null,
+      } = {}) => [
+        (_, __, done) => {
+          if (hrfinish) {
+            const hrend = process.hrtime(hrfinish);
+            console.info(
+              '$$$ @sounisi5011/metalsmith-netlify-published-date compare execution time (hr): %ds %dms',
+              hrend[0],
+              hrend[1] / 1000000,
+            );
+          }
+          hrstart = hrStepStart = process.hrtime();
+          done();
+        },
         pugRender({
           locals: {
             env: process.env,
@@ -332,16 +349,66 @@ Metalsmith(__dirname)
           pattern: 'characters/**/*.html',
           useMetadata: true,
         }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> Pug execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         excerpts(),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> metalsmith-excerpts execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         pugRender({
           pattern: pugRender.defaultOptions.pattern,
           reuse: true,
         }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> Pug execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         blankshield({ insertNoreferrer: true }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> @sounisi5011/metalsmith-blankshield execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         scriptModuleBundler({
           jsDirectory: 'src/scripts',
           rollupOptions: require('./config/rollup')({ outputDir: './js/' }),
         }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> @sounisi5011/metalsmith-script-module-bundler execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         tweetableParagraphs({
           filter(filename, filedata) {
             return filedata.tweetable;
@@ -403,8 +470,26 @@ Metalsmith(__dirname)
             return allowWarning;
           },
         }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> @sounisi5011/metalsmith-tweetable-paragraphs execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          done();
+        },
         (files, metalsmith, done) => {
           allowWarning = false;
+          {
+            const hrend = process.hrtime(hrstart);
+            console.info(
+              'Execution time (hr): %ds %dms\n',
+              hrend[0],
+              hrend[1] / 1000000,
+            );
+            hrfinish = process.hrtime();
+          }
           done();
         },
       ])(),
