@@ -16,12 +16,13 @@ exports.readFileAsync = util.promisify(fs.readFile);
 /**
  * @see https://stackoverflow.com/a/45242825/4907315
  */
-exports.isSubPath = (parentPath, targetPath) => {
+exports.isSameOrSubPath = (parentPath, targetPath) => {
   const relative = path.relative(parentPath, targetPath);
   return (
-    relative &&
-    !relative.startsWith(`..${path.sep}`) &&
-    !path.isAbsolute(relative)
+    relative === '' ||
+    (relative !== '..' &&
+      !relative.startsWith(`..${path.sep}`) &&
+      !path.isAbsolute(relative))
   );
 };
 

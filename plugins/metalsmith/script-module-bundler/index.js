@@ -18,7 +18,7 @@ const {
   toJsValue,
   readFileAsync,
   minifyJS,
-  isSubPath,
+  isSameOrSubPath,
   addMetalsmithFile,
 } = require('./utils');
 
@@ -198,10 +198,7 @@ module.exports = opts => {
         ...rollupOutputOptions,
         dir: path.resolve(metalsmithDestDir, rollupOutputOptions.dir || '.'),
       };
-      if (
-        metalsmithDestDir !== outputOptions.dir &&
-        !isSubPath(metalsmithDestDir, outputOptions.dir)
-      ) {
+      if (!isSameOrSubPath(metalsmithDestDir, outputOptions.dir)) {
         throw new Error(
           `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${outputOptions.dir}`,
         );
