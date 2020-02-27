@@ -72,7 +72,6 @@
     "@sounisi5011/rollup-plugin-css-include": "file:plugins/rollup/css-include",
     "asciidoctor-html5s": "^0.2.0",
     "autoprefixer": "^9.6.1",
-    "babel-preset-minify": "^0.5.1",
     "cheerio": "^1.0.0-rc.3",
     "core-js": "3",
     "del-cli": "^2.0.0",
