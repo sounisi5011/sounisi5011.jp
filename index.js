@@ -1,7 +1,5 @@
 const { URL } = require('url');
 
-const rollupCommonjs = require('@rollup/plugin-commonjs');
-const rollupNodeResolve = require('@rollup/plugin-node-resolve');
 const addFileMeta = require('@sounisi5011/metalsmith-add-file-metadata');
 const anotherSource = require('@sounisi5011/metalsmith-another-source');
 const asciidoc = require('@sounisi5011/metalsmith-asciidoctor');
@@ -28,7 +26,6 @@ const {
   init: shorturlInit,
   generate: shorturlGen,
 } = require('@sounisi5011/metalsmith-url-shortener');
-const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
@@ -44,8 +41,6 @@ const {
   compile: pugCompile,
   render: pugRender,
 } = require('metalsmith-pug-extra');
-const rollupBabel = require('rollup-plugin-babel');
-const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
 const childPages = require('./plugins/metalsmith/child-pages');
@@ -345,47 +340,7 @@ Metalsmith(__dirname)
         blankshield({ insertNoreferrer: true }),
         scriptModuleBundler({
           jsDirectory: 'src/scripts',
-          rollupOptions: (files, metalsmith) => ({
-            output: {
-              dir: './js/',
-              sourcemap: true,
-            },
-            plugins: [
-              rollupNodeResolve(),
-              rollupCommonjs(),
-              rollupCssInclude({
-                publicPath: metalsmith.destination(),
-              }),
-              rollupBabel({
-                exclude: 'node_modules/**',
-                comments: false,
-                presets: [
-                  [
-                    '@babel/preset-env',
-                    {
-                      corejs: 3,
-                      useBuiltIns: 'usage',
-                      exclude: [
-                        /*
-                         * IE11でcore-jsが定義するPromise.all内のiterateが動作しないため除外。
-                         * Promiseのpolyfillはmetalsmith-script-module-bundlerが追加するため問題はない。
-                         */
-                        'es.promise',
-                        /*
-                         * iterateを使わないのでIE11の問題とは無関係だが、
-                         * metalsmith-script-module-bundlerが追加するPromiseのpolyfillがサポート済みのため、
-                         * 容量削減の目的で無効化。
-                         */
-                        'es.promise.finally',
-                      ],
-                    },
-                  ],
-                  // 'minify',
-                ],
-              }),
-              rollupTerserMinify(),
-            ],
-          }),
+          rollupOptions: require('./config/rollup')({ outputDir: './js/' }),
         }),
         tweetableParagraphs({
           filter(filename, filedata) {
