@@ -45,6 +45,7 @@ const {
   render: pugRender,
 } = require('metalsmith-pug-extra');
 const rollupBabel = require('rollup-plugin-babel');
+const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
 
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
 const childPages = require('./plugins/metalsmith/child-pages');
@@ -451,6 +452,7 @@ Metalsmith(__dirname)
               // 'minify',
             ],
           }),
+          rollupTerserMinify(),
         ],
       }),
     }),
