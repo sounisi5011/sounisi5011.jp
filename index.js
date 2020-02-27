@@ -28,6 +28,7 @@ const {
   init: shorturlInit,
   generate: shorturlGen,
 } = require('@sounisi5011/metalsmith-url-shortener');
+const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
@@ -419,6 +420,7 @@ Metalsmith(__dirname)
         plugins: [
           rollupNodeResolve(),
           rollupCommonjs(),
+          rollupCssInclude(),
           rollupBabel({
             exclude: 'node_modules/**',
             comments: false,

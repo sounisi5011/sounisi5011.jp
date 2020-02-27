@@ -77,32 +77,6 @@ function getWindowHeight(doc = document) {
   return doc.documentElement.clientHeight;
 }
 
-/**
- * @see https://qiita.com/rana_kualu/items/95a7adf8420ea2b9f657
- * @see https://www.filamentgroup.com/lab/load-css-simpler/
- */
-function importStyle(src, callback) {
-  const linkElem = document.createElement('link');
-  linkElem.rel = 'stylesheet';
-  // linkElem.type = 'text/css';
-  linkElem.media = 'print';
-  if (callback) {
-    linkElem.onload = () => {
-      linkElem.media = 'all';
-      callback();
-    };
-  }
-  linkElem.onerror = error => {
-    throw new URIError(
-      "Cannot import style '" +
-        ((error && error.target && error.target.src) || src) +
-        "'",
-    );
-  };
-  linkElem.href = src;
-  document.head.appendChild(linkElem);
-}
-
 function getElemWidth(elem) {
   if (!(elem && typeof elem.getBoundingClientRect === 'function')) {
     return 0;
@@ -765,8 +739,11 @@ if (typeof navigator.share === 'function') {
   if (typeof dialogElem.showModal === 'function') {
     main(dialogElem);
   } else {
-    import('dialog-polyfill').then(({ default: dialogPolyfill }) => {
-      importStyle('/dialog-polyfill/dialog-polyfill.css', () => {
+    Promise.all([
+      import('dialog-polyfill'),
+      import('dialog-polyfill/dialog-polyfill.css'),
+    ]).then(([{ default: dialogPolyfill }, { load }]) => {
+      load().then(() => {
         dialogPolyfill.registerDialog(dialogElem);
         main(dialogElem);
       });
