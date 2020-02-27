@@ -343,6 +343,50 @@ Metalsmith(__dirname)
           reuse: true,
         }),
         blankshield({ insertNoreferrer: true }),
+        scriptModuleBundler({
+          jsDirectory: 'src/scripts',
+          rollupOptions: (files, metalsmith) => ({
+            output: {
+              dir: './js/',
+              sourcemap: true,
+            },
+            plugins: [
+              rollupNodeResolve(),
+              rollupCommonjs(),
+              rollupCssInclude({
+                publicPath: metalsmith.destination(),
+              }),
+              rollupBabel({
+                exclude: 'node_modules/**',
+                comments: false,
+                presets: [
+                  [
+                    '@babel/preset-env',
+                    {
+                      corejs: 3,
+                      useBuiltIns: 'usage',
+                      exclude: [
+                        /*
+                         * IE11でcore-jsが定義するPromise.all内のiterateが動作しないため除外。
+                         * Promiseのpolyfillはmetalsmith-script-module-bundlerが追加するため問題はない。
+                         */
+                        'es.promise',
+                        /*
+                         * iterateを使わないのでIE11の問題とは無関係だが、
+                         * metalsmith-script-module-bundlerが追加するPromiseのpolyfillがサポート済みのため、
+                         * 容量削減の目的で無効化。
+                         */
+                        'es.promise.finally',
+                      ],
+                    },
+                  ],
+                  // 'minify',
+                ],
+              }),
+              rollupTerserMinify(),
+            ],
+          }),
+        }),
         tweetableParagraphs({
           filter(filename, filedata) {
             return filedata.tweetable;
@@ -408,50 +452,6 @@ Metalsmith(__dirname)
           allowWarning = false;
           done();
         },
-        scriptModuleBundler({
-          jsDirectory: 'src/scripts',
-          rollupOptions: (files, metalsmith) => ({
-            output: {
-              dir: './js/',
-              sourcemap: true,
-            },
-            plugins: [
-              rollupNodeResolve(),
-              rollupCommonjs(),
-              rollupCssInclude({
-                publicPath: metalsmith.destination(),
-              }),
-              rollupBabel({
-                exclude: 'node_modules/**',
-                comments: false,
-                presets: [
-                  [
-                    '@babel/preset-env',
-                    {
-                      corejs: 3,
-                      useBuiltIns: 'usage',
-                      exclude: [
-                        /*
-                         * IE11でcore-jsが定義するPromise.all内のiterateが動作しないため除外。
-                         * Promiseのpolyfillはmetalsmith-script-module-bundlerが追加するため問題はない。
-                         */
-                        'es.promise',
-                        /*
-                         * iterateを使わないのでIE11の問題とは無関係だが、
-                         * metalsmith-script-module-bundlerが追加するPromiseのpolyfillがサポート済みのため、
-                         * 容量削減の目的で無効化。
-                         */
-                        'es.promise.finally',
-                      ],
-                    },
-                  ],
-                  // 'minify',
-                ],
-              }),
-              rollupTerserMinify(),
-            ],
-          }),
-        }),
       ])(),
     }),
   )
