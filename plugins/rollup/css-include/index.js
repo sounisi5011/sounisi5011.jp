@@ -1,10 +1,11 @@
 const path = require('path');
+const util = require('util');
 
 const { createFilter } = require('@rollup/pluginutils');
 const escapeStringRegexp = require('escape-string-regexp');
 
 const pkg = require('./package.json');
-const { toJsValue } = require('./utils');
+const { toJsValue, filename2urlPath, isSameOrSubPath } = require('./utils');
 
 module.exports = (options = {}) => {
   const filter = createFilter(options.include || '**/*.css', options.exclude);
@@ -43,15 +44,43 @@ module.exports = (options = {}) => {
      * @see https://rollupjs.org/guide/en/#generatebundle
      */
     generateBundle(outputOptions, bundle) {
+      let rootURL = options.publicURL;
+      if (rootURL) {
+        const url = new URL(rootURL, 'https://example.com');
+        url.search = url.hash = '';
+        rootURL = rootURL.startsWith(url.protocol + '//')
+          ? url.href
+          : rootURL.startsWith('//')
+          ? url.href.substring(url.protocol.length)
+          : url.pathname;
+      } else {
+        const publicPath = path.resolve(
+          outputOptions.dir,
+          options.publicPath || '.',
+        );
+        if (!isSameOrSubPath(publicPath, outputOptions.dir)) {
+          throw new Error(
+            `publicPathオプションの値は、Rollupの出力ディレクトリの親ディレクトリである必要があります:\n` +
+              `  options.publicPath: ${util.inspect(options.publicPath)}\n` +
+              `  Rollup output.dir: ${util.inspect(outputOptions.dir)}`,
+          );
+        }
+        rootURL = filename2urlPath(
+          path.relative(publicPath, outputOptions.dir),
+        );
+      }
       for (const { id, referenceId } of cssMap.values()) {
         const cssFileName = this.getFileName(referenceId);
         for (const chunkOrAsset of Object.values(bundle)) {
           if (chunkOrAsset.facadeModuleId !== id) continue;
           const chunk = chunkOrAsset;
+
           // TODO: SourceMapの更新も行う
+          const cssURL =
+            rootURL.replace(/\/+$/, '') + filename2urlPath(cssFileName);
           chunk.code = chunk.code.replace(
             new RegExp(`(["'])${escapeStringRegexp(referenceId)}\\1`, 'g'),
-            () => toJsValue(`/${cssFileName}`),
+            () => toJsValue(cssURL),
           );
         }
       }

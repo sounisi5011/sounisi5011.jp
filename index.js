@@ -413,7 +413,7 @@ Metalsmith(__dirname)
   .use(
     scriptModuleBundler({
       jsDirectory: 'src/scripts',
-      rollupOptions: {
+      rollupOptions: (files, metalsmith) => ({
         output: {
           dir: './js/',
           sourcemap: true,
@@ -421,7 +421,9 @@ Metalsmith(__dirname)
         plugins: [
           rollupNodeResolve(),
           rollupCommonjs(),
-          rollupCssInclude(),
+          rollupCssInclude({
+            publicPath: metalsmith.destination(),
+          }),
           rollupBabel({
             exclude: 'node_modules/**',
             comments: false,
@@ -450,7 +452,7 @@ Metalsmith(__dirname)
             ],
           }),
         ],
-      },
+      }),
     }),
   )
   .use(
