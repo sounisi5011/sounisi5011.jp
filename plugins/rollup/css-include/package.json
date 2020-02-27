@@ -1,0 +1,12 @@
+{
+  "name": "@sounisi5011/rollup-plugin-css-include",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "@rollup/pluginutils": "^3.0.8",
+    "escape-string-regexp": "^2.0.0"
+  },
+  "peerDependencies": {
+    "rollup": "^1.31.1"
+  }
+}
