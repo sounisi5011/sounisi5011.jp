@@ -14,7 +14,13 @@ const {
   appendChild,
   createElement,
 } = require('./parse5-utils');
-const { toJsValue, readFileAsync, minifyJS } = require('./utils');
+const {
+  toJsValue,
+  readFileAsync,
+  minifyJS,
+  isSubPath,
+  addMetalsmithFile,
+} = require('./utils');
 
 module.exports = opts => {
   const options = {
@@ -187,18 +193,26 @@ module.exports = opts => {
        * RollupのoutputOptionsを生成する
        * @see https://rollupjs.org/guide/en/#outputoptions-object
        */
-      const outputDir = metalsmith.destination();
+      const metalsmithDestDir = metalsmith.destination();
       const outputOptions = {
         ...rollupOutputOptions,
-        dir: outputDir,
+        dir: path.resolve(metalsmithDestDir, rollupOutputOptions.dir || '.'),
       };
+      if (
+        metalsmithDestDir !== outputOptions.dir &&
+        !isSubPath(metalsmithDestDir, outputOptions.dir)
+      ) {
+        throw new Error(
+          `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${outputOptions.dir}`,
+        );
+      }
 
       /*
        * RollupでJSをビルドする
        */
-      /** @type {Map.<string, Object>} */
+      /** @type {Map.<string, {filename: string, chunk: Object}>} */
       const esmChunkMap = new Map();
-      /** @type {Map.<string, Object>} */
+      /** @type {Map.<string, {filename: string, chunk: Object}>} */
       const systemJsChunkMap = new Map();
       for (const { chunkMap, ...opts } of [
         // ES module用
@@ -221,13 +235,13 @@ module.exports = opts => {
           ...opts,
         });
         for (const chunkOrAsset of output) {
-          const filename = chunkOrAsset.fileName;
+          const filepath = path.resolve(
+            outputOptions.dir,
+            chunkOrAsset.fileName,
+          );
           if (chunkOrAsset.type === 'asset') {
             const asset = chunkOrAsset;
-            const contents = Buffer.isBuffer(asset.source)
-              ? asset.source
-              : Buffer.from(asset.source);
-            pluginKit.addFile(files, filename, contents);
+            addMetalsmithFile(metalsmith, files, filepath, asset.source);
           } else {
             const chunk = chunkOrAsset;
             let { code } = chunk;
@@ -241,10 +255,11 @@ module.exports = opts => {
               if (outputOptions.sourcemap === 'inline') {
                 sourceMapURL = chunk.map.toUrl();
               } else {
-                sourceMapURL = `${path.basename(filename)}.map`;
-                pluginKit.addFile(
+                sourceMapURL = `${path.basename(filepath)}.map`;
+                addMetalsmithFile(
+                  metalsmith,
                   files,
-                  `${filename}.map`,
+                  `${filepath}.map`,
                   chunk.map.toString(),
                 );
               }
@@ -253,8 +268,13 @@ module.exports = opts => {
               }
             }
 
-            pluginKit.addFile(files, filename, code);
-            chunkMap.set(chunk.facadeModuleId, chunk);
+            const { filename } = addMetalsmithFile(
+              metalsmith,
+              files,
+              filepath,
+              code,
+            );
+            chunkMap.set(chunk.facadeModuleId, { filename, chunk });
           }
         }
       }
@@ -262,9 +282,10 @@ module.exports = opts => {
       /*
        * SystemJSを追加する
        */
-      pluginKit.addFile(
+      const { filename: systemJsFilename } = addMetalsmithFile(
+        metalsmith,
         files,
-        's.min.js',
+        path.resolve(outputOptions.dir, 's.min.js'),
         await readFileAsync(require.resolve('systemjs/dist/s.min.js')),
       );
 
@@ -272,10 +293,10 @@ module.exports = opts => {
        * Promise Polyfillを追加する
        * SystemJSで必要
        */
-      const promisePolyfillFilename = 'promise-polyfill.min.js';
-      pluginKit.addFile(
+      const { filename: promisePolyfillFilename } = addMetalsmithFile(
+        metalsmith,
         files,
-        promisePolyfillFilename,
+        path.resolve(outputOptions.dir, 'promise-polyfill.min.js'),
         await readFileAsync(
           require.resolve('promise-polyfill/dist/polyfill.min.js'),
         ),
@@ -321,13 +342,13 @@ module.exports = opts => {
           const esSyncFileList = insertScriptList
             .filter(({ async }) => !async)
             .map(
-              ({ srcFullpath }) => `/${esmChunkMap.get(srcFullpath).fileName}`,
+              ({ srcFullpath }) => `/${esmChunkMap.get(srcFullpath).filename}`,
             );
           // 読み込む順序が不定のJS。async属性指定
           const esAsyncFileList = insertScriptList
             .filter(({ async }) => async)
             .map(
-              ({ srcFullpath }) => `/${esmChunkMap.get(srcFullpath).fileName}`,
+              ({ srcFullpath }) => `/${esmChunkMap.get(srcFullpath).filename}`,
             );
           // script要素内のJSコードを生成
           const esmScriptText = minifyJS(
@@ -357,14 +378,14 @@ module.exports = opts => {
             .filter(({ async, moduleOnly }) => !async && !moduleOnly)
             .map(
               ({ srcFullpath }) =>
-                `/${systemJsChunkMap.get(srcFullpath).fileName}`,
+                `/${systemJsChunkMap.get(srcFullpath).filename}`,
             );
           // 読み込む順序が不定のJS。async属性指定
           const systemJsAsyncFileList = insertScriptList
             .filter(({ async, moduleOnly }) => async && !moduleOnly)
             .map(
               ({ srcFullpath }) =>
-                `/${systemJsChunkMap.get(srcFullpath).fileName}`,
+                `/${systemJsChunkMap.get(srcFullpath).filename}`,
             );
           // script要素内のJSコードを生成
           const systemJsScriptText = minifyJS(
@@ -397,10 +418,10 @@ module.exports = opts => {
                   typeof Promise.prototype.finally !== 'function'
                 ) {
                   importScript('/${promisePolyfillFilename}', function() {
-                    importScript('/s.min.js', init);
+                    importScript('/${systemJsFilename}', init);
                   });
                 } else {
-                  importScript('/s.min.js', init);
+                  importScript('/${systemJsFilename}', init);
                 }
               }`,
             ].join('\n'),
