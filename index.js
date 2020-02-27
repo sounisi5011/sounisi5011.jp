@@ -415,6 +415,7 @@ Metalsmith(__dirname)
       jsDirectory: 'src/scripts',
       rollupOptions: {
         output: {
+          dir: './js/',
           sourcemap: true,
         },
         plugins: [
