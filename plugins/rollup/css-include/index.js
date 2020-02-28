@@ -65,7 +65,7 @@ module.exports = (options = {}) => {
          * @see https://rollupjs.org/guide/en/#file-urls
          */
         code: [
-          `import cssLoader from ${toJsValue(importCssFullpath)};`,
+          `import { cssLoader } from ${toJsValue(importCssFullpath)};`,
           `export var load = cssLoader(import.meta.ROLLUP_FILE_URL_${cssReferenceId});`,
         ].join('\n'),
         /**

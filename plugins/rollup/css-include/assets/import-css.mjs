@@ -32,11 +32,11 @@ function importCSS(src) {
   });
 }
 
-export default src => {
+export function cssLoader(src) {
   const loader = importCSS(src);
   return () =>
     loader.then(({ init, ...other }) => {
       init();
       return other;
     });
-};
+}
