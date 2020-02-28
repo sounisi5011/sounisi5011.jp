@@ -4,7 +4,7 @@ const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
 const rollupBabel = require('rollup-plugin-babel');
 const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
 
-module.exports = ({ outputDir }) => (files, metalsmith) => ({
+module.exports = ({ outputDir }) => ({
   output: {
     dir: outputDir,
     sourcemap: true,
@@ -12,9 +12,7 @@ module.exports = ({ outputDir }) => (files, metalsmith) => ({
   plugins: [
     rollupNodeResolve(),
     rollupCommonjs(),
-    rollupCssInclude({
-      publicPath: metalsmith.destination(),
-    }),
+    rollupCssInclude(),
     rollupBabel({
       exclude: 'node_modules/**',
       comments: false,
