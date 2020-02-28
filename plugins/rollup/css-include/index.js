@@ -9,6 +9,8 @@ const importCssFullpath = path.resolve(__dirname, './assets/import-css.mjs');
 
 module.exports = (options = {}) => {
   const filter = createFilter(options.include || '**/*.css', options.exclude);
+  /** @type {Map.<string, { inputFilepath: string, referenceId: string }>} */
+  const cssOriginalFilepathMap = new Map();
 
   return {
     name: pkg.name,
@@ -29,6 +31,10 @@ module.exports = (options = {}) => {
         source: code,
         name: path.basename(id),
       });
+      cssOriginalFilepathMap.set(id, {
+        inputFilepath: id,
+        referenceId: cssReferenceId,
+      });
 
       return {
         /**
@@ -48,6 +54,128 @@ module.exports = (options = {}) => {
          */
         map: { mappings: '' },
       };
+    },
+
+    /**
+     * @param {Object} outputOptions
+     * @param {Object.<string, Object>} bundle
+     * @see https://rollupjs.org/guide/en/#generatebundle
+     */
+    async generateBundle(outputOptions, bundle) {
+      if (typeof options.cssConverter !== 'function') return;
+
+      /*
+       * 出力アセットファイルに対応する入力ファイルパスを取得する
+       */
+      /** @type {Map.<string, { inputFilepath: string }>} */
+      const inputFileDataMap = new Map();
+      for (const [, { inputFilepath, referenceId }] of cssOriginalFilepathMap) {
+        try {
+          const outputFilename = this.getFileName(referenceId);
+          inputFileDataMap.set(outputFilename, { inputFilepath });
+        } catch (error) {
+          if (
+            !(error instanceof Error) ||
+            !/\bUnable to get file name for unknown file\b/.test(error.message)
+          ) {
+            throw error;
+          }
+        }
+      }
+
+      /*
+       * 変換対象の出力アセットファイルの情報を配列化
+       */
+      const convertList = Object.entries(bundle)
+        .filter(([, chunkOrAsset]) => chunkOrAsset.type === 'asset')
+        .map(([outputFilename, assetInfo]) => ({
+          outputFilename,
+          assetInfo,
+          inputFileData: inputFileDataMap.get(outputFilename),
+        }))
+        .filter(({ inputFileData }) => inputFileData)
+        .map(({ outputFilename, assetInfo, inputFileData }) => ({
+          assetInfo,
+          converterArgument: {
+            inputFilepath: inputFileData.inputFilepath,
+            outputFilepath: path.resolve(outputOptions.dir, outputFilename),
+            source: assetInfo.source,
+            rollupOutputOptions: outputOptions,
+          },
+        }));
+
+      /*
+       * 出力アセットファイルを変換する
+       */
+      for (const { assetInfo, converterArgument } of convertList) {
+        const result = await options.cssConverter(converterArgument);
+
+        if (typeof result === 'string' || Buffer.isBuffer(result)) {
+          assetInfo.source = result;
+          continue;
+        }
+
+        if (!(typeof result === 'object' && result)) continue;
+        const { source, insertFiles } = result;
+        if (typeof source === 'string' || Buffer.isBuffer(source)) {
+          assetInfo.source = source;
+        } else if (source !== undefined) {
+          throw new TypeError(
+            `cssConverter()オプションの返り値が誤っています。オブジェクトのsourceプロパティには、次のいずれかの値のみを含められます：文字列、Bufferオブジェクト、undefined`,
+          );
+        }
+
+        if (!(typeof insertFiles === 'object' && insertFiles)) {
+          if (insertFiles === undefined) continue;
+          throw new TypeError(
+            `cssConverter()オプションの返り値が誤っています。オブジェクトのinsertFilesプロパティには、次のいずれかの値のみを含められます：オブジェクト、undefined`,
+          );
+        }
+        for (const [filepath, source] of Object.entries(insertFiles)) {
+          const fileName = path.relative(
+            outputOptions.dir,
+            path.resolve(outputOptions.dir, filepath),
+          );
+
+          /**
+           * 出力ディレクトリ外のパスは受け付けない
+           * @see https://stackoverflow.com/a/45242825/4907315
+           */
+          if (
+            !fileName ||
+            fileName === '..' ||
+            fileName.startsWith(`..${path.sep}`) ||
+            path.isAbsolute(fileName)
+          ) {
+            throw new Error(
+              `cssConverter()オプションの返り値が誤っています。insertFilesプロパティで指定可能なファイルパスはRollupの出力ディレクトリ内を示す必要があります`,
+            );
+          }
+          /*
+           * 重複するファイル名は受け付けない
+           */
+          if (Object.prototype.hasOwnProperty.call(bundle, fileName)) {
+            throw new Error(
+              `cssConverter()オプションの返り値が誤っています。insertFilesプロパティで指定されたファイルパスが既存のものと重複しています：'${fileName}'`,
+            );
+          }
+          /*
+           * 誤った型の内容は受け付けない
+           */
+          if (source === undefined) continue;
+          if (typeof source !== 'string' && !Buffer.isBuffer(source)) {
+            throw new TypeError(
+              `cssConverter()オプションの返り値が誤っています。insertFilesプロパティで指定可能なファイルの値は次のいずれかのみです：文字列、Bufferオブジェクト、undefined`,
+            );
+          }
+
+          bundle[fileName] = {
+            type: 'asset',
+            fileName,
+            source,
+          };
+        }
+      }
     },
   };
 };
