@@ -1,8 +1,19 @@
 const rollupCommonjs = require('@rollup/plugin-commonjs');
 const rollupNodeResolve = require('@rollup/plugin-node-resolve');
 const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
+const postcss = require('postcss');
+const postcssClean = require('postcss-clean');
 const rollupBabel = require('rollup-plugin-babel');
 const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
+
+const postcssOptions = {
+  /** @see https://github.com/postcss/postcss/blob/master/docs/source-maps.md */
+  map: { inline: false },
+};
+const postcssMinify = postcss([
+  //
+  postcssClean({ level: 2 }),
+]);
 
 module.exports = ({ outputDir }) => ({
   output: {
@@ -12,7 +23,23 @@ module.exports = ({ outputDir }) => ({
   plugins: [
     rollupNodeResolve(),
     rollupCommonjs(),
-    rollupCssInclude(),
+    rollupCssInclude({
+      async cssConverter({ inputFilepath, outputFilepath, source }) {
+        const result = await postcssMinify.process(source, {
+          ...postcssOptions,
+          from: inputFilepath,
+          to: outputFilepath,
+        });
+        return {
+          source: result.css,
+          insertFiles: {
+            [`${outputFilepath}.map`]: result.map
+              ? result.map.toString()
+              : undefined,
+          },
+        };
+      },
+    }),
     rollupBabel({
       exclude: 'node_modules/**',
       comments: false,
