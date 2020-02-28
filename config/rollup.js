@@ -12,7 +12,7 @@ const postcssOptions = {
 };
 const postcssMinify = postcss([cssnano]);
 
-module.exports = ({ outputDir }) => ({
+module.exports = ({ outputDir }) => (files, metalsmith) => ({
   output: {
     dir: outputDir,
     sourcemap: true,
@@ -21,6 +21,7 @@ module.exports = ({ outputDir }) => ({
     rollupNodeResolve(),
     rollupCommonjs(),
     rollupCssInclude({
+      publicPath: metalsmith.destination(),
       async cssConverter({ inputFilepath, outputFilepath, source }) {
         const result = await postcssMinify.process(source, {
           ...postcssOptions,
