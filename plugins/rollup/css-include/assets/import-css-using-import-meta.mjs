@@ -32,8 +32,8 @@ function importCSS(src) {
   });
 }
 
-export default src => {
-  const loader = importCSS(src);
+export default (src, baseURL) => {
+  const loader = importCSS(new URL(src, baseURL).href);
   return () =>
     loader.then(({ init, ...other }) => {
       init();

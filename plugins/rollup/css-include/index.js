@@ -1,16 +1,36 @@
 const path = require('path');
+const util = require('util');
 
 const { createFilter } = require('@rollup/pluginutils');
 
 const pkg = require('./package.json');
-const { toJsValue } = require('./utils');
-
-const importCssFullpath = path.resolve(__dirname, './assets/import-css.mjs');
+const { toJsValue, filename2urlPath, isSameOrSubPath } = require('./utils');
 
 module.exports = (options = {}) => {
   const filter = createFilter(options.include || '**/*.css', options.exclude);
   /** @type {Map.<string, { inputFilepath: string, referenceId: string }>} */
   const cssOriginalFilepathMap = new Map();
+  /** @type {WeakMap.<rollup.PluginContextMeta, { rootURL: string, outputOptions: rollup.OutputOptions }>} */
+  const rootURLMap = new WeakMap();
+
+  const useImportMeta = !(options.publicURL || options.publicPath);
+  const importCssFullpath = path.resolve(
+    __dirname,
+    useImportMeta
+      ? './assets/import-css-using-import-meta.mjs'
+      : './assets/import-css.mjs',
+  );
+  /** @type {string} */
+  let rootURLStr = '';
+  if (!useImportMeta && options.publicURL) {
+    const url = new URL(options.publicURL, 'https://example.com');
+    url.search = url.hash = '';
+    rootURLStr = options.publicURL.startsWith(url.protocol + '//')
+      ? url.href
+      : options.publicURL.startsWith('//')
+      ? url.href.substring(url.protocol.length)
+      : url.pathname;
+  }
 
   return {
     name: pkg.name,
@@ -54,6 +74,68 @@ module.exports = (options = {}) => {
          */
         map: { mappings: '' },
       };
+    },
+
+    /**
+     * @param {Object} outputOptions
+     * @see https://rollupjs.org/guide/en/#outputoptions
+     */
+    outputOptions(outputOptions) {
+      if (!useImportMeta) {
+        let rootURL = rootURLStr;
+        if (!rootURL && options.publicPath) {
+          const publicPath = path.resolve(
+            outputOptions.dir,
+            options.publicPath,
+          );
+          if (!isSameOrSubPath(publicPath, outputOptions.dir)) {
+            throw new Error(
+              `publicPathオプションの値は、Rollupの出力ディレクトリの親ディレクトリである必要があります:\n` +
+                `  options.publicPath: ${util.inspect(options.publicPath)}\n` +
+                `  Rollup output.dir: ${util.inspect(outputOptions.dir)}`,
+            );
+          }
+          rootURL = filename2urlPath(
+            path.relative(publicPath, outputOptions.dir),
+          );
+        }
+        rootURLMap.set(this.meta, { rootURL, outputOptions });
+      }
+      return null;
+    },
+
+    /**
+     * @param {{chunkId: string, fileName: string, format: string, moduleId: string, referenceId: string, relativePath: string}} arg
+     * @see https://rollupjs.org/guide/en/#resolvefileurl
+     */
+    resolveFileUrl({ fileName, format, moduleId, referenceId, relativePath }) {
+      const cssData = cssOriginalFilepathMap.get(moduleId);
+      if (cssData && cssData.referenceId === referenceId) {
+        if (!useImportMeta) {
+          const rootURLData = rootURLMap.get(this.meta);
+          if (!rootURLData || rootURLData.outputOptions.format !== format) {
+            throw new Error(
+              `rollupに破壊的な変更が生じた可能性があります。コードを修正してください`,
+            );
+          }
+          const { rootURL } = rootURLData;
+          return toJsValue(
+            rootURL.replace(/\/+$/, '') + filename2urlPath(fileName),
+          );
+        } else {
+          /**
+           * @see https://github.com/rollup/rollup/blob/v1.32.0/src/utils/defaultPlugin.ts#L114-L132
+           */
+          if (format === 'es') {
+            return `${toJsValue(relativePath)}, import.meta.url`;
+          } else if (format === 'system') {
+            return `${toJsValue(relativePath)}, module.meta.url`;
+          } else {
+            throw new Error(`format '${format}' はサポートしていません`);
+          }
+        }
+      }
+      return null;
     },
 
     /**
