@@ -33,7 +33,9 @@ function importCSS(src) {
 }
 
 export default src => {
-  const loader = importCSS(src);
+  // Note: このコードにURLクラスは全く必要ないが、RollupのファイルURL参照には必要なため、
+  //       ここで使用し、@babel/preset-envにPolyfillを挿入させる。
+  const loader = importCSS(new URL(src).href);
   return () =>
     loader.then(({ init, ...other }) => {
       init();
