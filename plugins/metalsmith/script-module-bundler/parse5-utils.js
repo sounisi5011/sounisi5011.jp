@@ -1,22 +1,33 @@
-const {
-  createElement,
-  insertText,
-  appendChild,
-} = require('parse5/lib/tree-adapters/default');
+const treeAdapter = require('parse5/lib/tree-adapters/default');
 
 /**
- * @param {Object.<string, string>|Map.<string, string>|Set.<string>} attrs
+ * @param {(Object.<string, string|null>|Map.<string, string|null>|Set.<string>)[]} attrsList
  * @returns {{name: string, value: string}[]}
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/attribute.md
  */
-function createAttrs(attrs) {
-  if (attrs instanceof Set)
-    return [...attrs].map(name => ({ name, value: '' }));
-  return (attrs instanceof Map
-    ? [...attrs]
-    : Object.entries(attrs)
-  ).map(([name, value]) => ({ name, value }));
+function createElemAttrs(...attrsList) {
+  /** @type {Map.<string, string>} */
+  const attrsMap = new Map();
+  for (const attrs of attrsList) {
+    if (attrs instanceof Set) {
+      for (const name of attrs) {
+        attrsMap.set(name, '');
+      }
+    } else {
+      for (const [name, value] of attrs instanceof Map
+        ? attrs
+        : Object.entries(attrs)) {
+        if (typeof value === 'string' || value) {
+          attrsMap.set(name, value);
+        } else {
+          attrsMap.delete(name);
+        }
+      }
+    }
+  }
+  return [...attrsMap].map(([name, value]) => ({ name, value }));
 }
+exports.createElemAttrs = createElemAttrs;
 
 function isNode(value) {
   return (
@@ -26,7 +37,7 @@ function isNode(value) {
 
 /**
  * @param {string} tagName
- * @param {Object.<string, string>|Map.<string, string>|Set.<string>} attrs
+ * @param {Object.<string, string>|Map.<string, string>|Set.<string>|(Object.<string, string>|Map.<string, string>|Set.<string>)[]} attrs
  * @param {string|Object|(string|Object)[]} content
  * @param {string} namespaceURI
  */
@@ -36,14 +47,18 @@ exports.createElement = (
   content = null,
   namespaceURI = 'http://www.w3.org/1999/xhtml',
 ) => {
-  const elem = createElement(tagName, namespaceURI, createAttrs(attrs));
+  const elem = treeAdapter.createElement(
+    tagName,
+    namespaceURI,
+    Array.isArray(attrs) ? createElemAttrs(...attrs) : createElemAttrs(attrs),
+  );
   const contentList = Array.isArray(content) ? content : [content];
   for (const content of contentList) {
     if (content) {
       if (isNode(content)) {
-        appendChild(elem, content);
+        treeAdapter.appendChild(elem, content);
       } else {
-        insertText(elem, String(content));
+        treeAdapter.insertText(elem, String(content));
       }
     }
   }
@@ -78,7 +93,27 @@ exports.getAttrMap = attrs => {
   return map;
 };
 
-exports.appendChild = appendChild;
+function getNextNode(targetNode, parentNode = targetNode.parentNode) {
+  const childNodeIndex = parentNode.childNodes.indexOf(targetNode);
+  if (childNodeIndex < 0) return null;
+  return parentNode.childNodes[childNodeIndex + 1] || null;
+}
+exports.getNextNode = getNextNode;
+
+exports.appendChild = treeAdapter.appendChild;
+
+function insertBefore(parentNode, targetNode, newNode) {
+  if (parentNode.childNodes.includes(targetNode)) {
+    treeAdapter.insertBefore(parentNode, newNode, targetNode);
+  } else {
+    treeAdapter.appendChild(parentNode, newNode);
+  }
+}
+exports.insertBefore = insertBefore;
+
+exports.insertAfter = (parentNode, targetNode, newNode) => {
+  insertBefore(parentNode, getNextNode(targetNode), newNode);
+};
 
 exports.removeChild = (parentNode, targetNode) => {
   if (parentNode) {
