@@ -17,7 +17,8 @@ exports.toJsValue = value =>
     char => `\\u${char.codePointAt(0).toString(16)}`,
   );
 
-exports.readFileAsync = util.promisify(fs.readFile);
+const readFileAsync = util.promisify(fs.readFile);
+exports.readFileAsync = readFileAsync;
 
 /**
  * @see https://stackoverflow.com/a/45242825/4907315
@@ -60,3 +61,62 @@ exports.addMetalsmithFile = (metalsmith, files, filepath, contents) => {
   pluginKit.addFile(files, filename, contents);
   return { filename };
 };
+
+/**
+ * @typedef {function(string, Object.<string, function(string): string|false|null>|function({ label:string, body:string }): string|false|null): string} GroupReplacer
+ * @typedef {function(string, Object.<string, string | function({ globalVarName:string }): string|false|null>|function({ globalVarName:string, label:string }): string|false|null): string} VarReplacer
+ * @param {string|string[]} templateFilepath
+ * @param {function(string, { groupReplacer: GroupReplacer, variableReplacer: VarReplacer }): string} callback
+ * @param {Promise.<string>}
+ */
+exports.templateConverter = async (templateFilepath, callback) => {
+  /** @type {GroupReplacer} */
+  const groupReplacer = (text, replacer) => {
+    return text.replace(
+      /\/\* +__((?:(?!(?::start__ +)?\*\/).)+):start__ +\*\/((?:(?!\/\* +__\1:end__ +\*\/).)*)\/\* +__\1:end__ +\*\//gs,
+      (matchText, label, body) => {
+        let replacedText;
+        if (typeof replacer === 'function') {
+          replacedText = replacer({ label, body });
+        } else {
+          if (typeof replacer[label] !== 'function') return matchText;
+          replacedText = replacer[label](body);
+        }
+        return (typeof replacedText === 'string' || replacedText)
+          ? replacedText
+          : matchText;
+      },
+    );
+  };
+  /** @type {VarReplacer} */
+  const variableReplacer = (text, replacer) => {
+    return text.replace(
+      /\b(window|this|self)\.__(\w+)__\b/g,
+      (matchText, globalVarName, label) => {
+        let replacedText;
+        if (typeof replacer === 'function') {
+          replacedText = replacer({ globalVarName, label });
+        } else {
+          replacedText = replacer[label];
+          if (typeof replacedText === 'function') {
+            replacedText = replacedText({ globalVarName });
+          }
+        }
+        return (typeof replacedText === 'string' || replacedText)
+          ? replacedText
+          : matchText;
+      },
+    );
+  };
+
+  const templatePath = Array.isArray(templateFilepath)
+    ? path.resolve(...templateFilepath)
+    : templateFilepath;
+  let templateText = templateCache.get(templatePath);
+  if (typeof templateText !== 'string') {
+    templateText = await readFileAsync(templatePath, 'utf8');
+    templateCache.set(templatePath, templateText);
+  }
+  return callback(templateText, { groupReplacer, variableReplacer });
+};
+const templateCache = new Map();

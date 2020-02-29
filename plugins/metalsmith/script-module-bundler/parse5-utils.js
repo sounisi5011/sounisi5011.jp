@@ -27,7 +27,6 @@ function createElemAttrs(...attrsList) {
   }
   return [...attrsMap].map(([name, value]) => ({ name, value }));
 }
-exports.createElemAttrs = createElemAttrs;
 
 function isNode(value) {
   return (
@@ -93,35 +92,6 @@ exports.getAttrMap = attrs => {
   return map;
 };
 
-function getNextNode(targetNode, parentNode = targetNode.parentNode) {
-  const childNodeIndex = parentNode.childNodes.indexOf(targetNode);
-  if (childNodeIndex < 0) return null;
-  return parentNode.childNodes[childNodeIndex + 1] || null;
-}
-exports.getNextNode = getNextNode;
-
 exports.appendChild = treeAdapter.appendChild;
 
-function insertBefore(parentNode, targetNode, newNode) {
-  if (parentNode.childNodes.includes(targetNode)) {
-    treeAdapter.insertBefore(parentNode, newNode, targetNode);
-  } else {
-    treeAdapter.appendChild(parentNode, newNode);
-  }
-}
-exports.insertBefore = insertBefore;
-
-exports.insertAfter = (parentNode, targetNode, newNode) => {
-  insertBefore(parentNode, getNextNode(targetNode), newNode);
-};
-
-exports.removeChild = (parentNode, targetNode) => {
-  if (parentNode) {
-    if (targetNode.parentNode !== parentNode) return;
-  } else {
-    parentNode = targetNode.parentNode;
-  }
-  parentNode.childNodes = parentNode.childNodes.filter(
-    node => node !== targetNode,
-  );
-};
+exports.detachNode = treeAdapter.detachNode;

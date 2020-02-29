@@ -9,24 +9,8 @@ const rollup = require('rollup');
 const walkParse5 = require('walk-parse5');
 const MIMEType = require('whatwg-mimetype');
 
-const {
-  getAttrMap,
-  removeChild,
-  appendChild,
-  createElement,
-  getNodePath,
-  createElemAttrs,
-  insertAfter,
-} = require('./parse5-utils');
-const {
-  toJsValue,
-  readFileAsync,
-  minifyJS,
-  isSameOrSubPath,
-  addMetalsmithFile,
-  toMetalsmithDestFilename,
-  cmp,
-} = require('./utils');
+const parse5Utils = require('./parse5-utils');
+const utils = require('./utils');
 
 /**
  * @typedef {{ path: (function(): string), destination: (function(): string) }} Metalsmith
@@ -84,7 +68,7 @@ module.exports = opts => {
   const scriptFileFullpathSet = new Set();
   /**
    * @typedef {Map.<string, string | Buffer>} FilesMap
-   * @typedef {Map.<string, {filepath: string, chunk: ChunkInfo, useDynamicImports: boolean}>} ChunkMap
+   * @typedef {Map.<string, {outputFileFullpath: string, chunk: ChunkInfo, useDynamicImports: boolean}>} ChunkMap
    * @type {MultikeyMap.<[Metalsmith, MetalsmithFiles, string, string], {
    *          esm:    { outputOptions: RollupOutputOptions, filesMap: FilesMap, chunkMap: ChunkMap },
    *          system: { outputOptions: RollupOutputOptions, filesMap: FilesMap, chunkMap: ChunkMap }
@@ -112,7 +96,7 @@ module.exports = opts => {
         if (targetNode.tagName !== 'script') return;
 
         const scriptElemNode = targetNode;
-        const scriptElemAttrs = getAttrMap(scriptElemNode.attrs);
+        const scriptElemAttrs = parse5Utils.getAttrMap(scriptElemNode.attrs);
 
         /**
          * type属性値の値が以下に当てはまらない場合は処理しない
@@ -217,16 +201,16 @@ module.exports = opts => {
        */
       const buildID = JSON.stringify(
         [...targetFileMap]
-          .sort(([a], [b]) => cmp(a, b))
+          .sort(([a], [b]) => utils.cmp(a, b))
           .reduce(
             (obj, [filename, { scriptNodeMap }]) => ({
               ...obj,
               [filename]: [...scriptNodeMap]
                 .map(([parentNode, scriptNodeList]) => [
-                  getNodePath(parentNode),
+                  parse5Utils.getNodePath(parentNode),
                   scriptNodeList,
                 ])
-                .sort(([a], [b]) => cmp(a, b))
+                .sort(([a], [b]) => utils.cmp(a, b))
                 .reduce(
                   (obj, [parentNodePath, scriptNodeList]) => ({
                     ...obj,
@@ -326,7 +310,12 @@ module.exports = opts => {
                 rollupOutputOptions.dir || '.',
               ),
             };
-            if (!isSameOrSubPath(metalsmithDestDir, rollupOutputOptsBase.dir)) {
+            if (
+              !utils.isSameOrSubPath(
+                metalsmithDestDir,
+                rollupOutputOptsBase.dir,
+              )
+            ) {
               throw new Error(
                 `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${rollupOutputOptsBase.dir}`,
               );
@@ -361,13 +350,13 @@ module.exports = opts => {
           );
 
           for (const chunkOrAsset of output) {
-            const filepath = path.resolve(
+            const outputFileFullpath = path.resolve(
               outputOptions.dir,
               chunkOrAsset.fileName,
             );
             if (chunkOrAsset.type === 'asset') {
               const asset = chunkOrAsset;
-              filesMap.set(filepath, asset.source);
+              filesMap.set(outputFileFullpath, asset.source);
             } else {
               const chunk = chunkOrAsset;
               let { code } = chunk;
@@ -381,8 +370,11 @@ module.exports = opts => {
                 if (outputOptions.sourcemap === 'inline') {
                   sourceMapURL = chunk.map.toUrl();
                 } else {
-                  sourceMapURL = `${path.basename(filepath)}.map`;
-                  filesMap.set(`${filepath}.map`, chunk.map.toString());
+                  sourceMapURL = `${path.basename(outputFileFullpath)}.map`;
+                  filesMap.set(
+                    `${outputFileFullpath}.map`,
+                    chunk.map.toString(),
+                  );
                 }
                 if (outputOptions.sourcemap !== 'hidden') {
                   code += `//# sourceMappingURL=${sourceMapURL}\n`;
@@ -426,9 +418,9 @@ module.exports = opts => {
                 return result;
               })(chunk);
 
-              filesMap.set(filepath, code);
+              filesMap.set(outputFileFullpath, code);
               chunkMap.set(chunk.facadeModuleId, {
-                filepath,
+                outputFileFullpath,
                 chunk,
                 useDynamicImports,
               });
@@ -457,11 +449,11 @@ module.exports = opts => {
         bundleOutputCache.esm,
         bundleOutputCache.system,
       ]) {
-        for (const [filepath, contents] of filesMap) {
-          addMetalsmithFile(
+        for (const [outputFileFullpath, contents] of filesMap) {
+          utils.addMetalsmithFile(
             metalsmith,
             files,
-            filepath,
+            outputFileFullpath,
             typeof contents === 'string' ? contents : Buffer.from(contents),
           );
         }
@@ -470,22 +462,22 @@ module.exports = opts => {
       /*
        * SystemJSを追加する
        */
-      const { filename: systemJsFilename } = addMetalsmithFile(
+      const { filename: systemJsFilename } = utils.addMetalsmithFile(
         metalsmith,
         files,
         path.resolve(systemJsOutputOptions.dir, 's.min.js'),
-        await readFileAsync(require.resolve('systemjs/dist/s.min.js')),
+        await utils.readFileAsync(require.resolve('systemjs/dist/s.min.js')),
       );
 
       /*
        * Promise Polyfillを追加する
        * SystemJSで必要
        */
-      const { filename: promisePolyfillFilename } = addMetalsmithFile(
+      const { filename: promisePolyfillFilename } = utils.addMetalsmithFile(
         metalsmith,
         files,
         path.resolve(systemJsOutputOptions.dir, 'promise-polyfill.min.js'),
-        await readFileAsync(
+        await utils.readFileAsync(
           require.resolve('promise-polyfill/dist/polyfill.min.js'),
         ),
       );
@@ -493,223 +485,388 @@ module.exports = opts => {
       /*
        * script要素を置換する
        */
-      for (const [
-        filename,
-        { filedata, htmlAST, scriptNodeMap },
-      ] of targetFileMap) {
-        /** @type {Set.<string>} */
-        const removedSrcFullpathSet = new Set();
-        let isSupportsDynamicImportInserted = false;
-
-        for (const [parentNode, scriptNodeList] of scriptNodeMap) {
-          const insertScriptNodeList = scriptNodeList
-            .map(scriptNodeData => ({
-              ...scriptNodeData,
-              esmChunkData: esmChunkMap.get(scriptNodeData.srcFullpath),
-              systemJsChunkData: systemJsChunkMap.get(
-                scriptNodeData.srcFullpath,
-              ),
-            }))
-            .filter(
-              ({ esmChunkData, systemJsChunkData }) =>
-                esmChunkData || systemJsChunkData,
-            );
-          if (insertScriptNodeList.length < 0) continue;
-          const insertScriptList = insertScriptNodeList
-            .map(
-              ({
-                node,
-                attrs,
-                srcFullpath,
-                esmChunkData,
-                systemJsChunkData,
-              }) => {
-                let insertedModuleScript = false;
-                if (esmChunkData && !esmChunkData.useDynamicImports) {
-                  insertAfter(
-                    parentNode,
-                    node,
-                    createElement('script', [
-                      new Set(['type', 'src']),
-                      attrs,
-                      {
-                        type: 'module',
-                        src: `/${toMetalsmithDestFilename(
-                          metalsmith,
-                          esmChunkData.filepath,
-                        )}`,
-                        defer: null,
-                      },
-                    ]),
-                  );
-                  insertedModuleScript = true;
-                }
-
-                /*
-                 * 元のscript要素を削除する
-                 */
-                removeChild(parentNode, node);
-                removedSrcFullpathSet.add(srcFullpath);
-
+      for (const [, { filedata, htmlAST, scriptNodeMap }] of targetFileMap) {
+        /*
+         * 挿入するJSに関する情報を生成
+         */
+        let systemJsScriptCount = 0;
+        const scriptNodeDataMap = new Map(
+          [...scriptNodeMap].map(([parentNode, scriptNodeList]) => {
+            const insertScriptNodeDataList = scriptNodeList
+              .map(scriptNodeData => ({
+                ...scriptNodeData,
+                esmChunkData: esmChunkMap.get(scriptNodeData.srcFullpath),
+                systemJsChunkData: systemJsChunkMap.get(
+                  scriptNodeData.srcFullpath,
+                ),
                 /**
                  * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-async
                  */
-                return {
-                  srcFullpath,
-                  async: attrs.has('async'),
-                  moduleOnly: attrs.get('type') === 'module',
-                  insertedModuleScript,
-                };
+                async: scriptNodeData.attrs.has('async'),
+                moduleOnly: scriptNodeData.attrs.get('type') === 'module',
+              }))
+              .filter(
+                ({ esmChunkData, systemJsChunkData }) =>
+                  esmChunkData || systemJsChunkData,
+              );
+            if (insertScriptNodeDataList.length < 0) return [];
+
+            const esScriptNodeDataList = insertScriptNodeDataList
+              .filter(({ esmChunkData }) => esmChunkData)
+              .map(scriptNodeData => ({
+                ...scriptNodeData,
+                srcAttrValue: `/${utils.toMetalsmithDestFilename(
+                  metalsmith,
+                  scriptNodeData.esmChunkData.outputFileFullpath,
+                )}`,
+              }));
+            const systemJsScriptNodeDataList = insertScriptNodeDataList
+              .filter(
+                ({ systemJsChunkData, moduleOnly }) =>
+                  systemJsChunkData && !moduleOnly,
+              )
+              .map(scriptNodeData => ({
+                ...scriptNodeData,
+                srcAttrValue: `/${utils.toMetalsmithDestFilename(
+                  metalsmith,
+                  scriptNodeData.systemJsChunkData.outputFileFullpath,
+                )}`,
+              }));
+            /** @type {Map.<Parse5Node, string>} */
+            const originalScriptNodeMap = new Map([
+              ...esScriptNodeDataList.map(({ node, srcFullpath }) => [
+                node,
+                srcFullpath,
+              ]),
+              ...systemJsScriptNodeDataList.map(({ node, srcFullpath }) => [
+                node,
+                srcFullpath,
+              ]),
+            ]);
+            const esScriptNodeDataRecord = {
+              // <script type=module> 形式で挿入するJS
+              staticImport: esScriptNodeDataList.filter(
+                ({ esmChunkData }) => !esmChunkData.useDynamicImports,
+              ),
+              dynamicImport: {
+                // 順序を維持したDynamic import()で読み込むJS
+                sync: esScriptNodeDataList.filter(
+                  ({ async, esmChunkData }) =>
+                    esmChunkData.useDynamicImports && !async,
+                ),
+                // 順不同のDynamic import()で読み込むJS
+                async: esScriptNodeDataList.filter(
+                  ({ async, esmChunkData }) =>
+                    esmChunkData.useDynamicImports && async,
+                ),
               },
-            )
-            .filter(Boolean);
+            };
+            const staticImportSrcFullpathSet = new Set(
+              esScriptNodeDataRecord.staticImport.map(
+                ({ srcFullpath }) => srcFullpath,
+              ),
+            );
+            const scriptNodeDataRecord = {
+              es: esScriptNodeDataRecord,
+              systemJs: {
+                staticImport: {
+                  // 順序を維持したSystemJSで読み込むnomoduleのみのJS
+                  sync: systemJsScriptNodeDataList.filter(
+                    ({ async, srcFullpath }) =>
+                      !async && staticImportSrcFullpathSet.has(srcFullpath),
+                  ),
+                  // 順序を維持したSystemJSで読み込むJS
+                  async: systemJsScriptNodeDataList.filter(
+                    ({ async, srcFullpath }) =>
+                      async && staticImportSrcFullpathSet.has(srcFullpath),
+                  ),
+                },
+                dynamicImport: {
+                  // 順不同のSystemJSで読み込むnomoduleのみのJS
+                  sync: systemJsScriptNodeDataList.filter(
+                    ({ async, srcFullpath }) =>
+                      !async && !staticImportSrcFullpathSet.has(srcFullpath),
+                  ),
+                  // 順不同のSystemJSで読み込むJS
+                  async: systemJsScriptNodeDataList.filter(
+                    ({ async, srcFullpath }) =>
+                      async && !staticImportSrcFullpathSet.has(srcFullpath),
+                  ),
+                },
+              },
+            };
+            const hasEsDynamic =
+              scriptNodeDataRecord.es.dynamicImport.sync.length >= 1 ||
+              scriptNodeDataRecord.es.dynamicImport.async.length >= 1;
+            const hasSystemJsStatic =
+              scriptNodeDataRecord.systemJs.staticImport.sync.length >= 1 ||
+              scriptNodeDataRecord.systemJs.staticImport.async.length >= 1;
+            const hasSystemJsDynamic =
+              scriptNodeDataRecord.systemJs.dynamicImport.sync.length >= 1 ||
+              scriptNodeDataRecord.systemJs.dynamicImport.async.length >= 1;
+
+            if (hasSystemJsStatic) {
+              systemJsScriptCount++;
+            }
+            if (hasSystemJsDynamic) {
+              systemJsScriptCount++;
+            }
+
+            return [
+              parentNode,
+              {
+                originalScriptNodeMap,
+                scriptNodeDataRecord,
+                hasEsDynamic,
+                hasSystemJsStatic,
+                hasSystemJsDynamic,
+              },
+            ];
+          }),
+        );
+
+        /*
+         * script要素を挿入・削除する
+         */
+        const templateCallback = scriptNodeData => (
+          templateText,
+          { groupReplacer, variableReplacer },
+        ) => {
+          return variableReplacer(
+            groupReplacer(templateText, {
+              SUPPORTS_DYNAMIC_IMPORT: body =>
+                isSupportsDynamicImportInserted ? '' : body,
+              'JS_SRC_LIST:loop': !scriptNodeData
+                ? () => null
+                : body =>
+                    [
+                      scriptNodeData.sync.map(
+                        ({ srcAttrValue }) => srcAttrValue,
+                      ),
+                      ...scriptNodeData.async.map(({ srcAttrValue }) => [
+                        srcAttrValue,
+                      ]),
+                    ]
+                      .map(srcAttrValueList =>
+                        variableReplacer(
+                          srcAttrValueList
+                            .map((srcAttrValue, index) =>
+                              groupReplacer(body, ({ label, body }) => {
+                                if (
+                                  label === 'JS_SRC_LIST:head' &&
+                                  index !== 0
+                                ) {
+                                  body = '';
+                                }
+                                if (
+                                  label === 'JS_SRC_LIST:tail' &&
+                                  index === 0
+                                ) {
+                                  body = '';
+                                }
+                                return variableReplacer(body, {
+                                  JS_SRC: utils.toJsValue(srcAttrValue),
+                                });
+                              }),
+                            )
+                            .join(''),
+                          {
+                            JS_SRC_LIST: utils.toJsValue(srcAttrValueList),
+                          },
+                        ),
+                      )
+                      .join('\n'),
+            }),
+            {
+              SUPPORTS_DYNAMIC_IMPORT: ({ globalVarName }) =>
+                `${globalVarName}.supportsDynamicImport`,
+              SYSTEM_JS_LOADER: ({ globalVarName }) =>
+                `${globalVarName}.SystemJsLoader`,
+              SYSTEM_JS_URL: utils.toJsValue(`/${systemJsFilename}`),
+              PROMISE_POLYFILL_URL: utils.toJsValue(
+                `/${promisePolyfillFilename}`,
+              ),
+            },
+          );
+        };
+        let isSupportsDynamicImportInserted = false;
+        let isSystemJsLoaderInserted = false;
+        for (const [
+          parentNode,
+          {
+            originalScriptNodeMap,
+            scriptNodeDataRecord,
+            hasEsDynamic,
+            hasSystemJsStatic,
+            hasSystemJsDynamic,
+          },
+        ] of scriptNodeDataMap) {
+          /*
+           * ES Modules static import用のscript要素を挿入
+           */
+          for (const { attrs, srcAttrValue } of scriptNodeDataRecord.es
+            .staticImport) {
+            parse5Utils.appendChild(
+              parentNode,
+              parse5Utils.createElement('script', [
+                new Set(['type', 'src']),
+                attrs,
+                {
+                  type: 'module',
+                  src: srcAttrValue,
+                  defer: null,
+                },
+              ]),
+            );
+          }
 
           /*
-           * ES module用のscript要素を挿入する
+           * ES Modules Dynamic import()用のscript要素を挿入
            */
-          // 読み込む順序が決まっているJS。async属性未指定
-          const esSyncFileList = insertScriptList
-            .filter(
-              ({ async, insertedModuleScript }) =>
-                !async && !insertedModuleScript,
-            )
-            .map(
-              ({ srcFullpath }) =>
-                `/${toMetalsmithDestFilename(
-                  metalsmith,
-                  esmChunkMap.get(srcFullpath).filepath,
-                )}`,
-            );
-          // 読み込む順序が不定のJS。async属性指定
-          const esAsyncFileList = insertScriptList
-            .filter(
-              ({ async, insertedModuleScript }) =>
-                async && !insertedModuleScript,
-            )
-            .map(
-              ({ srcFullpath }) =>
-                `/${toMetalsmithDestFilename(
-                  metalsmith,
-                  esmChunkMap.get(srcFullpath).filepath,
-                )}`,
-            );
-          if (esSyncFileList.length >= 1 || esAsyncFileList.length >= 1) {
+          if (hasEsDynamic) {
             // script要素内のJSコードを生成
-            const esmScriptText = minifyJS(
-              [
-                esSyncFileList
-                  .map((src, i) =>
-                    i === 0
-                      ? `import(${toJsValue(src)})`
-                      : `.then(() => import(${toJsValue(src)}))`,
-                  )
-                  .join('') + ';',
-                ...esAsyncFileList.map(src => `import(${toJsValue(src)});`),
-                ...(isSupportsDynamicImportInserted
-                  ? []
-                  : [`window.supportsDynamicImport = 1;`]),
-              ].join('\n'),
+            const esmScriptText = utils.minifyJS(
+              await utils.templateConverter(
+                [__dirname, 'templates/es-modules-dynamic-import.js'],
+                templateCallback(scriptNodeDataRecord.es.dynamicImport),
+              ),
             );
+
             // script要素を追加
-            appendChild(parentNode, createElement('script', {}, esmScriptText));
+            parse5Utils.appendChild(
+              parentNode,
+              parse5Utils.createElement(
+                'script',
+                {
+                  // Note: type=module属性を指定されると、コードは常に非同期実行されるため、
+                  //       Dynamic import()に対応しているか判定するための変数が更新されないまま後続のスクリプトが実行されてしまう。
+                  //       このため、判定に必要な変数が既に定義済みの場合にのみtype属性を設定する。
+                  type: isSupportsDynamicImportInserted ? 'module' : null,
+                },
+                esmScriptText,
+              ),
+            );
             isSupportsDynamicImportInserted = true;
           }
 
           /*
-           * SystemJS用のscript要素を挿入する
+           * SystemJSによる動的ロード用のscript要素を挿入
            */
-          // 読み込む順序が決まっているJS。async属性未指定
-          const systemJsSyncFileList = insertScriptList
-            .filter(({ async, moduleOnly }) => !async && !moduleOnly)
-            .map(
-              ({ srcFullpath }) =>
-                `/${toMetalsmithDestFilename(
-                  metalsmith,
-                  systemJsChunkMap.get(srcFullpath).filepath,
-                )}`,
-            );
-          // 読み込む順序が不定のJS。async属性指定
-          const systemJsAsyncFileList = insertScriptList
-            .filter(({ async, moduleOnly }) => async && !moduleOnly)
-            .map(
-              ({ srcFullpath }) =>
-                `/${toMetalsmithDestFilename(
-                  metalsmith,
-                  systemJsChunkMap.get(srcFullpath).filepath,
-                )}`,
-            );
-          if (
-            systemJsSyncFileList.length >= 1 ||
-            systemJsAsyncFileList.length >= 1
-          ) {
+          if (hasSystemJsDynamic) {
             // script要素内のJSコードを生成
-            const systemJsScriptText = minifyJS(
-              [
-                `
-                if (!window.supportsDynamicImport) {
-                  const init = function() {`,
-                systemJsSyncFileList
-                  .map((src, i) => {
-                    const importCode = `System.import(${toJsValue(src)})`;
-                    return i === 0
-                      ? importCode
-                      : `.then(function() { return ${importCode}; })`;
-                  })
-                  .join('\n') + ';',
-                ...systemJsAsyncFileList.map(
-                  src => `System.import(${toJsValue(src)});`,
-                ),
-                `
-                  };
-                  const importScript = function(jspath, callback) {
-                    const doc = document;
-                    const jsLoaderElem = doc.createElement('script');
-                    jsLoaderElem.addEventListener('load', callback);
-                    jsLoaderElem.src = jspath;
-                    doc.head.appendChild(jsLoaderElem);
-                  };
-                  if (
-                    typeof Promise !== 'function' ||
-                    typeof Promise.prototype.finally !== 'function'
-                  ) {
-                    importScript('/${promisePolyfillFilename}', function() {
-                      importScript('/${systemJsFilename}', init);
-                    });
-                  } else {
-                    importScript('/${systemJsFilename}', init);
-                  }
-                }`,
-              ].join('\n'),
+            const esmScriptText = utils.minifyJS(
+              await utils.templateConverter(
+                [
+                  __dirname,
+                  isSystemJsLoaderInserted
+                    ? 'templates/system-js-dynamic-import-use-defined-loader.js'
+                    : systemJsScriptCount >= 2
+                    ? 'templates/system-js-dynamic-import-export-loader.js'
+                    : 'templates/system-js-dynamic-import.js',
+                ],
+                templateCallback(scriptNodeDataRecord.systemJs.dynamicImport),
+              ),
             );
+
             // script要素を追加
-            appendChild(
+            parse5Utils.appendChild(
               parentNode,
-              createElement('script', {}, systemJsScriptText),
+              parse5Utils.createElement('script', {}, esmScriptText),
             );
-          }
-        }
 
-        if (options.removePreload) {
-          /*
-           * HTMLに含まれるlink要素のうち、置換したJSのpreloadを除去する
-           */
-          walkParse5(htmlAST, targetNode => {
-            if (targetNode.tagName !== 'link') return;
-
-            const linkElemNode = targetNode;
-            const linkElemAttrs = getAttrMap(linkElemNode.attrs);
-
-            if (linkElemAttrs.get('rel') !== 'preload') return;
-            if (linkElemAttrs.get('as') !== 'script') return;
-
-            const href = linkElemAttrs.get('href');
-            if (!href || !href.startsWith('/')) return;
-            const preloadFileFullpath = path.join(jsRootDirPath, href);
-
-            if (removedSrcFullpathSet.has(preloadFileFullpath)) {
-              removeChild(null, targetNode);
+            if (systemJsScriptCount >= 2) {
+              isSystemJsLoaderInserted = true;
             }
-          });
+          }
+
+          /*
+           * SystemJSによる静的ロード用のscript要素を挿入
+           */
+          if (hasSystemJsStatic) {
+            /*
+             * System JSが必要なコードが複数存在し、かつ、まだSystem JSが未定義の場合は、
+             * System JSを読み込むコードを挿入する。
+             */
+            if (systemJsScriptCount >= 2 && !isSystemJsLoaderInserted) {
+              // script要素内のJSコードを生成
+              const esmScriptText = utils.minifyJS(
+                await utils.templateConverter(
+                  [__dirname, 'templates/system-js-export-loader.js'],
+                  templateCallback(),
+                ),
+              );
+
+              // script要素を追加
+              // Note: Dynamic import()に対応していないブラウザ向けのフォールバックでもあるため、
+              //       nomodule属性は指定しない。
+              parse5Utils.appendChild(
+                parentNode,
+                parse5Utils.createElement('script', {}, esmScriptText),
+              );
+
+              isSystemJsLoaderInserted = true;
+            }
+
+            // script要素内のJSコードを生成
+            const esmScriptText = utils.minifyJS(
+              await utils.templateConverter(
+                [
+                  __dirname,
+                  isSystemJsLoaderInserted
+                    ? 'templates/system-js-static-import-use-defined-loader.js'
+                    : 'templates/system-js-static-import.js',
+                ],
+                templateCallback(scriptNodeDataRecord.systemJs.staticImport),
+              ),
+            );
+
+            // script要素を追加
+            parse5Utils.appendChild(
+              parentNode,
+              parse5Utils.createElement(
+                'script',
+                { nomodule: '' },
+                esmScriptText,
+              ),
+            );
+
+            // Note: ここでisSystemJsLoaderInserted変数を更新しないように！
+            //       nomodule属性がついているため、モジュールに対応したブラウザではコードが実行されない。
+            //       このため、続くscript要素内でSystem JSが必要なモジュール対応ブラウザ向けのコードが動作しなくなってしまう。
+          }
+
+          /*
+           * 古いscript要素を削除
+           */
+          for (const originalScriptNode of originalScriptNodeMap.keys()) {
+            parse5Utils.detachNode(originalScriptNode);
+          }
+
+          if (options.removePreload) {
+            /*
+             * HTMLに含まれるlink要素のうち、置換したJSのpreloadを除去する
+             */
+            const removedSrcFullpathSet = new Set(
+              originalScriptNodeMap.values(),
+            );
+            walkParse5(htmlAST, targetNode => {
+              if (targetNode.tagName !== 'link') return;
+
+              const linkElemNode = targetNode;
+              const linkElemAttrs = parse5Utils.getAttrMap(linkElemNode.attrs);
+
+              if (linkElemAttrs.get('rel') !== 'preload') return;
+              if (linkElemAttrs.get('as') !== 'script') return;
+
+              const href = linkElemAttrs.get('href');
+              if (!href || !href.startsWith('/')) return;
+              const preloadFileFullpath = path.join(jsRootDirPath, href);
+
+              if (removedSrcFullpathSet.has(preloadFileFullpath)) {
+                parse5Utils.detachNode(targetNode);
+              }
+            });
+          }
         }
 
         /**
