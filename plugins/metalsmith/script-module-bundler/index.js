@@ -31,8 +31,31 @@ const {
  * @typedef {Object.<string, MetalsmithFileData>} MetalsmithFiles
  * @typedef {{ contents: Buffer }} MetalsmithFileData
  * @typedef {{ nodeName: string, childNodes?: Parse5Node[] }} Parse5Node
+ * @typedef {{ dir: string, sourcemap: boolean | 'inline' | 'hidden' }} RollupOutputOptions
+ * @typedef {{ plugins: Object[], output: RollupOutputOptions }} RollupOptions
  */
 
+/**
+ * @typedef {boolean} IsESModules
+ * @param {{
+ *          pattern: string | string[],
+ *          jsDirectory: string,
+ *          rollupOptions: (
+ *            RollupOptions |
+ *            function(MetalsmithFiles, Metalsmith): (
+ *              (
+ *                RollupOptions |
+ *                function(IsESModules): RollupOptions | Promise.<RollupOptions>
+ *              ) |
+ *              Promise.<
+ *                RollupOptions |
+ *                function(IsESModules): RollupOptions | Promise.<RollupOptions>
+ *              >
+ *            )
+ *          ),
+ *          removePreload: boolean
+ *        }} opts
+ */
 module.exports = opts => {
   const options = {
     pattern: ['**/*.html'],
@@ -57,12 +80,11 @@ module.exports = opts => {
   /** @type {Set.<string>} */
   const scriptFileFullpathSet = new Set();
   /**
-   * @typedef {{ dir: string, sourcemap: boolean | 'inline' | 'hidden' }} RollupOutputOptions
+   * @typedef {Map.<string, string | Buffer>} FilesMap
    * @typedef {Map.<string, {filepath: string, chunk: Object}>} ChunkMap
    * @type {MultikeyMap.<[Metalsmith, MetalsmithFiles, string, string], {
-   *          outputOptions: RollupOutputOptions,
-   *          esm: { filesMap: Map.<string, string | Buffer>, chunkMap: ChunkMap },
-   *          system: { filesMap: Map.<string, string | Buffer>, chunkMap: ChunkMap }
+   *          esm:    { outputOptions: RollupOutputOptions, filesMap: FilesMap, chunkMap: ChunkMap },
+   *          system: { outputOptions: RollupOutputOptions, filesMap: FilesMap, chunkMap: ChunkMap }
    *       }>}
    */
   const bundleOutputCacheMap = new MultikeyMap();
@@ -228,13 +250,13 @@ module.exports = opts => {
         /*
          * Rollupのオプションを生成する
          */
-        const { output: rollupOutputOptions, ...rollupInputOptions } =
+        const rollupOptionsGenerator =
           typeof options.rollupOptions === 'function'
             ? await options.rollupOptions(files, metalsmith)
             : options.rollupOptions;
 
         /**
-         * RollupのinputOptionsを生成する
+         * RollupのinputOptionsに必要なentryRecordを生成する
          * @see https://rollupjs.org/guide/en/#inputoptions-object
          */
         /** @type {Object.<string, string>} */
@@ -248,56 +270,79 @@ module.exports = opts => {
             .replace(/\.m?js$/, '');
           entryRecord[entryName] = scriptFileFullpath;
         }
-        const inputOptions = {
-          ...rollupInputOptions,
-          input: entryRecord,
-        };
 
-        /*
-         * Rollupのバンドルを生成する
-         */
-        const bundle = await rollup.rollup(inputOptions);
-
-        /**
-         * RollupのoutputOptionsを生成する
-         * @see https://rollupjs.org/guide/en/#outputoptions-object
-         */
-        /** @type {RollupOutputOptions} */
-        const outputOptions = {
-          ...rollupOutputOptions,
-          dir: path.resolve(metalsmithDestDir, rollupOutputOptions.dir || '.'),
-        };
-        if (!isSameOrSubPath(metalsmithDestDir, outputOptions.dir)) {
-          throw new Error(
-            `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${outputOptions.dir}`,
-          );
-        }
-
-        /*
-         * RollupでJSをビルドする
-         */
-        bundleOutputCache = {
-          outputOptions,
-        };
-        for (const opts of [
+        bundleOutputCache = {};
+        let generatedRollupData;
+        for (const { isESModules, ...rollupOutputOpts } of [
           // ES module用
           {
+            isESModules: true,
             entryFileNames: '[name].mjs',
             chunkFileNames: '[name]-[hash].mjs',
             format: 'esm',
           },
           // SystemJS用
           {
+            isESModules: false,
             entryFileNames: '[name].system.js',
             chunkFileNames: '[name]-[hash].system.js',
             format: 'system',
           },
         ]) {
-          const { output } = await bundle.generate({
-            ...outputOptions,
-            ...opts,
-          });
-          /** @type {Map.<string, string | Buffer>} */
+          if (
+            !generatedRollupData ||
+            typeof rollupOptionsGenerator === 'function'
+          ) {
+            const { output: rollupOutputOptions, ...rollupInputOptions } =
+              typeof rollupOptionsGenerator === 'function'
+                ? await rollupOptionsGenerator(isESModules)
+                : rollupOptionsGenerator;
+
+            /**
+             * RollupのinputOptionsを生成する
+             * @see https://rollupjs.org/guide/en/#inputoptions-object
+             */
+            const inputOptions = {
+              ...rollupInputOptions,
+              input: entryRecord,
+            };
+
+            /*
+             * Rollupのバンドルを生成する
+             */
+            const bundle = await rollup.rollup(inputOptions);
+
+            /**
+             * RollupのoutputOptionsを生成する
+             * @see https://rollupjs.org/guide/en/#outputoptions-object
+             */
+            const rollupOutputOptsBase = {
+              ...rollupOutputOptions,
+              dir: path.resolve(
+                metalsmithDestDir,
+                rollupOutputOptions.dir || '.',
+              ),
+            };
+            if (!isSameOrSubPath(metalsmithDestDir, rollupOutputOptsBase.dir)) {
+              throw new Error(
+                `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${rollupOutputOptsBase.dir}`,
+              );
+            }
+
+            generatedRollupData = { bundle, rollupOutputOptsBase };
+          }
+
+          const { bundle, rollupOutputOptsBase } = generatedRollupData;
+
+          /*
+           * RollupでJSをビルドする
+           */
+          const outputOptions = {
+            ...rollupOutputOptsBase,
+            ...rollupOutputOpts,
+          };
+          const { output } = await bundle.generate(outputOptions);
+          /** @type {FilesMap} */
           const filesMap = new Map();
           /** @type {ChunkMap} */
           const chunkMap = new Map();
@@ -336,7 +381,8 @@ module.exports = opts => {
             }
           }
 
-          bundleOutputCache[opts.format] = {
+          bundleOutputCache[rollupOutputOpts.format] = {
+            outputOptions,
             filesMap,
             chunkMap,
           };
@@ -348,9 +394,11 @@ module.exports = opts => {
         );
       }
 
-      const { outputOptions } = bundleOutputCache;
       const esmChunkMap = bundleOutputCache.esm.chunkMap;
-      const systemJsChunkMap = bundleOutputCache.system.chunkMap;
+      const {
+        outputOptions: systemJsOutputOptions,
+        chunkMap: systemJsChunkMap,
+      } = bundleOutputCache.system;
       for (const { filesMap } of [
         bundleOutputCache.esm,
         bundleOutputCache.system,
@@ -371,7 +419,7 @@ module.exports = opts => {
       const { filename: systemJsFilename } = addMetalsmithFile(
         metalsmith,
         files,
-        path.resolve(outputOptions.dir, 's.min.js'),
+        path.resolve(systemJsOutputOptions.dir, 's.min.js'),
         await readFileAsync(require.resolve('systemjs/dist/s.min.js')),
       );
 
@@ -382,7 +430,7 @@ module.exports = opts => {
       const { filename: promisePolyfillFilename } = addMetalsmithFile(
         metalsmith,
         files,
-        path.resolve(outputOptions.dir, 'promise-polyfill.min.js'),
+        path.resolve(systemJsOutputOptions.dir, 'promise-polyfill.min.js'),
         await readFileAsync(
           require.resolve('promise-polyfill/dist/polyfill.min.js'),
         ),
