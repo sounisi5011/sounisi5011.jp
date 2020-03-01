@@ -4,17 +4,17 @@ header.page
       -
         const svgImage = qrCodeImageFiles.svg;
         const pngImage = qrCodeImageFiles.png;
-        const shortURL = lookupShortURL(visibleCanonical) || visibleCanonical;
-      a(href=shortURL)
-        if svgImage && pngImage
+      if svgImage && pngImage
+        a(href=svgImage.linkURL)
           picture.qr-code
             source(srcset=rootRrelativeURL(svgImage.path) type="image/svg+xml")
             img(src=rootRrelativeURL(pngImage.path)
                 width=pngImage.width
                 height=pngImage.height
                 alt="")
-        else if svgImage || pngImage
-          - const image = svgImage || pngImage;
+      else if svgImage || pngImage
+        - const image = svgImage || pngImage;
+        a(href=image.linkURL)
           img.qr-code(src=rootRrelativeURL(image.path)
                       width=image.width
                       height=image.height
