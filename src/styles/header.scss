@@ -34,7 +34,8 @@ header.page {
     display: flex;
     align-items: center;
 
-    & > .qr-code {
+    & > .qr-code,
+    & > a > .qr-code {
       image-rendering: pixelated;
     }
 
