@@ -118,6 +118,10 @@ exports.init = opts => {
         });
       }
 
+      /**
+       * @param {string} url
+       * @returns {string}
+       */
       const createShortWord = url => {
         const foundWord = urlMap.getByURL(url);
         if (foundWord) return foundWord;
@@ -134,6 +138,12 @@ exports.init = opts => {
         throw new Error('短縮URLの生成が失敗しました');
       };
       Object.assign(metalsmith.metadata(), {
+        /**
+         * 短縮URLを生成する
+         * @param {string} url 短縮URLを生成する元のURL
+         * @param {string} rootURL 短縮URLの先頭に追加するルートURL
+         * @returns {string}
+         */
         createShortURL(url, rootURL = options.rootURL) {
           const dummyWord = options.wordPrefix + 'x'.repeat(options.wordLength);
           /*
@@ -148,6 +158,21 @@ exports.init = opts => {
           return rootURL
             ? filename2url(word, options.rootURLShrinker(rootURL))
             : word;
+        },
+        /**
+         * 生成済みの短縮URLを取得する
+         * @param {string} url 短縮URLを探す元のURL
+         * @param {string} rootURL 短縮URLの先頭に追加するルートURL
+         * @returns {string|null} 短縮URL、または、見つからなかった場合にnull
+         */
+        lookupShortURL(url, rootURL = options.rootURL) {
+          const foundWord = urlMap.getByURL(url);
+          if (foundWord) {
+            return rootURL
+              ? filename2url(foundWord, options.rootURLShrinker(rootURL))
+              : foundWord;
+          }
+          return null;
         },
       });
 
@@ -216,5 +241,6 @@ exports.generate = () =>
       );
 
       delete metalsmith.metadata().createShortURL;
+      delete metalsmith.metadata().lookupShortURL;
     },
   });
