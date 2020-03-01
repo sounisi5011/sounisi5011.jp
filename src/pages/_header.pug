@@ -4,7 +4,8 @@ header.page
       -
         const svgImage = qrCodeImageFiles.svg;
         const pngImage = qrCodeImageFiles.png;
-      a(href=createShortURL(visibleCanonical))
+        const shortURL = lookupShortURL(visibleCanonical) || visibleCanonical;
+      a(href=shortURL)
         if svgImage && pngImage
           picture.qr-code
             source(srcset=rootRrelativeURL(svgImage.path) type="image/svg+xml")

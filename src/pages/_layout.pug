@@ -36,9 +36,15 @@ html(lang="ja" style=rootInlineStyle)
       if description
         meta(name="description" content=description)
       link(rel="canonical" href=canonicalURL(rootURL, path))
+
+      - {
+      - const shortURL = lookupShortURL(visibleCanonical);
       //- see https://code.google.com/archive/p/shortlink/wikis/Specification.wiki
       //- see http://microformats.org/wiki/rel-shortlink
-      link(rel="shortlink" href=createShortURL(visibleCanonical))
+      if shortURL
+        link(rel="shortlink" href=shortURL)
+      - }
+
       block preload
         include _head/preload
       block ogp
