@@ -24,7 +24,7 @@
     }
   },
   "lint-staged": {
-    "!(package).json|*.{html,css,scss,yaml,yml,toml}": [
+    "!(package).json|*.{html,css,scss,yaml,yml,toml,mjs}": [
       "prettier --write",
       "git add"
     ],
@@ -45,7 +45,10 @@
   "dependencies": {
     "@babel/core": "^7.2.0",
     "@babel/preset-env": "^7.5.5",
+    "@babel/preset-modules": "^0.1.3",
     "@fortawesome/fontawesome-free": "^5.9.0",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
     "@sounisi5011/metalsmith-add-file-metadata": "file:plugins/metalsmith/add-file-metadata",
     "@sounisi5011/metalsmith-another-source": "file:plugins/metalsmith/another-source",
     "@sounisi5011/metalsmith-asciidoctor": "file:plugins/metalsmith/asciidoctor",
@@ -60,23 +63,24 @@
     "@sounisi5011/metalsmith-page-qr-code-gen": "file:plugins/metalsmith/page-qr-code-gen",
     "@sounisi5011/metalsmith-preload-list": "file:plugins/metalsmith/preload-list",
     "@sounisi5011/metalsmith-pug-layouts": "file:plugins/metalsmith/pug-layouts",
+    "@sounisi5011/metalsmith-script-module-bundler": "file:plugins/metalsmith/script-module-bundler",
     "@sounisi5011/metalsmith-sitemap": "file:plugins/metalsmith/sitemap",
     "@sounisi5011/metalsmith-svg-to-ico": "file:plugins/metalsmith/svg-to-ico",
     "@sounisi5011/metalsmith-svg-to-png": "file:plugins/metalsmith/svg-to-png",
     "@sounisi5011/metalsmith-svgo": "file:plugins/metalsmith/svgo",
     "@sounisi5011/metalsmith-tweetable-paragraphs": "file:plugins/metalsmith/tweetable-paragraphs",
     "@sounisi5011/metalsmith-url-shortener": "file:plugins/metalsmith/url-shortener",
+    "@sounisi5011/rollup-plugin-css-include": "file:plugins/rollup/css-include",
     "asciidoctor-html5s": "^0.2.0",
     "autoprefixer": "^9.6.1",
-    "babel-preset-minify": "^0.5.1",
     "cheerio": "^1.0.0-rc.3",
     "core-js": "3",
+    "cssnano": "^4.1.10",
     "del-cli": "^2.0.0",
     "dialog-polyfill": "^0.5.0",
     "html-differ": "^1.4.0",
     "metalsmith": "^2.3.0",
     "metalsmith-assets-convention": "^2.1.1",
-    "metalsmith-babel": "^5.1.0",
     "metalsmith-collections": "^0.9.0",
     "metalsmith-dart-sass": "^1.0.1",
     "metalsmith-directory-metadata": "^1.0.0",
@@ -89,11 +93,14 @@
     "npm-run-all": "^4.1.5",
     "postcss": "^7.0.17",
     "postcss-clean": "^1.1.0",
+    "rollup": "^1.32.0",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-terser": "^5.2.0",
     "strict-uri-encode": "^2.0.0"
   },
   "devDependencies": {
     "cross-spawn": "^6.0.5",
-    "eslint": "^5.16.0",
+    "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.0.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.17.3",

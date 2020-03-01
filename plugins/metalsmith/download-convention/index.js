@@ -168,7 +168,10 @@ module.exports = opts => {
       }
 
       Object.entries(newFiles).forEach(([newFilename, newFiledata]) => {
-        if (options.override || !files.hasOwnProperty(newFilename)) {
+        if (
+          options.override ||
+          !Object.prototype.hasOwnProperty.call(files, newFilename)
+        ) {
           files[newFilename] = newFiledata;
         }
       });

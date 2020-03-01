@@ -22,7 +22,7 @@ module.exports = (sourcePath, { override = false } = {}) => {
         Object.assign(files, newFiles);
       } else {
         Object.entries(newFiles).forEach(([filepath, filedata]) => {
-          if (!files.hasOwnProperty(filepath)) {
+          if (!Object.prototype.hasOwnProperty.call(files, filepath)) {
             files[filepath] = filedata;
           }
         });

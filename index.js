@@ -16,6 +16,7 @@ const preloadList = require('@sounisi5011/metalsmith-preload-list');
 const {
   compile: pugLayoutsCompile,
 } = require('@sounisi5011/metalsmith-pug-layouts');
+const scriptModuleBundler = require('@sounisi5011/metalsmith-script-module-bundler');
 const sitemap = require('@sounisi5011/metalsmith-sitemap');
 const svg2ico = require('@sounisi5011/metalsmith-svg-to-ico');
 const svg2png = require('@sounisi5011/metalsmith-svg-to-png');
@@ -28,7 +29,6 @@ const {
 const debug = require('debug');
 const Metalsmith = require('metalsmith');
 const assetsConvention = require('metalsmith-assets-convention');
-const babel = require('metalsmith-babel');
 const collections = require('metalsmith-collections');
 const sass = require('metalsmith-dart-sass');
 const directoryMetadata = require('metalsmith-directory-metadata');
@@ -119,7 +119,9 @@ Metalsmith(__dirname)
    */
   .use((files, metalsmith, done) => {
     const metadata = metalsmith.metadata();
-    if (!metadata.hasOwnProperty('preloadDependencies')) {
+    if (
+      !Object.prototype.hasOwnProperty.call(metadata, 'preloadDependencies')
+    ) {
       metadata.preloadDependencies = [];
     }
     if (Array.isArray(metadata.preloadDependencies)) {
@@ -136,7 +138,9 @@ Metalsmith(__dirname)
       metadata.preloadDependencies = [...preloadDependenciesSet];
     }
     Object.values(files).forEach(filedata => {
-      if (!filedata.hasOwnProperty('preloadDependencies')) {
+      if (
+        !Object.prototype.hasOwnProperty.call(filedata, 'preloadDependencies')
+      ) {
         filedata.preloadDependencies = [];
       }
 
@@ -227,56 +231,6 @@ Metalsmith(__dirname)
       .use(mergePreloadDependencies())
       .use(ignore('**/*.scss')),
   )
-  .use(
-    anotherSource('./src/scripts')
-      .ignore('.eslintrc.*')
-      .use(
-        babel({
-          comments: false,
-          presets: [
-            [
-              '@babel/preset-env',
-              {
-                corejs: 3,
-                exclude: [
-                  /**
-                   * Symbolsは使用しないので、Symbol関係のpolyfillを除外する
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/README.md#ecmascript-string-and-regexp
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.object.to-string.js
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/internals/object-to-string.js
-                   */
-                  'es.string.match',
-                  'es.string.replace',
-                  'es.string.search',
-                  'es.string.split',
-                  'es.object.to-string',
-                  /**
-                   * RegExpのtoStringメソッドの関数名と、RegExpオブジェクトではないオブジェクトがthisだった場合に動作させる修正。
-                   * このような機能に依存した処理を書くつもりは無いため、除外。
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.regexp.to-string.js
-                   */
-                  'es.regexp.to-string',
-                  /**
-                   * RegExp.lastIndexの値と、マッチしなかったグループの値がundefinedではない値になる、IE8のexecメソッドに関するバグ修正。
-                   * こんな絶妙な使い方をすることはおそらく無く、またIE8など眼中に無いため、無効化。
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/internals/regexp-exec.js
-                   */
-                  'es.regexp.exec',
-                  /**
-                   * 不正な形式のDateオブジェクトを文字列化した際に"Invalid Date"を返すpolyfill。
-                   * この値に依存した処理を書くつもりは無いため、除外。
-                   * @see https://github.com/zloirock/core-js/blob/v3.2.1/packages/core-js/modules/es.date.to-string.js
-                   */
-                  'es.date.to-string',
-                ],
-                useBuiltIns: 'usage',
-              },
-            ],
-            'minify',
-          ],
-        }),
-      ),
-  )
   .use(mergePreloadDependencies())
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
   .use(mustache())
@@ -290,7 +244,12 @@ Metalsmith(__dirname)
   .use(
     modernizr({
       config(filename, filedata) {
-        if (filedata.hasOwnProperty('modernizr-feature-detects')) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            filedata,
+            'modernizr-feature-detects',
+          )
+        ) {
           return {
             classPrefix: 'modernizr--',
             'feature-detects': filedata['modernizr-feature-detects'] || [],
@@ -313,7 +272,9 @@ Metalsmith(__dirname)
         ...metalsmith.metadata(),
         ...filedata,
       };
-      const path = data.hasOwnProperty('path') ? data.path : filename;
+      const path = Object.prototype.hasOwnProperty.call(data, 'path')
+        ? data.path
+        : filename;
 
       return {
         canonical: templateFuncs.canonicalURL(data.rootURL, path),
@@ -362,7 +323,24 @@ Metalsmith(__dirname)
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
       metadataUpdater: setPublishedDate,
-      plugins: (({ allowWarning = true } = {}) => [
+      plugins: (({
+        allowWarning = true,
+        hrstart = null,
+        hrStepStart = null,
+        hrfinish = null,
+      } = {}) => [
+        (_, __, done) => {
+          if (hrfinish) {
+            const hrend = process.hrtime(hrfinish);
+            console.info(
+              '$$$ @sounisi5011/metalsmith-netlify-published-date compare execution time (hr): %ds %dms',
+              hrend[0],
+              hrend[1] / 1000000,
+            );
+          }
+          hrstart = hrStepStart = process.hrtime();
+          done();
+        },
         pugRender({
           locals: {
             env: process.env,
@@ -371,12 +349,66 @@ Metalsmith(__dirname)
           pattern: 'characters/**/*.html',
           useMetadata: true,
         }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> Pug execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         excerpts(),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> metalsmith-excerpts execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         pugRender({
           pattern: pugRender.defaultOptions.pattern,
           reuse: true,
         }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> Pug execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         blankshield({ insertNoreferrer: true }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> @sounisi5011/metalsmith-blankshield execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
+        scriptModuleBundler({
+          jsDirectory: 'src/scripts',
+          rollupOptions: require('./config/rollup')({ outputDir: './js/' }),
+        }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> @sounisi5011/metalsmith-script-module-bundler execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          hrStepStart = process.hrtime();
+          done();
+        },
         tweetableParagraphs({
           filter(filename, filedata) {
             return filedata.tweetable;
@@ -438,8 +470,26 @@ Metalsmith(__dirname)
             return allowWarning;
           },
         }),
+        (_, __, done) => {
+          const hrend = process.hrtime(hrStepStart);
+          console.info(
+            '>>> @sounisi5011/metalsmith-tweetable-paragraphs execution time (hr): %ds %dms',
+            hrend[0],
+            hrend[1] / 1000000,
+          );
+          done();
+        },
         (files, metalsmith, done) => {
           allowWarning = false;
+          {
+            const hrend = process.hrtime(hrstart);
+            console.info(
+              'Execution time (hr): %ds %dms\n',
+              hrend[0],
+              hrend[1] / 1000000,
+            );
+            hrfinish = process.hrtime();
+          }
           done();
         },
       ])(),

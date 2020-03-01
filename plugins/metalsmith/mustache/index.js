@@ -19,7 +19,10 @@ module.exports = opts => {
 
       file.contents = Buffer.from(compiledText);
 
-      if (filename !== newFilename && !files.hasOwnProperty(newFilename)) {
+      if (
+        filename !== newFilename &&
+        !Object.prototype.hasOwnProperty.call(files, newFilename)
+      ) {
         delete files[filename];
         files[newFilename] = file;
       }
