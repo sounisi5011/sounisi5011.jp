@@ -5,8 +5,8 @@ header.page
         const svgImage = qrCodeImageFiles.svg;
         const pngImage = qrCodeImageFiles.png;
       if svgImage && pngImage
-        a(href=svgImage.linkURL)
-          picture.qr-code
+        a.qr-code(href=svgImage.linkURL)
+          picture
             source(srcset=rootRrelativeURL(svgImage.path) type="image/svg+xml")
             img(src=rootRrelativeURL(pngImage.path)
                 width=pngImage.width
@@ -14,11 +14,11 @@ header.page
                 alt="")
       else if svgImage || pngImage
         - const image = svgImage || pngImage;
-        a(href=image.linkURL)
-          img.qr-code(src=rootRrelativeURL(image.path)
-                      width=image.width
-                      height=image.height
-                      alt="")
+        a.qr-code(href=image.linkURL)
+          img(src=rootRrelativeURL(image.path)
+              width=image.width
+              height=image.height
+              alt="")
     span.url(itemprop="breadcrumb" itemscope itemtype="https://schema.org/BreadcrumbList")
       each urlItem, index in urlSplitter(canonicalURL(visibleRootURL, path))
         if urlItem.value.raw
