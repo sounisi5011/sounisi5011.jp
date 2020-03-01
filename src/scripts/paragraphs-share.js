@@ -739,14 +739,11 @@ if (typeof navigator.share === 'function') {
   if (typeof dialogElem.showModal === 'function') {
     main(dialogElem);
   } else {
-    Promise.all([
-      import('dialog-polyfill'),
-      import('dialog-polyfill/dialog-polyfill.css'),
-    ]).then(([{ default: dialogPolyfill }, { load }]) => {
-      load().then(() => {
+    import('./dialog-polyfill')
+      .then(({ waitLoad }) => waitLoad())
+      .then(({ dialogPolyfill }) => {
         dialogPolyfill.registerDialog(dialogElem);
         main(dialogElem);
       });
-    });
   }
 }
