@@ -149,7 +149,7 @@ module.exports = ({ treeAdapter = defaultTreeAdapter } = {}) => {
       Object.entries(attrObj)
         .filter(
           ([, value]) =>
-            value === null || value === undefined || value === false,
+            value !== null && value !== undefined && value !== false,
         )
         .map(([name, value]) => ({
           name,
