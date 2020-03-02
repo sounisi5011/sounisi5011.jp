@@ -1,5 +1,6 @@
 const CSSselect = require('css-select');
 const { Parse5Adapter } = require('css-select-parse5-adapter');
+const parse5Serializer = require('parse5/lib/serializer');
 const defaultTreeAdapter = require('parse5/lib/tree-adapters/default');
 
 module.exports = ({ treeAdapter = defaultTreeAdapter } = {}) => {
@@ -227,6 +228,15 @@ module.exports = ({ treeAdapter = defaultTreeAdapter } = {}) => {
     _insertBefore(parentNode, newNodeList, getNextNode(targetNode, parentNode));
   }
 
+  /**
+   * @param {string} attrValue
+   * @returns {string}
+   * @see https://github.com/inikulin/parse5/blob/9c7556ed05e4ff4d884ab2447e27ce3817c42e79/packages/parse5/lib/serializer/index.js#L103
+   */
+  function escapeAttrValue(attrValue) {
+    return parse5Serializer.escapeString(attrValue, true);
+  }
+
   return {
     getTextContent,
     getAttribute,
@@ -247,5 +257,6 @@ module.exports = ({ treeAdapter = defaultTreeAdapter } = {}) => {
     getTextNodeContent: treeAdapter.getTextNodeContent,
     isTextNode: treeAdapter.isTextNode,
     isElementNode: treeAdapter.isElementNode,
+    escapeAttrValue,
   };
 };

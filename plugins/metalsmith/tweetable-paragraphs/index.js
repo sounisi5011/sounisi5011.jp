@@ -409,7 +409,8 @@ module.exports = opts => {
       }
 
       if (isUpdated) {
-        filedata.contents = Buffer.from(parse5.serialize(htmlAST));
+        const htmlText = parse5.serialize(htmlAST);
+        filedata.contents = Buffer.from(htmlText);
         debug(`contents updated: ${util.inspect(filename)}`);
 
         /**
@@ -421,50 +422,103 @@ module.exports = opts => {
          */
         const twitterCardQrWidth = 144;
 
-        const rootElemNode = parse5Utils.querySelector(htmlAST, ':root, html');
-        const headElemNode = parse5Utils.querySelector(htmlAST, 'head');
-        let refreshMetaElem;
-        let ogpImageElem;
-        const twitterCardImageElems = parse5Utils.querySelectorAll(
-          headElemNode,
-          'meta[name="twitter:image"]',
-        );
-        const twitterCardImageFound = Boolean(
-          twitterCardImageElems.length >= 1 &&
-            twitterCardImageElems.some(node =>
-              parse5Utils.getAttribute(node, 'content'),
-            ),
-        );
+        /*
+         * 置換処理に用いるテンプレート文字列を生成
+         */
+        const { templateHTMLText, label } = (() => {
+          const rootElemNode = parse5Utils.querySelector(
+            htmlAST,
+            ':root, html',
+          );
+          const headElemNode = parse5Utils.querySelector(htmlAST, 'head');
 
-        parse5Utils.setAttribute(rootElemNode, 'data-canonical-url', pageURL);
+          /*
+           * 置換用のランダム文字列を生成する
+           */
+          const replaceLabel = (() => {
+            while (true) {
+              const randStr = [
+                '',
+                ...[
+                  Math.random(),
+                  Math.random(),
+                  Math.random(),
+                  Math.random(),
+                  Math.random(),
+                ].map(n => n.toString(36).substring(2)),
+                '',
+              ].join('____');
+              if (!htmlText.includes(randStr)) {
+                return randStr;
+              }
+            }
+          })();
+          const label = {
+            // id属性値の置換用ラベル
+            id: `${replaceLabel}id____`,
+            // fragmentクエリ付きURLの置換用ラベル
+            fragmentPageURL: `${replaceLabel}fragmentPageURL____`,
+            // ハッシュフラグメント付きURLの置換用ラベル
+            pageURLandHashFrag: `${replaceLabel}pageURLandHashFrag____`,
+          };
 
-        for (const { id, fragmentPageURL } of idList) {
-          parse5Utils.setAttribute(rootElemNode, 'data-jump-id', id);
+          /*
+           * ルート要素にdata-*属性を追加
+           */
+          parse5Utils.setAttribute(rootElemNode, 'data-canonical-url', pageURL);
+          parse5Utils.setAttribute(rootElemNode, 'data-jump-id', label.id);
+
+          /*
+           * スクリプトが機能しない環境向けのリダイレクトタグを追加
+           */
+          {
+            const noscriptElem = parse5Utils.createElement(
+              headElemNode,
+              'noscript',
+              {},
+              parse5Utils.createElement(headElemNode, 'meta', {
+                'http-equiv': 'refresh',
+                content: `0; url=${label.pageURLandHashFrag}`,
+              }),
+            );
+
+            const charsetElem = parse5Utils.querySelector(
+              headElemNode,
+              'meta[charset]',
+            );
+            if (charsetElem) {
+              parse5Utils.insertAfter(charsetElem, noscriptElem);
+            } else {
+              parse5Utils.prependChild(headElemNode, noscriptElem);
+            }
+          }
 
           /**
            * クロールを禁止するrobotsメタタグを追加
            * @see https://developers.google.com/search/reference/robots_meta_tag?hl=ja
            */
-          const metaRobotElemList = parse5Utils.querySelectorAll(
-            headElemNode,
-            'meta[name=robots]',
-          );
-          if (metaRobotElemList.length >= 1) {
-            metaRobotElemList.forEach((metaElem, i) => {
-              if (i === 0) {
-                parse5Utils.setAttribute(metaElem, 'content', 'noindex');
-              } else {
-                parse5Utils.detachNode(metaElem);
-              }
-            });
-          } else {
-            parse5Utils.appendChild(
+          {
+            const metaRobotElemList = parse5Utils.querySelectorAll(
               headElemNode,
-              parse5Utils.createElement(headElemNode, 'meta', {
-                name: 'robots',
-                content: 'noindex',
-              }),
+              'meta[name=robots]',
             );
+            if (metaRobotElemList.length >= 1) {
+              metaRobotElemList.forEach((metaElem, i) => {
+                if (i === 0) {
+                  parse5Utils.setAttribute(metaElem, 'content', 'noindex');
+                } else {
+                  parse5Utils.detachNode(metaElem);
+                }
+              });
+            } else {
+              parse5Utils.appendChild(
+                headElemNode,
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  name: 'robots',
+                  content: 'noindex',
+                }),
+              );
+            }
           }
 
           /*
@@ -474,12 +528,108 @@ module.exports = opts => {
             .querySelectorAll(headElemNode, 'meta[property="og:url"]')
             .forEach((metaElem, i) => {
               if (i === 0) {
-                parse5Utils.setAttribute(metaElem, 'content', fragmentPageURL);
+                parse5Utils.setAttribute(
+                  metaElem,
+                  'content',
+                  label.fragmentPageURL,
+                );
               } else {
                 parse5Utils.detachNode(metaElem);
               }
             });
 
+          /*
+           * OGP用画像のタグを追加
+           */
+          {
+            const insertedOgpImageElem = parse5Utils.querySelector(
+              headElemNode,
+              'meta[property="og:image"], meta[property^="og:image:"]',
+            );
+            if (insertedOgpImageElem) {
+              label.ogpImg = {
+                url: `${replaceLabel}ogpImgURL____`,
+              };
+
+              parse5Utils.insertBefore(insertedOgpImageElem, [
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image',
+                  content: label.ogpImg.url,
+                }),
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image:type',
+                  content: 'image/png',
+                }),
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image:width',
+                  content: ogpQrWidth,
+                }),
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image:height',
+                  content: ogpQrWidth,
+                }),
+              ]);
+            }
+          }
+
+          /*
+           * Twitter Cardの画像が未定義の場合は、Twitter Card用画像のタグを追加
+           */
+          {
+            const twitterCardImageElems = parse5Utils.querySelectorAll(
+              headElemNode,
+              'meta[name="twitter:image"]',
+            );
+            if (
+              twitterCardImageElems.every(
+                elem => !parse5Utils.getAttribute(elem, 'content'),
+              )
+            ) {
+              label.twitterCardImg = {
+                url: `${replaceLabel}twiCardImgURL____`,
+              };
+              if (twitterCardImageElems.length >= 1) {
+                twitterCardImageElems.forEach((metaElem, i) => {
+                  if (i === 0) {
+                    parse5Utils.setAttribute(
+                      metaElem,
+                      'content',
+                      label.twitterCardImg.url,
+                    );
+                  } else {
+                    parse5Utils.detachNode(metaElem);
+                  }
+                });
+              } else {
+                const twitterCardImageElem = parse5Utils.createElement(
+                  headElemNode,
+                  'meta',
+                  { name: 'twitter:image', content: label.twitterCardImg.url },
+                );
+                const insertedOgpOrTwitterCardImageElem = parse5Utils.querySelector(
+                  headElemNode,
+                  'meta[property^="twitter:"], meta[property^="og:"]',
+                );
+                if (insertedOgpOrTwitterCardImageElem) {
+                  parse5Utils.insertAfter(
+                    insertedOgpOrTwitterCardImageElem,
+                    twitterCardImageElem,
+                  );
+                } else {
+                  parse5Utils.appendChild(headElemNode, twitterCardImageElem);
+                }
+              }
+            }
+          }
+
+          const templateHTMLText = parse5.serialize(htmlAST);
+          return {
+            templateHTMLText,
+            label,
+          };
+        })();
+
+        for (const { id, fragmentPageURL } of idList) {
           const encodedID = strictUriEncode(id);
           const [urlWithFragment, qrCodeUrlWithFragment] = [
             pageURL,
@@ -498,78 +648,13 @@ module.exports = opts => {
           });
           const qrCodeBasename = sha1(qrCodeURL);
 
-          /*
-           * スクリプトが機能しない環境向けのリダイレクトタグを追加
-           */
-          if (!refreshMetaElem) {
-            const metaElem = parse5Utils.createElement(headElemNode, 'meta', {
-              'http-equiv': 'refresh',
-            });
-            const noscriptElem = parse5Utils.createElement(
-              headElemNode,
-              'noscript',
-            );
-
-            parse5Utils.appendChild(noscriptElem, metaElem);
-
-            const charsetElem = parse5Utils.querySelector(
-              headElemNode,
-              'meta[charset]',
-            );
-
-            if (charsetElem) {
-              parse5Utils.insertAfter(charsetElem, noscriptElem);
-            } else {
-              parse5Utils.prependChild(headElemNode, noscriptElem);
-            }
-
-            refreshMetaElem = metaElem;
-          }
-          parse5Utils.setAttribute(
-            refreshMetaElem,
-            'content',
-            `0; url=${urlWithFragment}`,
-          );
-
-          await Promise.all(
+          const [ogpImgURL, twitterCardImgURL] = await Promise.all(
             [
               async () => {
-                /*
-                 * OGPの画像に、QRコードを追加する
-                 */
-
-                if (!ogpImageElem) {
-                  const insertedOgpImageElem = parse5Utils.querySelector(
-                    headElemNode,
-                    'meta[property="og:image"], meta[property^="og:image:"]',
-                  );
-                  if (!insertedOgpImageElem) return;
-
-                  ogpImageElem = parse5Utils.createElement(
-                    headElemNode,
-                    'meta',
-                    { property: 'og:image' },
-                  );
-
-                  parse5Utils.insertBefore(insertedOgpImageElem, [
-                    ogpImageElem,
-                    parse5Utils.createElement(headElemNode, 'meta', {
-                      property: 'og:image:type',
-                      content: 'image/png',
-                    }),
-                    parse5Utils.createElement(headElemNode, 'meta', {
-                      property: 'og:image:width',
-                      content: ogpQrWidth,
-                    }),
-                    parse5Utils.createElement(headElemNode, 'meta', {
-                      property: 'og:image:height',
-                      content: ogpQrWidth,
-                    }),
-                  ]);
-                }
+                if (!label.ogpImg) return;
 
                 /*
-                 * ページのURLを示すQRコードを生成
+                 * ページのURLを示すQRコードのファイル名を生成
                  */
                 const qrFilename = path.join(
                   path.dirname(filename),
@@ -594,67 +679,62 @@ module.exports = opts => {
                 qrFileURL.search = '';
                 qrFileURL.hash = '';
 
-                parse5Utils.setAttribute(
-                  ogpImageElem,
-                  'content',
-                  String(qrFileURL),
-                );
+                return qrFileURL.href;
               },
               async () => {
+                if (!label.twitterCardImg) return;
+
                 /*
-                 * Twitter Cardの画像が未定義の場合は、URLを示すQRコードを指定する
+                 * ページのURLを示すQRコードのファイル名を生成
                  */
-                if (!twitterCardImageFound) {
-                  /*
-                   * ページのURLを示すQRコードを生成
-                   */
-                  const qrFilename = path.join(
-                    path.dirname(filename),
-                    `${qrCodeBasename}.${twitterCardQrWidth}x${twitterCardQrWidth}.png`,
-                  );
-                  pluginKit.addFile(
-                    files,
-                    qrFilename,
-                    await QRCode.toBuffer(qrCodeURL, {
-                      type: 'png',
-                      width: twitterCardQrWidth,
-                    }),
-                  );
-                  debug(`file generated: ${util.inspect(qrFilename)}`);
+                const qrFilename = path.join(
+                  path.dirname(filename),
+                  `${qrCodeBasename}.${twitterCardQrWidth}x${twitterCardQrWidth}.png`,
+                );
+                pluginKit.addFile(
+                  files,
+                  qrFilename,
+                  await QRCode.toBuffer(qrCodeURL, {
+                    type: 'png',
+                    width: twitterCardQrWidth,
+                  }),
+                );
+                debug(`file generated: ${util.inspect(qrFilename)}`);
 
-                  const qrFileURL = new URL(pageURL);
-                  qrFileURL.pathname = qrFilename;
-                  qrFileURL.search = '';
-                  qrFileURL.hash = '';
+                const qrFileURL = new URL(pageURL);
+                qrFileURL.pathname = qrFilename;
+                qrFileURL.search = '';
+                qrFileURL.hash = '';
 
-                  const twitterCardImageElem = parse5Utils.querySelector(
-                    headElemNode,
-                    'meta[name="twitter:image"]',
-                  );
-                  if (!twitterCardImageElem) {
-                    const twitterCardImageElem = parse5Utils.createElement(
-                      headElemNode,
-                      'meta',
-                      { name: 'twitter:image', content: String(qrFileURL) },
-                    );
-                    parse5Utils.appendChild(headElemNode, twitterCardImageElem);
-                  } else {
-                    parse5Utils.setAttribute(
-                      twitterCardImageElem,
-                      'content',
-                      String(qrFileURL),
-                    );
-                  }
-                }
+                return qrFileURL.href;
               },
             ].map(fn => fn()),
           );
 
           /*
+           * テンプレートHTMLを置換
+           */
+          const newFileHTMLText = [
+            [label.id, id],
+            [label.fragmentPageURL, fragmentPageURL],
+            [label.pageURLandHashFrag, urlWithFragment],
+            [label.ogpImg.url, ogpImgURL],
+            [label.twitterCardImg.url, twitterCardImgURL],
+          ].reduce((templateHTMLText, [label, attrValue]) => {
+            if (label && attrValue) {
+              return templateHTMLText.replace(
+                new RegExp(label, 'g'),
+                parse5Utils.escapeAttrValue(attrValue),
+              );
+            }
+            return templateHTMLText;
+          }, templateHTMLText);
+
+          /*
            * ファイルを生成
            */
           const newFilename = path.join(ASSETS_DIR, id, filename);
-          pluginKit.addFile(files, newFilename, parse5.serialize(htmlAST));
+          pluginKit.addFile(files, newFilename, newFileHTMLText);
 
           /*
            * metalsmith-sitemapプラグインが生成するsitemap.xmlにファイルを含めない
