@@ -5,7 +5,7 @@ header.page
         const svgImage = qrCodeImageFiles.svg;
         const pngImage = qrCodeImageFiles.png;
       if svgImage && pngImage
-        a.qr-code(href=svgImage.linkURL)
+        a.qr-code(href=svgImage.linkURL.replace(/^http:\/\//, 'https://'))
           picture
             source(srcset=rootRrelativeURL(svgImage.path) type="image/svg+xml")
             img(src=rootRrelativeURL(pngImage.path)
@@ -14,7 +14,7 @@ header.page
                 alt="")
       else if svgImage || pngImage
         - const image = svgImage || pngImage;
-        a.qr-code(href=image.linkURL)
+        a.qr-code(href=image.linkURL.replace(/^http:\/\//, 'https://'))
           img(src=rootRrelativeURL(image.path)
               width=image.width
               height=image.height
