@@ -10,13 +10,15 @@ const rollup = require('rollup');
 const MIMEType = require('whatwg-mimetype');
 
 const utils = require('./utils');
-const parse5Utils = require('./utils/parse5');
+const parse5UtilsGenerator = require('./utils/parse5');
+
+const parse5Utils = parse5UtilsGenerator({ treeAdapter: htmlparser2Adapter });
 
 /**
  * @typedef {{ path: (function(): string), destination: (function(): string) }} Metalsmith
  * @typedef {Object.<string, MetalsmithFileData>} MetalsmithFiles
  * @typedef {{ contents: Buffer }} MetalsmithFileData
- * @typedef {{ nodeName: string, childNodes?: Parse5Node[] }} Parse5Node
+ * @typedef {{ implementationIsUnknown: true }} Parse5Node
  * @typedef {{ dir: string, sourcemap: boolean | 'inline' | 'hidden' }} RollupOutputOptions
  * @typedef {{ plugins: Object[], output: RollupOutputOptions }} RollupOptions
  * @typedef {{ type: 'chunk', code: string, dynamicImports: string[] }} ChunkInfo
@@ -94,112 +96,109 @@ module.exports = opts => {
       /*
        * HTMLに含まれるscript要素を探す
        */
-      parse5Utils.walk(
-        htmlAST,
-        { treeAdapter: htmlparser2Adapter },
-        targetNode => {
-          if (targetNode.tagName !== 'script') return;
+      parse5Utils.walk(htmlAST, targetNode => {
+        if (!parse5Utils.isElemNode(targetNode, 'script')) return;
 
-          const scriptElemNode = targetNode;
-          const scriptElemAttrs = parse5Utils.getAttrMap(scriptElemNode.attrs);
+        const scriptElemNode = targetNode;
+        const scriptElemAttrs = parse5Utils.getAttrMap(scriptElemNode);
 
-          /**
-           * type属性値の値が以下に当てはまらない場合は処理しない
-           * + 未定義
-           * + 空文字列
-           * + JSのMIMEタイプ
-           * + "module"
-           * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-type
-           */
-          const type = scriptElemAttrs.get('type');
-          if (type) {
-            if (
-              type !== 'module' &&
-              !new MIMEType(type).isJavaScript({ allowParameters: true })
-            ) {
-              return;
-            }
-          }
-
-          /**
-           * src属性の値を検証
-           */
-          const src = scriptElemAttrs.get('src');
-          // src属性が存在しない場合は処理しない
-          if (!src) return;
-          // src属性がURLの場合は処理しない
-          if (isUrl(src)) return;
-          // src属性が絶対パスでない場合は処理しない
-          // TODO: 相対パスにも対応する
-          if (!src.startsWith('/')) {
-            throw new Error(
-              `絶対パスではないJSパスは対応していません："${src}" in ${filename}`,
-            );
-          }
-
-          /**
-           * 非同期属性が無いものはスキップする
-           * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-async
-           */
+        /**
+         * type属性値の値が以下に当てはまらない場合は処理しない
+         * + 未定義
+         * + 空文字列
+         * + JSのMIMEタイプ
+         * + "module"
+         * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-type
+         */
+        const type = scriptElemAttrs.get('type');
+        if (type) {
           if (
             type !== 'module' &&
-            !scriptElemAttrs.has('defer') &&
-            !scriptElemAttrs.has('async')
+            !new MIMEType(type).isJavaScript({ allowParameters: true })
           ) {
-            console.warn(
-              `JSの同期実行はサポートしていません。Rollup.jsの変換対象から除外します："${src}" in ${filename}`,
-            );
             return;
           }
+        }
 
-          /*
-           * src属性値から、JSファイルの絶対パスを導出する
-           */
-          const scriptFileFullpath = path.join(jsRootDirPath, src);
-          scriptFileFullpathSet.add(scriptFileFullpath);
+        /**
+         * src属性の値を検証
+         */
+        const src = scriptElemAttrs.get('src');
+        // src属性が存在しない場合は処理しない
+        if (!src) return;
+        // src属性がURLの場合は処理しない
+        if (isUrl(src)) return;
+        // src属性が絶対パスでない場合は処理しない
+        // TODO: 相対パスにも対応する
+        if (!src.startsWith('/')) {
+          throw new Error(
+            `絶対パスではないJSパスは対応していません："${src}" in ${filename}`,
+          );
+        }
 
-          /*
-           * script要素の更新に必要な情報を追加
-           */
-          const targetFileData = targetFileMap.get(filename);
-          if (!targetFileData) {
-            targetFileMap.set(filename, {
-              filedata,
-              htmlAST,
-              scriptNodeMap: new Map([
+        /**
+         * 非同期属性が無いものはスキップする
+         * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-async
+         */
+        if (
+          type !== 'module' &&
+          !scriptElemAttrs.has('defer') &&
+          !scriptElemAttrs.has('async')
+        ) {
+          console.warn(
+            `JSの同期実行はサポートしていません。Rollup.jsの変換対象から除外します："${src}" in ${filename}`,
+          );
+          return;
+        }
+
+        /*
+         * src属性値から、JSファイルの絶対パスを導出する
+         */
+        const scriptFileFullpath = path.join(jsRootDirPath, src);
+        scriptFileFullpathSet.add(scriptFileFullpath);
+
+        /*
+         * script要素の更新に必要な情報を追加
+         */
+        const targetFileData = targetFileMap.get(filename);
+        if (!targetFileData) {
+          targetFileMap.set(filename, {
+            filedata,
+            htmlAST,
+            scriptNodeMap: new Map([
+              [
+                parse5Utils.getParentNode(scriptElemNode),
                 [
-                  scriptElemNode.parentNode,
-                  [
-                    {
-                      node: scriptElemNode,
-                      attrs: scriptElemAttrs,
-                      srcFullpath: scriptFileFullpath,
-                    },
-                  ],
+                  {
+                    node: scriptElemNode,
+                    attrs: scriptElemAttrs,
+                    srcFullpath: scriptFileFullpath,
+                  },
                 ],
-              ]),
+              ],
+            ]),
+          });
+        } else {
+          const { scriptNodeMap } = targetFileData;
+          const scriptParentNode = parse5Utils.getParentNode(scriptElemNode);
+          const scriptNodeList = scriptNodeMap.get(scriptParentNode);
+          if (scriptNodeList) {
+            scriptNodeList.push({
+              node: scriptElemNode,
+              attrs: scriptElemAttrs,
+              srcFullpath: scriptFileFullpath,
             });
           } else {
-            const { scriptNodeMap } = targetFileData;
-            const scriptNodeList = scriptNodeMap.get(scriptElemNode.parentNode);
-            if (scriptNodeList) {
-              scriptNodeList.push({
+            scriptNodeMap.set(scriptParentNode, [
+              {
                 node: scriptElemNode,
                 attrs: scriptElemAttrs,
                 srcFullpath: scriptFileFullpath,
-              });
-            } else {
-              scriptNodeMap.set(scriptElemNode.parentNode, [
-                {
-                  node: scriptElemNode,
-                  attrs: scriptElemAttrs,
-                  srcFullpath: scriptFileFullpath,
-                },
-              ]);
-            }
+              },
+            ]);
           }
-        },
-      );
+        }
+      });
     },
     async after(files, metalsmith) {
       /*
@@ -855,29 +854,23 @@ module.exports = opts => {
             const removedSrcFullpathSet = new Set(
               originalScriptNodeMap.values(),
             );
-            parse5Utils.walk(
-              htmlAST,
-              { treeAdapter: htmlparser2Adapter },
-              targetNode => {
-                if (targetNode.tagName !== 'link') return;
+            parse5Utils.walk(htmlAST, targetNode => {
+              if (!parse5Utils.isElemNode(targetNode, 'link')) return;
 
-                const linkElemNode = targetNode;
-                const linkElemAttrs = parse5Utils.getAttrMap(
-                  linkElemNode.attrs,
-                );
+              const linkElemNode = targetNode;
+              const linkElemAttrs = parse5Utils.getAttrMap(linkElemNode);
 
-                if (linkElemAttrs.get('rel') !== 'preload') return;
-                if (linkElemAttrs.get('as') !== 'script') return;
+              if (linkElemAttrs.get('rel') !== 'preload') return;
+              if (linkElemAttrs.get('as') !== 'script') return;
 
-                const href = linkElemAttrs.get('href');
-                if (!href || !href.startsWith('/')) return;
-                const preloadFileFullpath = path.join(jsRootDirPath, href);
+              const href = linkElemAttrs.get('href');
+              if (!href || !href.startsWith('/')) return;
+              const preloadFileFullpath = path.join(jsRootDirPath, href);
 
-                if (removedSrcFullpathSet.has(preloadFileFullpath)) {
-                  parse5Utils.detachNode(targetNode);
-                }
-              },
-            );
+              if (removedSrcFullpathSet.has(preloadFileFullpath)) {
+                parse5Utils.detachNode(linkElemNode);
+              }
+            });
           }
         }
 
