@@ -439,15 +439,23 @@ Metalsmith(__dirname)
           },
           ignoreElems: ['style', 'script', 'template', 'aside.message'],
           rootSelector: '.novel-body',
-          textContentsReplacer($elem, childTextDataList) {
+          textContentsReplacer({ node, parse5Utils }, childTextDataList) {
+            if (!parse5Utils.isElementNode(node)) {
+              return childTextDataList;
+            }
+
             const textData = childTextDataList[0];
             if (textData) {
               const isEmpty =
-                $elem.is('[aria-hidden=true]') ||
-                /^[\t\n\f\r ]+$/.test($elem.text());
+                parse5Utils.matches(node, '[aria-hidden=true]') ||
+                /^[\t\n\f\r ]+$/.test(
+                  parse5Utils.getTextContent(node, {
+                    omitSelectors: 'style, script, template',
+                  }),
+                );
 
               for (let lines = 30; lines; lines--) {
-                if ($elem.is(`.spacing-${lines}`)) {
+                if (parse5Utils.matches(node, `.spacing-${lines}`)) {
                   textData.margin.top = lines;
                   if (!isEmpty) {
                     textData.margin.bottom = lines;
@@ -455,12 +463,12 @@ Metalsmith(__dirname)
                 }
               }
 
-              if ($elem.is('em')) {
+              if (parse5Utils.matches(node, 'em')) {
                 let openQuote, closeQuote;
-                if ($elem.is('.voice')) {
+                if (parse5Utils.matches(node, '.voice')) {
                   openQuote = '「';
                   closeQuote = '」';
-                } else if ($elem.is('.quot')) {
+                } else if (parse5Utils.matches(node, '.quot')) {
                   openQuote = '\u{201C}';
                   closeQuote = '\u{201D}';
                 }
