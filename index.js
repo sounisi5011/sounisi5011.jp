@@ -448,14 +448,18 @@ Metalsmith(__dirname)
             if (textData) {
               const isEmpty =
                 parse5Utils.matches(node, '[aria-hidden=true]') ||
-                /^[\t\n\f\r ]+$/.test(
-                  parse5Utils.getTextContent(node, {
-                    omitSelectors: 'style, script, template',
-                  }),
+                childTextDataList.every(({ rawText }) =>
+                  /^[\t\n\f\r ]+$/.test(rawText),
                 );
 
-              for (let lines = 30; lines; lines--) {
-                if (parse5Utils.matches(node, `.spacing-${lines}`)) {
+              const classValue = parse5Utils.getAttribute(node, 'class');
+              if (classValue) {
+                const lines = classValue
+                  .split(/\s+/)
+                  .map(className => /^spacing-(\d+)$/.exec(className))
+                  .map(match => (match ? Number(match[1]) : 0))
+                  .reduce((a, b) => Math.max(a, b), 0);
+                if (lines >= 1) {
                   textData.margin.top = lines;
                   if (!isEmpty) {
                     textData.margin.bottom = lines;
