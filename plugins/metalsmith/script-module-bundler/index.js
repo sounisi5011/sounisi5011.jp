@@ -6,17 +6,18 @@ const pluginKit = require('metalsmith-plugin-kit');
 const { MultikeyMap } = require('multikey-map');
 const parse5 = require('parse5');
 const rollup = require('rollup');
-const walkParse5 = require('walk-parse5');
 const MIMEType = require('whatwg-mimetype');
 
-const parse5Utils = require('./parse5-utils');
 const utils = require('./utils');
+const parse5UtilsGenerator = require('./utils/parse5');
+
+const parse5Utils = parse5UtilsGenerator();
 
 /**
  * @typedef {{ path: (function(): string), destination: (function(): string) }} Metalsmith
  * @typedef {Object.<string, MetalsmithFileData>} MetalsmithFiles
  * @typedef {{ contents: Buffer }} MetalsmithFileData
- * @typedef {{ nodeName: string, childNodes?: Parse5Node[] }} Parse5Node
+ * @typedef {{ implementationIsUnknown: true }} Parse5Node
  * @typedef {{ dir: string, sourcemap: boolean | 'inline' | 'hidden' }} RollupOutputOptions
  * @typedef {{ plugins: Object[], output: RollupOutputOptions }} RollupOptions
  * @typedef {{ type: 'chunk', code: string, dynamicImports: string[] }} ChunkInfo
@@ -92,11 +93,11 @@ module.exports = opts => {
       /*
        * HTMLに含まれるscript要素を探す
        */
-      walkParse5(htmlAST, targetNode => {
-        if (targetNode.tagName !== 'script') return;
+      parse5Utils.walk(htmlAST, targetNode => {
+        if (!parse5Utils.isElemNode(targetNode, 'script')) return;
 
         const scriptElemNode = targetNode;
-        const scriptElemAttrs = parse5Utils.getAttrMap(scriptElemNode.attrs);
+        const scriptElemAttrs = parse5Utils.getAttrMap(scriptElemNode);
 
         /**
          * type属性値の値が以下に当てはまらない場合は処理しない
@@ -163,7 +164,7 @@ module.exports = opts => {
             htmlAST,
             scriptNodeMap: new Map([
               [
-                scriptElemNode.parentNode,
+                parse5Utils.getParentNode(scriptElemNode),
                 [
                   {
                     node: scriptElemNode,
@@ -176,7 +177,8 @@ module.exports = opts => {
           });
         } else {
           const { scriptNodeMap } = targetFileData;
-          const scriptNodeList = scriptNodeMap.get(scriptElemNode.parentNode);
+          const scriptParentNode = parse5Utils.getParentNode(scriptElemNode);
+          const scriptNodeList = scriptNodeMap.get(scriptParentNode);
           if (scriptNodeList) {
             scriptNodeList.push({
               node: scriptElemNode,
@@ -184,7 +186,7 @@ module.exports = opts => {
               srcFullpath: scriptFileFullpath,
             });
           } else {
-            scriptNodeMap.set(scriptElemNode.parentNode, [
+            scriptNodeMap.set(scriptParentNode, [
               {
                 node: scriptElemNode,
                 attrs: scriptElemAttrs,
@@ -849,11 +851,11 @@ module.exports = opts => {
             const removedSrcFullpathSet = new Set(
               originalScriptNodeMap.values(),
             );
-            walkParse5(htmlAST, targetNode => {
-              if (targetNode.tagName !== 'link') return;
+            parse5Utils.walk(htmlAST, targetNode => {
+              if (!parse5Utils.isElemNode(targetNode, 'link')) return;
 
               const linkElemNode = targetNode;
-              const linkElemAttrs = parse5Utils.getAttrMap(linkElemNode.attrs);
+              const linkElemAttrs = parse5Utils.getAttrMap(linkElemNode);
 
               if (linkElemAttrs.get('rel') !== 'preload') return;
               if (linkElemAttrs.get('as') !== 'script') return;
@@ -863,7 +865,7 @@ module.exports = opts => {
               const preloadFileFullpath = path.join(jsRootDirPath, href);
 
               if (removedSrcFullpathSet.has(preloadFileFullpath)) {
-                parse5Utils.detachNode(targetNode);
+                parse5Utils.detachNode(linkElemNode);
               }
             });
           }
