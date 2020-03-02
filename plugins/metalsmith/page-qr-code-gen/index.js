@@ -60,6 +60,7 @@ module.exports = opts => {
             filetype,
             Object.assign(filedata, {
               path: filename,
+              linkURL: pageURL,
               ...dimensions,
             }),
           ];

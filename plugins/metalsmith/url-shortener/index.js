@@ -9,23 +9,47 @@ const { encryptToFileData, decryptFromFileData } = require('./encrypt');
 const { initOptions } = require('./options');
 
 class URLMap {
+  /**
+   * @param {Object.<string, Object>} files
+   */
   constructor(files) {
-    this.urlMap = new Map();
-    this.wordMap = new Map();
-    this.existsFilenameList = Object.keys(files).map(
-      this.normalizeWord.bind(this),
-    );
+    /**
+     * @private
+     * @readonly
+     * @type {Map.<string, string>}
+     */
+    this.__urlMap = new Map();
+    /**
+     * @private
+     * @readonly
+     * @type {Map.<string, string>}
+     */
+    this.__wordMap = new Map();
+    /**
+     * @private
+     * @readonly
+     */
+    this.__files = files;
   }
 
+  /**
+   * @param {string} url
+   */
   getByURL(url) {
-    return this.urlMap.get(url);
+    return this.__urlMap.get(url);
   }
 
+  /**
+   * @param {string} word
+   */
   hasWord(word) {
     word = this.normalizeWord(word);
-    return this.wordMap.has(word) || this.existsWord(word);
+    return this.__wordMap.has(word) || this.existsWord(word);
   }
 
+  /**
+   * @param {{ url: string, word: string }} param0
+   */
   set({ url, word }) {
     word = this.normalizeWord(word);
     if (this.existsWord(word)) {
@@ -33,25 +57,31 @@ class URLMap {
         `短縮URL ${word} は追加できません。重複する名前のファイルが存在します`,
       );
     }
-    this.urlMap.set(url, word);
-    this.wordMap.set(word, url);
+    this.__urlMap.set(url, word);
+    this.__wordMap.set(word, url);
   }
 
   *[Symbol.iterator]() {
-    for (const [url, word] of this.urlMap) {
+    for (const [url, word] of this.__urlMap) {
       yield { url, word };
     }
   }
 
-  existsWord(word) {
+  /**
+   * @param {string} word
+   * @param {string[]} existsFilenameList
+   */
+  existsWord(word, existsFilenameList = Object.keys(this.__files)) {
     word = this.normalizeWord(word);
-    return this.existsFilenameList.some(
-      filepath =>
-        filepath.startsWith(word) &&
-        ['', path.sep, '.'].includes(
-          filepath.substring(word.length, word.length + 1),
-        ),
-    );
+
+    return existsFilenameList.some(filepath => {
+      filepath = this.normalizeWord(filepath);
+      return (
+        filepath === word ||
+        (filepath.startsWith(word) &&
+          /^[./\\]/.test(filepath.substring(word.length)))
+      );
+    });
   }
 
   normalizeWord(word) {
@@ -118,6 +148,10 @@ exports.init = opts => {
         });
       }
 
+      /**
+       * @param {string} url
+       * @returns {string}
+       */
       const createShortWord = url => {
         const foundWord = urlMap.getByURL(url);
         if (foundWord) return foundWord;
@@ -134,6 +168,12 @@ exports.init = opts => {
         throw new Error('短縮URLの生成が失敗しました');
       };
       Object.assign(metalsmith.metadata(), {
+        /**
+         * 短縮URLを生成する
+         * @param {string} url 短縮URLを生成する元のURL
+         * @param {string} rootURL 短縮URLの先頭に追加するルートURL
+         * @returns {string}
+         */
         createShortURL(url, rootURL = options.rootURL) {
           const dummyWord = options.wordPrefix + 'x'.repeat(options.wordLength);
           /*
@@ -149,6 +189,21 @@ exports.init = opts => {
             ? filename2url(word, options.rootURLShrinker(rootURL))
             : word;
         },
+        /**
+         * 生成済みの短縮URLを取得する
+         * @param {string} url 短縮URLを探す元のURL
+         * @param {string} rootURL 短縮URLの先頭に追加するルートURL
+         * @returns {string|null} 短縮URL、または、見つからなかった場合にnull
+         */
+        lookupShortURL(url, rootURL = options.rootURL) {
+          const foundWord = urlMap.getByURL(url);
+          if (foundWord) {
+            return rootURL
+              ? filename2url(foundWord, options.rootURLShrinker(rootURL))
+              : foundWord;
+          }
+          return null;
+        },
       });
 
       optionsMap.set(files, { options, encryptKey, urlMap });
@@ -161,6 +216,43 @@ exports.generate = () =>
     async before(files, metalsmith) {
       const { options, encryptKey, urlMap } = optionsMap.get(files) || {};
       if (!options) return;
+
+      /*
+       * 生成した短縮URLと重複する名前のファイルが存在するか判定
+       */
+      const filepathList = Object.keys(files);
+      /** @type {Map.<string, string[]} */
+      const duplicationFilepathMap = new Map();
+      for (const { word } of urlMap) {
+        const duplicationFilepathList = filepathList.filter(filepath =>
+          urlMap.existsWord(word, [filepath]),
+        );
+        if (duplicationFilepathList.length !== 0) {
+          const shortURL = filename2url(
+            word,
+            options.rootURLShrinker(options.rootURL),
+          );
+          duplicationFilepathMap.set(shortURL, duplicationFilepathList);
+        }
+      }
+      if (duplicationFilepathMap.size !== 0) {
+        console.error(
+          [
+            '短縮URLと重複する名前のファイルが存在します:',
+            ...[...duplicationFilepathMap].map(
+              ([shortURL, duplicationFilepathList]) => {
+                return [
+                  shortURL,
+                  ...duplicationFilepathList.map(filepath => `  * ${filepath}`),
+                ]
+                  .map(line => `  ${line}`)
+                  .join('\n');
+              },
+            ),
+          ].join('\n'),
+        );
+        throw new Error('短縮URLと重複する名前のファイルが存在します');
+      }
 
       /*
        * ファイルを生成
@@ -216,5 +308,6 @@ exports.generate = () =>
       );
 
       delete metalsmith.metadata().createShortURL;
+      delete metalsmith.metadata().lookupShortURL;
     },
   });
