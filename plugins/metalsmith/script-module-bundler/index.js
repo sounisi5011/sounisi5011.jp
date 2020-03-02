@@ -10,8 +10,8 @@ const rollup = require('rollup');
 const walkParse5 = require('walk-parse5');
 const MIMEType = require('whatwg-mimetype');
 
-const parse5Utils = require('./parse5-utils');
 const utils = require('./utils');
+const parse5Utils = require('./utils/parse5');
 
 /**
  * @typedef {{ path: (function(): string), destination: (function(): string) }} Metalsmith
