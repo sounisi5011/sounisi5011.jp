@@ -1,4 +1,6 @@
-module.exports = ({ treeAdapter }) => {
+const defaultTreeAdapter = require('parse5/lib/tree-adapters/default');
+
+module.exports = ({ treeAdapter = defaultTreeAdapter } = {}) => {
   function walk(node, callback) {
     if (callback(node) === false) {
       return false;
