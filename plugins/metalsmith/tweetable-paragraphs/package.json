@@ -7,6 +7,7 @@
     "cross-spawn": "^7.0.1",
     "debug": "^4.1.1",
     "metalsmith-plugin-kit": "^1.0.1",
+    "parse5": "^5.1.1",
     "qrcode": "^1.4.4",
     "strict-uri-encode": "^2.0.0"
   },
