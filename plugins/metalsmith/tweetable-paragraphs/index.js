@@ -7,10 +7,10 @@ const cheerio = require('cheerio');
 const spawn = require('cross-spawn');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
-const QRCode = require('qrcode');
 const strictUriEncode = require('strict-uri-encode');
 
 const pkg = require('./package.json');
+const QRCode = require('./utils/qr-code');
 const debug = logger(pkg.name);
 
 let twitter;
