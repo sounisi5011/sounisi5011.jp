@@ -1,5 +1,17 @@
 const htmlparser2Adapter = require('parse5-htmlparser2-tree-adapter');
 
+function walk(node, { treeAdapter }, callback) {
+  if (callback(node) === false) {
+    return false;
+  }
+  for (const childNode of treeAdapter.getChildNodes(node)) {
+    if (callback(childNode) === false) {
+      return false;
+    }
+  }
+}
+exports.walk = walk;
+
 /**
  * @param {(Object.<string, string|null>|Map.<string, string|null>|Set.<string>)[]} attrsList
  * @returns {{name: string, value: string}[]}
