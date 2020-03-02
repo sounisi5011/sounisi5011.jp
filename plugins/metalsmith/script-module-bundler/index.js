@@ -5,6 +5,7 @@ const isUrl = require('is-url');
 const pluginKit = require('metalsmith-plugin-kit');
 const { MultikeyMap } = require('multikey-map');
 const parse5 = require('parse5');
+const htmlparser2Adapter = require('parse5-htmlparser2-tree-adapter');
 const rollup = require('rollup');
 const walkParse5 = require('walk-parse5');
 const MIMEType = require('whatwg-mimetype');
@@ -87,7 +88,9 @@ module.exports = opts => {
       /*
        * HTMLをパースし、ASTを作成する
        */
-      const htmlAST = parse5.parse(filedata.contents.toString());
+      const htmlAST = parse5.parse(filedata.contents.toString(), {
+        treeAdapter: htmlparser2Adapter,
+      });
 
       /*
        * HTMLに含まれるscript要素を探す
@@ -872,7 +875,9 @@ module.exports = opts => {
         /**
          * HTMLの内容を更新する
          */
-        filedata.contents = Buffer.from(parse5.serialize(htmlAST));
+        filedata.contents = Buffer.from(
+          parse5.serialize(htmlAST, { treeAdapter: htmlparser2Adapter }),
+        );
       }
     },
   });

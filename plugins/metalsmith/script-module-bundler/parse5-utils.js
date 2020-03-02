@@ -1,4 +1,4 @@
-const treeAdapter = require('parse5/lib/tree-adapters/default');
+const htmlparser2Adapter = require('parse5-htmlparser2-tree-adapter');
 
 /**
  * @param {(Object.<string, string|null>|Map.<string, string|null>|Set.<string>)[]} attrsList
@@ -46,7 +46,7 @@ exports.createElement = (
   content = null,
   namespaceURI = 'http://www.w3.org/1999/xhtml',
 ) => {
-  const elem = treeAdapter.createElement(
+  const elem = htmlparser2Adapter.createElement(
     tagName,
     namespaceURI,
     Array.isArray(attrs) ? createElemAttrs(...attrs) : createElemAttrs(attrs),
@@ -55,9 +55,9 @@ exports.createElement = (
   for (const content of contentList) {
     if (content) {
       if (isNode(content)) {
-        treeAdapter.appendChild(elem, content);
+        htmlparser2Adapter.appendChild(elem, content);
       } else {
-        treeAdapter.insertText(elem, String(content));
+        htmlparser2Adapter.insertText(elem, String(content));
       }
     }
   }
@@ -92,6 +92,6 @@ exports.getAttrMap = attrs => {
   return map;
 };
 
-exports.appendChild = treeAdapter.appendChild;
+exports.appendChild = htmlparser2Adapter.appendChild;
 
-exports.detachNode = treeAdapter.detachNode;
+exports.detachNode = htmlparser2Adapter.detachNode;
