@@ -68,8 +68,6 @@ if (
   console.log(`Overwrite env.DEBUG: "${oldDebug}" → "${newDebug}"`);
 }
 
-let hrstart = process.hrtime();
-
 Metalsmith(__dirname)
   .metadata({
     /* eslint-disable sort-keys */
@@ -97,38 +95,8 @@ Metalsmith(__dirname)
   .source('./src/pages')
   .destination('./public')
   .clean(false)
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ init execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(fixHFSPlusNormalization())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ Fix HFS+ execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(directoryMetadata({ pattern: '**/.metadata.*' }))
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ metalsmith-directory-metadata execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   /*
    * AsciiDocファイルの変換とレイアウトの適用
    */
@@ -140,32 +108,12 @@ Metalsmith(__dirname)
       },
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ @sounisi5011/metalsmith-asciidoctor execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     pugLayoutsCompile({
       pattern: '**/*.html',
       directory: 'layouts',
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ @sounisi5011/metalsmith-pug-layouts execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   /*
    * 依存関係のメタデータを更新
    */
@@ -226,16 +174,6 @@ Metalsmith(__dirname)
     });
     done();
   })
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ Update metadatas execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   /*
    * Pugテンプレートのコンパイル
    */
@@ -250,16 +188,6 @@ Metalsmith(__dirname)
       ],
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ Pug compile execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     collections({
       characters: {
@@ -279,117 +207,17 @@ Metalsmith(__dirname)
       },
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ collections execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(childPages())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ childPages execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(anotherSource('./src/assets'))
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ anotherSource execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(netlifyMetadata())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ netlifyMetadata execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(assetsConvention())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ assetsConvention execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(copyConvention())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ copyConvention execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(downloadConvention())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ downloadConvention execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(svg2png())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ svg2png execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(svg2ico())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ svg2ico execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     anotherSource('./src/styles')
       .use(commentFrontmatter())
-      .use((_, __, done) => {
-        const hrend = process.hrtime(hrstart);
-        console.info(
-          '@@@ SASS/commentFrontmatter execution time (hr): %ds %dms',
-          hrend[0],
-          hrend[1] / 1000000,
-        );
-        hrstart = process.hrtime();
-        done();
-      })
       .use(
         sass((_files, _metalsmith, defaultOptions) => ({
           dependenciesKey: 'dependencies',
@@ -399,120 +227,20 @@ Metalsmith(__dirname)
           },
         })),
       )
-      .use((_, __, done) => {
-        const hrend = process.hrtime(hrstart);
-        console.info(
-          '@@@ SASS convert execution time (hr): %ds %dms',
-          hrend[0],
-          hrend[1] / 1000000,
-        );
-        hrstart = process.hrtime();
-        done();
-      })
       .use(postcss())
-      .use((_, __, done) => {
-        const hrend = process.hrtime(hrstart);
-        console.info(
-          '@@@ SASS/PostCSS execution time (hr): %ds %dms',
-          hrend[0],
-          hrend[1] / 1000000,
-        );
-        hrstart = process.hrtime();
-        done();
-      })
       .use(mergePreloadDependencies())
-      .use((_, __, done) => {
-        const hrend = process.hrtime(hrstart);
-        console.info(
-          '@@@ SASS/mergePreloadDependencies execution time (hr): %ds %dms',
-          hrend[0],
-          hrend[1] / 1000000,
-        );
-        hrstart = process.hrtime();
-        done();
-      })
-      .use(ignore('**/*.scss'))
-      .use((_, __, done) => {
-        const hrend = process.hrtime(hrstart);
-        console.info(
-          '@@@ SASS/ignore execution time (hr): %ds %dms',
-          hrend[0],
-          hrend[1] / 1000000,
-        );
-        hrstart = process.hrtime();
-        done();
-      }),
+      .use(ignore('**/*.scss')),
   )
   .use(mergePreloadDependencies())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ mergePreloadDependencies execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(preloadList({ preloadListIncludeKeys: ['preloadDependencies'] }))
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ preloadList execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(mustache())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ mustache execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(ignore(['**/*.pug']))
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ ignore execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(svgo())
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ svgo execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     permalinks({
       relative: false,
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ permalinks execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     modernizr({
       config(filename, filedata) {
@@ -538,16 +266,6 @@ Metalsmith(__dirname)
       },
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ modernizr execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     addFileMeta((filename, filedata, files, metalsmith) => {
       const data = {
@@ -564,16 +282,6 @@ Metalsmith(__dirname)
       };
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ addFileMeta execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     shorturlInit({
       rootURLShrinker(rootURL) {
@@ -584,16 +292,6 @@ Metalsmith(__dirname)
       },
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ shorturlInit execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     pageQrCodeGenerator({
       pageURL(filename, file, files, metalsmith) {
@@ -611,16 +309,6 @@ Metalsmith(__dirname)
       },
     }),
   )
-  .use((_, __, done) => {
-    const hrend = process.hrtime(hrstart);
-    console.info(
-      '@@@ pageQrCodeGenerator execution time (hr): %ds %dms',
-      hrend[0],
-      hrend[1] / 1000000,
-    );
-    hrstart = process.hrtime();
-    done();
-  })
   .use(
     (options =>
       Object.keys(process.env).some(env => /^SKIP_NETLIFY_PUB_DATE$/i.test(env))
