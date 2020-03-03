@@ -3,15 +3,18 @@ const path = require('path');
 const { URL } = require('url');
 const util = require('util');
 
-const cheerio = require('cheerio');
 const spawn = require('cross-spawn');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
-const QRCode = require('qrcode');
+const parse5 = require('parse5');
 const strictUriEncode = require('strict-uri-encode');
 
 const pkg = require('./package.json');
+const parse5UtilsGenerator = require('./utils/parse5');
+const QRCode = require('./utils/qr-code');
 const debug = logger(pkg.name);
+
+const parse5Utils = parse5UtilsGenerator();
 
 let twitter;
 try {
@@ -77,7 +80,7 @@ function filepath2RootRelativeURL(filepath) {
     .join('/');
 }
 
-function getURL($) {
+function getURL(htmlAST) {
   const metaElemDefs = [
     {
       attr: 'content',
@@ -93,11 +96,15 @@ function getURL($) {
     },
   ];
 
-  const $head = $('head');
+  const headElem = parse5Utils.querySelector(htmlAST, 'head');
+  if (!headElem) return;
+
   for (const { query, attr } of metaElemDefs) {
-    const value = $head.find(query).attr(attr);
-    if (typeof value === 'string' && /^https?:\/\//.test(value)) {
-      return value;
+    for (const matchNode of parse5Utils.querySelectorAll(headElem, query)) {
+      const value = parse5Utils.getAttribute(matchNode, attr);
+      if (typeof value === 'string' && /^https?:\/\//.test(value)) {
+        return value;
+      }
     }
   }
 
@@ -125,10 +132,10 @@ function getValidTweetLength(tweetText, suffixText = '') {
   return validTweetLength;
 }
 
-function createData($, idNode, text = '') {
-  const id = idNode && $(idNode).attr('id');
+function createData(idNode, text = '') {
+  const id = idNode && parse5Utils.getAttribute(idNode, 'id');
   return {
-    id: id !== undefined ? id : null,
+    id: id || null,
     idNode,
     margin: {
       bottom: -1,
@@ -139,113 +146,109 @@ function createData($, idNode, text = '') {
   };
 }
 
-function readTextContents($, elem, opts = {}, prevIdNode = null) {
+function readTextContents(elemNode, opts = {}, prevIdNode = null) {
   const options = {
     ignoreElems: ['style', 'script', 'template'],
-    replacer: (node, dataList) => dataList,
+    replacer: ({ node, parse5Utils }, dataList) => dataList,
     ...opts,
   };
   const ignoreElemSelector = options.ignoreElems.join(', ');
 
-  const $elem = $(elem);
-  const dataList = [];
+  let dataList = [];
 
-  $elem.each((i, node) => {
-    const $node = $(node);
+  if (parse5Utils.isTextNode(elemNode)) {
+    dataList = [
+      createData(prevIdNode, parse5Utils.getTextNodeContent(elemNode)),
+    ];
+  } else if (
+    parse5Utils.isElementNode(elemNode) &&
+    !parse5Utils.matches(elemNode, ignoreElemSelector)
+  ) {
+    let currentIdNode = parse5Utils.hasAttribute(elemNode, 'id')
+      ? elemNode
+      : prevIdNode;
+    /**
+     * @see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css
+     * @see https://dxr.mozilla.org/mozilla-central/source/layout/style/res/html.css
+     * @see http://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css
+     */
+    const isPreElem = parse5Utils.matches(
+      elemNode,
+      'pre, xmp, plaintext, listing, textarea',
+    );
+    const isPElem = parse5Utils.matches(
+      elemNode,
+      'p, blockquote, figure, h1, h2, h3, h4, h5, h6, hr, ul, menu, dir, ol, dl, multicol, pre, xmp, plaintext, listing',
+    );
 
-    if (node.type === 'text') {
-      dataList.push(createData($, prevIdNode, node.data));
-    } else if (node.type === 'tag' && !$node.is(ignoreElemSelector)) {
-      let currentIdNode = $node.is('[id]') ? node : prevIdNode;
-      /**
-       * @see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css
-       * @see https://dxr.mozilla.org/mozilla-central/source/layout/style/res/html.css
-       * @see http://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css
-       */
-      const isPreElem = $node.is('pre, xmp, plaintext, listing, textarea');
-      const isPElem = $node.is(
-        'p, blockquote, figure, h1, h2, h3, h4, h5, h6, hr, ul, menu, dir, ol, dl, multicol, pre, xmp, plaintext, listing',
-      );
+    const newDataList = parse5Utils.getChildNodes(elemNode).reduce(
+      (list, childNode) => {
+        const data = readTextContents(childNode, options, currentIdNode);
 
-      const newDataList = $node
-        .contents()
-        .get()
-        .reduce(
-          (list, childNode) => {
-            const data = readTextContents(
-              $,
-              $(childNode),
-              options,
-              currentIdNode,
-            );
-
-            /*
-             * pre要素の内容のスペース文字は保持する
-             */
-            if (isPreElem) {
-              data.forEach(data => {
-                data.text = data.rawText;
-              });
-            }
-
-            if (last(data)) {
-              currentIdNode = last(data).idNode;
-            }
-
-            const firstDataItem = data[0];
-            const lastListItem = last(list);
-            if (firstDataItem && lastListItem) {
-              if (lastListItem.idNode === firstDataItem.idNode) {
-                /*
-                 * 前後のマージンの数だけ空行を生成する
-                 */
-                const marginLinesNumber = Math.max(
-                  lastListItem.margin.bottom,
-                  firstDataItem.margin.top,
-                );
-                const marginLines = '\n'.repeat(
-                  Math.max(0, 1 + marginLinesNumber),
-                );
-
-                lastListItem.rawText += marginLines + firstDataItem.rawText;
-                lastListItem.text += marginLines + firstDataItem.text;
-                data.shift();
-              }
-            }
-
-            return [...list, ...data];
-          },
-          currentIdNode !== null ? [createData($, currentIdNode)] : [],
-        );
-
-      /*
-       * br要素の内容は改行にする
-       */
-      if ($node.is('br')) {
-        const firstData = newDataList[0];
-        if (firstData) {
-          firstData.text = firstData.rawText = '\n';
-        } else {
-          newDataList.push(createData($, currentIdNode, '\n'));
+        /*
+         * pre要素の内容のスペース文字は保持する
+         */
+        if (isPreElem) {
+          data.forEach(data => {
+            data.text = data.rawText;
+          });
         }
-      }
 
-      /*
-       * p要素の前後には、一行のマージンを追加する
-       */
-      if (isPElem) {
-        const margin = 1;
-        const firstData = first(newDataList, createData($, currentIdNode));
-        const lastData = last(newDataList);
-        firstData.margin.top = Math.max(margin, firstData.margin.top);
-        lastData.margin.bottom = Math.max(margin, lastData.margin.bottom);
-      }
+        if (last(data)) {
+          currentIdNode = last(data).idNode;
+        }
 
-      dataList.push(...newDataList);
+        const firstDataItem = data[0];
+        const lastListItem = last(list);
+        if (firstDataItem && lastListItem) {
+          if (lastListItem.idNode === firstDataItem.idNode) {
+            /*
+             * 前後のマージンの数だけ空行を生成する
+             */
+            const marginLinesNumber = Math.max(
+              lastListItem.margin.bottom,
+              firstDataItem.margin.top,
+            );
+            const marginLines = '\n'.repeat(Math.max(0, 1 + marginLinesNumber));
+
+            lastListItem.rawText += marginLines + firstDataItem.rawText;
+            lastListItem.text += marginLines + firstDataItem.text;
+            data.shift();
+          }
+        }
+
+        return [...list, ...data];
+      },
+      currentIdNode ? [createData(currentIdNode)] : [],
+    );
+
+    /*
+     * br要素の内容は改行にする
+     */
+    if (parse5Utils.getTagName(elemNode) === 'br') {
+      const firstData = newDataList[0];
+      if (firstData) {
+        firstData.text = firstData.rawText = '\n';
+      } else {
+        newDataList.push(createData(currentIdNode, '\n'));
+      }
     }
-  });
 
-  return options.replacer($elem, dataList);
+    /*
+     * p要素の前後には、一行のマージンを追加する
+     */
+    if (isPElem) {
+      const margin = 1;
+      const firstData = first(newDataList, createData(currentIdNode));
+      const lastData = last(newDataList);
+      firstData.margin.top = Math.max(margin, firstData.margin.top);
+      lastData.margin.bottom = Math.max(margin, lastData.margin.bottom);
+    }
+
+    dataList = newDataList;
+  }
+
+  return options.replacer({ node: elemNode, parse5Utils }, dataList);
 }
 
 module.exports = opts => {
@@ -260,7 +263,8 @@ module.exports = opts => {
       ignoreElems: ['style', 'script', 'template'],
       pattern: '**/*.html',
       rootSelector: 'body',
-      textContentsReplacer: ($elem, childTextDataList) => childTextDataList,
+      textContentsReplacer: ({ node, parse5Utils }, childTextDataList) =>
+        childTextDataList,
       allowWarning: true,
     },
     Object.getOwnPropertyDescriptors(opts),
@@ -285,18 +289,13 @@ module.exports = opts => {
 
       debug(`processing file: ${util.inspect(filename)}`);
 
-      let $;
-      try {
-        $ = cheerio.load(filedata.contents.toString());
-      } catch (err) {
-        return;
-      }
+      const htmlAST = parse5.parse(filedata.contents.toString());
 
       const newErrorList = [];
       let isUpdated = false;
       const idList = [];
 
-      const pageURL = getURL($);
+      const pageURL = getURL(htmlAST);
       if (!pageURL) {
         newErrorList.push({
           filepath: filename,
@@ -304,99 +303,104 @@ module.exports = opts => {
             'ページの絶対URLを取得できませんでした。OGPのmeta要素、正規URLを指定するlink要素、または、絶対URLが記述されたbase要素が必要です',
         });
       } else {
-        $(options.rootSelector).each((i, elem) => {
-          const $root = $(elem);
-          const dataList = readTextContents($, $root, {
-            ignoreElems: options.ignoreElems,
-            replacer: options.textContentsReplacer,
-          });
+        parse5Utils
+          .querySelectorAll(htmlAST, options.rootSelector)
+          .forEach(rootElem => {
+            const dataList = readTextContents(rootElem, {
+              ignoreElems: options.ignoreElems,
+              replacer: options.textContentsReplacer,
+            });
 
-          const usedIdMap = new Map();
-          dataList.forEach(({ id, idNode, text }) => {
-            if (!idNode) {
-              newErrorList.push({
-                filepath: filename,
-                message:
-                  'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
-              });
-              return;
-            }
+            const usedIdMap = new Map();
+            dataList.forEach(({ id, idNode, text }) => {
+              if (!idNode) {
+                newErrorList.push({
+                  filepath: filename,
+                  message:
+                    'id属性が割り当てられていない内容が存在します。id属性を追加し、全ての位置のハッシュフラグメントを提供してください',
+                });
+                return;
+              }
 
-            if (id === '') {
-              newErrorList.push({
-                filepath: filename,
-                message: 'id属性は空文字列を許可していません',
-              });
-              return;
-            }
+              if (id === '') {
+                newErrorList.push({
+                  filepath: filename,
+                  message: 'id属性は空文字列を許可していません',
+                });
+                return;
+              }
 
-            if (HTML_WS_REGEXP.test(id)) {
-              newErrorList.push({
-                filepath: filename,
-                message: `id属性値にASCIIホワイトスペース文字を含めることはできません: ${util.inspect(
-                  id,
-                )}`,
-              });
-              return;
-            }
+              if (HTML_WS_REGEXP.test(id)) {
+                newErrorList.push({
+                  filepath: filename,
+                  message: `id属性値にASCIIホワイトスペース文字を含めることはできません: ${util.inspect(
+                    id,
+                  )}`,
+                });
+                return;
+              }
 
-            if (usedIdMap.has(id)) {
-              if (usedIdMap.get(id) !== idNode) {
+              if (usedIdMap.has(id)) {
+                if (usedIdMap.get(id) !== idNode) {
+                  newErrorList.push({
+                    filepath: `${filename}#${id}`,
+                    message:
+                      'id属性が重複しています。idの値はユニークでなければなりません',
+                  });
+                }
+              } else {
+                usedIdMap.set(id, idNode);
+              }
+
+              const fragmentPageURL = options.generateFragmentPageURL(
+                pageURL,
+                id,
+              );
+              const validTweetLength = getValidTweetLength(
+                text,
+                '\u{0020}' + fragmentPageURL,
+              );
+
+              if (validTweetLength) {
+                const lengthOutText = text.substring(validTweetLength);
+                const outLen = unicodeLength(lengthOutText);
                 newErrorList.push({
                   filepath: `${filename}#${id}`,
                   message:
-                    'id属性が重複しています。idの値はユニークでなければなりません',
+                    `テキストが長すぎます。以下のテキストを削除し、あと${outLen}文字減らしてください:\n\n` +
+                    lengthOutText.replace(/^/gm, '  > '),
+                });
+                return;
+              }
+
+              if (/(?:\s*\n){3,}/.test(text)) {
+                warningList.push({
+                  filename,
+                  id,
+                  message:
+                    '2行以上の空行はTwitterでは無視されます。空行の間にid属性を追加し、個別のツイートに分離することを推奨します:',
+                  text,
                 });
               }
-            } else {
-              usedIdMap.set(id, idNode);
-            }
 
-            const fragmentPageURL = options.generateFragmentPageURL(
-              pageURL,
-              id,
-            );
-            const validTweetLength = getValidTweetLength(
-              text,
-              '\u{0020}' + fragmentPageURL,
-            );
+              parse5Utils.setAttribute(
+                idNode,
+                'data-share-url',
+                fragmentPageURL,
+              );
+              parse5Utils.setAttribute(idNode, 'data-share-text', text);
 
-            if (validTweetLength) {
-              const lengthOutText = text.substring(validTweetLength);
-              const outLen = unicodeLength(lengthOutText);
-              newErrorList.push({
-                filepath: `${filename}#${id}`,
-                message:
-                  `テキストが長すぎます。以下のテキストを削除し、あと${outLen}文字減らしてください:\n\n` +
-                  lengthOutText.replace(/^/gm, '  > '),
+              idList.push({ fragmentPageURL, id });
+
+              isUpdated = true;
+            });
+
+            parse5Utils
+              .querySelectorAll(rootElem, options.ignoreElems.join(', '))
+              .forEach(elem => {
+                parse5Utils.setAttribute(elem, 'data-share-ignore', '');
               });
-              return;
-            }
-
-            if (/(?:\s*\n){3,}/.test(text)) {
-              warningList.push({
-                filename,
-                id,
-                message:
-                  '2行以上の空行はTwitterでは無視されます。空行の間にid属性を追加し、個別のツイートに分離することを推奨します:',
-                text,
-              });
-            }
-
-            const $idElem = $(idNode);
-            $idElem.attr('data-share-url', fragmentPageURL);
-            $idElem.attr('data-share-text', text);
-
-            idList.push({ fragmentPageURL, id });
-
-            isUpdated = true;
           });
-
-          $root.find(options.ignoreElems.join(', ')).each((i, elem) => {
-            const $elem = $(elem);
-            $elem.attr('data-share-ignore', '');
-          });
-        });
       }
 
       if (newErrorList.length >= 1) {
@@ -405,7 +409,8 @@ module.exports = opts => {
       }
 
       if (isUpdated) {
-        filedata.contents = Buffer.from($.html());
+        const htmlText = parse5.serialize(htmlAST);
+        filedata.contents = Buffer.from(htmlText);
         debug(`contents updated: ${util.inspect(filename)}`);
 
         /**
@@ -417,50 +422,214 @@ module.exports = opts => {
          */
         const twitterCardQrWidth = 144;
 
-        const $root = $(':root');
-        const $head = $('head');
-        let $refreshMeta;
-        let ogpImageElem;
-        const twitterCardImageElems = $head.find('meta[name="twitter:image"]');
-        const twitterCardImageFound = Boolean(
-          twitterCardImageElems >= 1 && twitterCardImageElems.attr('content'),
-        );
+        /*
+         * 置換処理に用いるテンプレート文字列を生成
+         */
+        const { templateHTMLText, label } = (() => {
+          const rootElemNode = parse5Utils.querySelector(
+            htmlAST,
+            ':root, html',
+          );
+          const headElemNode = parse5Utils.querySelector(htmlAST, 'head');
 
-        $root.attr('data-canonical-url', pageURL);
+          /*
+           * 置換用のランダム文字列を生成する
+           */
+          const replaceLabel = (() => {
+            while (true) {
+              const randStr = [
+                '',
+                ...[
+                  Math.random(),
+                  Math.random(),
+                  Math.random(),
+                  Math.random(),
+                  Math.random(),
+                ].map(n => n.toString(36).substring(2)),
+                '',
+              ].join('____');
+              if (!htmlText.includes(randStr)) {
+                return randStr;
+              }
+            }
+          })();
+          const label = {
+            // id属性値の置換用ラベル
+            id: `${replaceLabel}id____`,
+            // fragmentクエリ付きURLの置換用ラベル
+            fragmentPageURL: `${replaceLabel}fragmentPageURL____`,
+            // ハッシュフラグメント付きURLの置換用ラベル
+            pageURLandHashFrag: `${replaceLabel}pageURLandHashFrag____`,
+          };
 
-        for (const { id, fragmentPageURL } of idList) {
-          $root.attr('data-jump-id', id);
+          /*
+           * ルート要素にdata-*属性を追加
+           */
+          parse5Utils.setAttribute(rootElemNode, 'data-canonical-url', pageURL);
+          parse5Utils.setAttribute(rootElemNode, 'data-jump-id', label.id);
+
+          /*
+           * スクリプトが機能しない環境向けのリダイレクトタグを追加
+           */
+          {
+            const noscriptElem = parse5Utils.createElement(
+              headElemNode,
+              'noscript',
+              {},
+              parse5Utils.createElement(headElemNode, 'meta', {
+                'http-equiv': 'refresh',
+                content: `0; url=${label.pageURLandHashFrag}`,
+              }),
+            );
+
+            const charsetElem = parse5Utils.querySelector(
+              headElemNode,
+              'meta[charset]',
+            );
+            if (charsetElem) {
+              parse5Utils.insertAfter(charsetElem, noscriptElem);
+            } else {
+              parse5Utils.prependChild(headElemNode, noscriptElem);
+            }
+          }
 
           /**
            * クロールを禁止するrobotsメタタグを追加
            * @see https://developers.google.com/search/reference/robots_meta_tag?hl=ja
            */
-          const $metaRobots = $head.find('meta[name=robots]');
-          if ($metaRobots.length >= 1) {
-            $metaRobots.each((i, elem) => {
-              const $meta = $(elem);
-              if (i === 0) {
-                $meta.attr('content', 'noindex');
-              } else {
-                $meta.remove();
-              }
-            });
-          } else {
-            $head.append('<meta name="robots" content="noindex">');
+          {
+            const metaRobotElemList = parse5Utils.querySelectorAll(
+              headElemNode,
+              'meta[name=robots]',
+            );
+            if (metaRobotElemList.length >= 1) {
+              metaRobotElemList.forEach((metaElem, i) => {
+                if (i === 0) {
+                  parse5Utils.setAttribute(metaElem, 'content', 'noindex');
+                } else {
+                  parse5Utils.detachNode(metaElem);
+                }
+              });
+            } else {
+              parse5Utils.appendChild(
+                headElemNode,
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  name: 'robots',
+                  content: 'noindex',
+                }),
+              );
+            }
           }
 
           /*
            * OGPタグのURLを上書き
            */
-          $head.find('meta[property="og:url"]').each((i, elem) => {
-            const $meta = $(elem);
-            if (i === 0) {
-              $meta.attr('content', fragmentPageURL);
-            } else {
-              $meta.remove();
-            }
-          });
+          parse5Utils
+            .querySelectorAll(headElemNode, 'meta[property="og:url"]')
+            .forEach((metaElem, i) => {
+              if (i === 0) {
+                parse5Utils.setAttribute(
+                  metaElem,
+                  'content',
+                  label.fragmentPageURL,
+                );
+              } else {
+                parse5Utils.detachNode(metaElem);
+              }
+            });
 
+          /*
+           * OGP用画像のタグを追加
+           */
+          {
+            const insertedOgpImageElem = parse5Utils.querySelector(
+              headElemNode,
+              'meta[property="og:image"], meta[property^="og:image:"]',
+            );
+            if (insertedOgpImageElem) {
+              label.ogpImg = {
+                url: `${replaceLabel}ogpImgURL____`,
+              };
+
+              parse5Utils.insertBefore(insertedOgpImageElem, [
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image',
+                  content: label.ogpImg.url,
+                }),
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image:type',
+                  content: 'image/png',
+                }),
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image:width',
+                  content: ogpQrWidth,
+                }),
+                parse5Utils.createElement(headElemNode, 'meta', {
+                  property: 'og:image:height',
+                  content: ogpQrWidth,
+                }),
+              ]);
+            }
+          }
+
+          /*
+           * Twitter Cardの画像が未定義の場合は、Twitter Card用画像のタグを追加
+           */
+          {
+            const twitterCardImageElems = parse5Utils.querySelectorAll(
+              headElemNode,
+              'meta[name="twitter:image"]',
+            );
+            if (
+              twitterCardImageElems.every(
+                elem => !parse5Utils.getAttribute(elem, 'content'),
+              )
+            ) {
+              label.twitterCardImg = {
+                url: `${replaceLabel}twiCardImgURL____`,
+              };
+              if (twitterCardImageElems.length >= 1) {
+                twitterCardImageElems.forEach((metaElem, i) => {
+                  if (i === 0) {
+                    parse5Utils.setAttribute(
+                      metaElem,
+                      'content',
+                      label.twitterCardImg.url,
+                    );
+                  } else {
+                    parse5Utils.detachNode(metaElem);
+                  }
+                });
+              } else {
+                const twitterCardImageElem = parse5Utils.createElement(
+                  headElemNode,
+                  'meta',
+                  { name: 'twitter:image', content: label.twitterCardImg.url },
+                );
+                const insertedOgpOrTwitterCardImageElem = parse5Utils.querySelector(
+                  headElemNode,
+                  'meta[property^="twitter:"], meta[property^="og:"]',
+                );
+                if (insertedOgpOrTwitterCardImageElem) {
+                  parse5Utils.insertAfter(
+                    insertedOgpOrTwitterCardImageElem,
+                    twitterCardImageElem,
+                  );
+                } else {
+                  parse5Utils.appendChild(headElemNode, twitterCardImageElem);
+                }
+              }
+            }
+          }
+
+          const templateHTMLText = parse5.serialize(htmlAST);
+          return {
+            templateHTMLText,
+            label,
+          };
+        })();
+
+        for (const { id, fragmentPageURL } of idList) {
           const encodedID = strictUriEncode(id);
           const [urlWithFragment, qrCodeUrlWithFragment] = [
             pageURL,
@@ -479,50 +648,13 @@ module.exports = opts => {
           });
           const qrCodeBasename = sha1(qrCodeURL);
 
-          /*
-           * スクリプトが機能しない環境向けのリダイレクトタグを追加
-           */
-          if (!$refreshMeta) {
-            const $meta = $('<meta http-equiv="refresh">');
-            const $noscript = $('<noscript></noscript>');
-            $noscript.append($meta);
-
-            const $charset = $head.find('meta[charset]').first();
-            if ($charset.length >= 1) {
-              $charset.after($noscript);
-            } else {
-              $head.prepend($noscript);
-            }
-
-            $refreshMeta = $meta;
-          }
-          $refreshMeta.attr('content', `0; url=${urlWithFragment}`);
-
-          await Promise.all(
+          const [ogpImgURL, twitterCardImgURL] = await Promise.all(
             [
               async () => {
-                /*
-                 * OGPの画像に、QRコードを追加する
-                 */
-
-                if (!ogpImageElem) {
-                  ogpImageElem = $('<meta property="og:image">');
-
-                  $head
-                    .find(
-                      'meta[property="og:image"], meta[property^="og:image:"]',
-                    )
-                    .first()
-                    .before(
-                      ogpImageElem,
-                      '<meta property="og:image:type" content="image/png">',
-                      `<meta property="og:image:width" content="${ogpQrWidth}">`,
-                      `<meta property="og:image:height" content="${ogpQrWidth}">`,
-                    );
-                }
+                if (!label.ogpImg) return;
 
                 /*
-                 * ページのURLを示すQRコードを生成
+                 * ページのURLを示すQRコードのファイル名を生成
                  */
                 const qrFilename = path.join(
                   path.dirname(filename),
@@ -547,57 +679,62 @@ module.exports = opts => {
                 qrFileURL.search = '';
                 qrFileURL.hash = '';
 
-                ogpImageElem.attr('content', String(qrFileURL));
+                return qrFileURL.href;
               },
               async () => {
+                if (!label.twitterCardImg) return;
+
                 /*
-                 * Twitter Cardの画像が未定義の場合は、URLを示すQRコードを指定する
+                 * ページのURLを示すQRコードのファイル名を生成
                  */
-                if (!twitterCardImageFound) {
-                  /*
-                   * ページのURLを示すQRコードを生成
-                   */
-                  const qrFilename = path.join(
-                    path.dirname(filename),
-                    `${qrCodeBasename}.${twitterCardQrWidth}x${twitterCardQrWidth}.png`,
-                  );
-                  pluginKit.addFile(
-                    files,
-                    qrFilename,
-                    await QRCode.toBuffer(qrCodeURL, {
-                      type: 'png',
-                      width: twitterCardQrWidth,
-                    }),
-                  );
-                  debug(`file generated: ${util.inspect(qrFilename)}`);
+                const qrFilename = path.join(
+                  path.dirname(filename),
+                  `${qrCodeBasename}.${twitterCardQrWidth}x${twitterCardQrWidth}.png`,
+                );
+                pluginKit.addFile(
+                  files,
+                  qrFilename,
+                  await QRCode.toBuffer(qrCodeURL, {
+                    type: 'png',
+                    width: twitterCardQrWidth,
+                  }),
+                );
+                debug(`file generated: ${util.inspect(qrFilename)}`);
 
-                  const qrFileURL = new URL(pageURL);
-                  qrFileURL.pathname = qrFilename;
-                  qrFileURL.search = '';
-                  qrFileURL.hash = '';
+                const qrFileURL = new URL(pageURL);
+                qrFileURL.pathname = qrFilename;
+                qrFileURL.search = '';
+                qrFileURL.hash = '';
 
-                  const twitterCardImageElem = $head.find(
-                    'meta[name="twitter:image"]',
-                  );
-                  if (twitterCardImageElem.length < 1) {
-                    const twitterCardImageElem = $(
-                      '<meta name="twitter:image">',
-                    );
-                    twitterCardImageElem.attr('content', String(qrFileURL));
-                    $head.append(twitterCardImageElem);
-                  } else {
-                    twitterCardImageElem.attr('content', String(qrFileURL));
-                  }
-                }
+                return qrFileURL.href;
               },
             ].map(fn => fn()),
           );
 
           /*
+           * テンプレートHTMLを置換
+           */
+          const newFileHTMLText = [
+            [label.id, id],
+            [label.fragmentPageURL, fragmentPageURL],
+            [label.pageURLandHashFrag, urlWithFragment],
+            [label.ogpImg.url, ogpImgURL],
+            [label.twitterCardImg.url, twitterCardImgURL],
+          ].reduce((templateHTMLText, [label, attrValue]) => {
+            if (label && attrValue) {
+              return templateHTMLText.replace(
+                new RegExp(label, 'g'),
+                parse5Utils.escapeAttrValue(attrValue),
+              );
+            }
+            return templateHTMLText;
+          }, templateHTMLText);
+
+          /*
            * ファイルを生成
            */
           const newFilename = path.join(ASSETS_DIR, id, filename);
-          pluginKit.addFile(files, newFilename, $.html());
+          pluginKit.addFile(files, newFilename, newFileHTMLText);
 
           /*
            * metalsmith-sitemapプラグインが生成するsitemap.xmlにファイルを含めない
