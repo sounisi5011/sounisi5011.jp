@@ -5,5 +5,5 @@ module.exports = [
   require('./spacing'),
   require('./fixed-anchor'),
   asciidoctorHtml5s.register,
-  require('./omit-line-breaks'),
+  require('@sounisi5011/asciidoctor-extension-omit-line-breaks'),
 ];
