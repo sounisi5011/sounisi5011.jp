@@ -1,6 +1,25 @@
 import { h, maxScroll, setAttr, throttle } from '../utils/dom';
+import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 
 const asciidoctor = window.Asciidoctor();
+
+const registry = asciidoctor.Extensions.create();
+for (const extension of asciidocExtensions) {
+  if (typeof extension === 'function') {
+    extension(registry);
+  }
+}
+
+const asciidoctorOptions = {
+  backend: 'html5s',
+  attributes: {
+    // @see https://asciidoctor.org/docs/user-manual/#front-matter-added-for-static-site-generators
+    'skip-front-matter': '',
+  },
+  extension_registry: registry,
+};
+
+// ----- ----- ----- ----- ----- //
 
 const editorElem = h('textarea', {
   className: 'editor',
@@ -24,12 +43,7 @@ const novelTitleElem = h('h1', { className: 'novel-title' });
 const novelBodyElem = h('main', { className: 'novel-body' });
 
 function updatePreview(inputText) {
-  const doc = asciidoctor.load(inputText, {
-    attributes: {
-      // @see https://asciidoctor.org/docs/user-manual/#front-matter-added-for-static-site-generators
-      'skip-front-matter': '',
-    },
-  });
+  const doc = asciidoctor.load(inputText, asciidoctorOptions);
 
   // @see https://asciidoctor-docs.netlify.com/asciidoctor.js/processor/extract-api/#get-the-document-title
   const title = doc.getDocumentTitle();
