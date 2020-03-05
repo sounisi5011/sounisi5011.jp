@@ -1,8 +1,6 @@
-import Asciidoctor from '@asciidoctor/core';
-
 import { h, throttle } from '../utils/dom';
 
-const asciidoctor = Asciidoctor();
+const asciidoctor = window.Asciidoctor();
 
 const editorElem = h('textarea', {
   className: 'editor',
