@@ -1,4 +1,4 @@
-import { h, setAttr, throttle } from '../utils/dom';
+import { h, maxScroll, setAttr, throttle } from '../utils/dom';
 
 const asciidoctor = window.Asciidoctor();
 
@@ -10,6 +10,10 @@ const editorElem = h('textarea', {
   },
   onInput: [
     event => throttle(updatePreview)(event.currentTarget.value),
+    { passive: true },
+  ],
+  onScroll: [
+    event => throttle(scrollPreview)(event.currentTarget),
     { passive: true },
   ],
 });
@@ -47,6 +51,16 @@ function updatePreview(inputText) {
 
   const html = doc.convert();
   novelBodyElem.innerHTML = html;
+}
+
+function scrollPreview(editorElem) {
+  const previewScrollingElement = previewElem.contentDocument.scrollingElement;
+  const editorScrollPct = editorElem.scrollTop / maxScroll(editorElem).top;
+
+  previewScrollingElement.scrollTo(
+    previewScrollingElement.scrollLeft,
+    maxScroll(previewScrollingElement).top * editorScrollPct,
+  );
 }
 
 document.body.appendChild(editorElem);

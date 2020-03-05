@@ -52,6 +52,28 @@ export function h(tagName, attrs = {}, children = []) {
   return elem;
 }
 
+export function maxScroll(docOrElem) {
+  if (docOrElem instanceof Document) {
+    const scrollingElement = docOrElem.scrollingElement;
+    return maxScroll(scrollingElement);
+  }
+
+  return {
+    /**
+     * @see https://qiita.com/sounisi5011/items/1a5a2410fce27ba6d8ae#%E5%8F%B3%E3%81%8B%E3%82%89%E3%81%AE%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E9%87%8F
+     */
+    get left() {
+      return docOrElem.scrollWidth - docOrElem.clientWidth;
+    },
+    /**
+     * @see https://qiita.com/sounisi5011/items/1a5a2410fce27ba6d8ae#%E4%B8%8B%E3%81%8B%E3%82%89%E3%81%AE%E3%82%B9%E3%82%AF%E3%83%AD%E3%83%BC%E3%83%AB%E9%87%8F
+     */
+    get top() {
+      return docOrElem.scrollHeight - docOrElem.clientHeight;
+    },
+  };
+}
+
 export function throttle(fn) {
   let isRunning = false;
   let argsCache = [];
