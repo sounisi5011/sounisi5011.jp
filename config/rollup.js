@@ -1,7 +1,6 @@
 const rollupCommonjs = require('@rollup/plugin-commonjs');
 const rollupNodeResolve = require('@rollup/plugin-node-resolve');
 const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
-const rollupFixAsciidoctorJs = require('@sounisi5011/rollup-plugin-fix-asciidoctor.js');
 const cssnano = require('cssnano');
 const postcss = require('postcss');
 const rollupBabel = require('rollup-plugin-babel');
@@ -23,7 +22,6 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
       browser: true,
     }),
     rollupCommonjs(),
-    rollupFixAsciidoctorJs(),
     rollupCssInclude({
       publicPath: metalsmith.destination(),
       async cssConverter({ inputFilepath, outputFilepath, source }) {
