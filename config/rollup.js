@@ -18,7 +18,9 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
     sourcemap: true,
   },
   plugins: [
-    rollupNodeResolve(),
+    rollupNodeResolve({
+      browser: true,
+    }),
     rollupCommonjs(),
     rollupCssInclude({
       publicPath: metalsmith.destination(),
