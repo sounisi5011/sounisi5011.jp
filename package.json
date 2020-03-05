@@ -71,6 +71,7 @@
     "@sounisi5011/metalsmith-tweetable-paragraphs": "file:plugins/metalsmith/tweetable-paragraphs",
     "@sounisi5011/metalsmith-url-shortener": "file:plugins/metalsmith/url-shortener",
     "@sounisi5011/rollup-plugin-css-include": "file:plugins/rollup/css-include",
+    "@sounisi5011/rollup-plugin-fix-asciidoctor.js": "file:plugins/rollup/fix-asciidoctor.js",
     "asciidoctor-html5s": "^0.2.0",
     "autoprefixer": "^9.6.1",
     "cheerio": "^1.0.0-rc.3",
