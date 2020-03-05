@@ -7,4 +7,10 @@ html(lang="ja")
     title 管理画面（予定）
     meta(name="robots" content="noindex")
   body
-    script(type="module" src="/admin/main.mjs" async defer)
+    //- asciidoctor.js v2.1.1のビルドに用いられているOpal 0.11.99.devのコードが原因でstrict mode時に実行エラーが生じるため、strict modeを無効にする。
+    //- see https://github.com/asciidoctor/asciidoctor.js/releases/tag/v2.1.1
+    //- see https://github.com/opal/opal/blob/31d26d697ab7b75e78fbeb8d0d80739eeda715b5/opal/corelib/runtime.js#L1866
+    //-
+    //- Note: 最新のmasterブランチのOpalでは修正済みのため、将来のasciidoctor.jsの更新により修正される可能性がある。
+    //-       see https://github.com/opal/opal/blob/bfe645a5327282558197b7fdb1e04f127bb1cd2d/opal/corelib/runtime.js#L1868-L1870
+    script(src="/admin/main.mjs" async defer nostrict)
