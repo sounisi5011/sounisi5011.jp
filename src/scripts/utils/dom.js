@@ -12,7 +12,11 @@ export function setAttr(elem, attrs) {
         elem.addEventListener(eventType, attrValue);
       }
     } else if (attrName in elem) {
-      elem[attrName] = attrValue;
+      if (typeof attrValue === 'object' && attrValue) {
+        Object.assign(elem[attrName], attrValue);
+      } else {
+        elem[attrName] = attrValue;
+      }
     } else {
       if (attrValue === null || attrValue === undefined) {
         elem.removeAttribute(attrName);
