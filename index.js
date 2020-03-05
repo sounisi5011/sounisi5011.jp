@@ -324,6 +324,7 @@ Metalsmith(__dirname)
             ...options.plugins,
           ]
         : netlifyPublishedDate(options))({
+      pattern: ['**/*.html', '!admin/**'],
       accessToken: process.env.NETLIFY_API_ACCESS_TOKEN,
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
