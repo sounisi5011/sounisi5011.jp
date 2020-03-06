@@ -1,7 +1,7 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
-import { h, maxScroll, setAttr, throttle, wrap } from '../utils/dom';
+import { h, maxScroll, throttle, wrap } from '../utils/dom';
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 import html2textConfig from '../../../config/html2text';
 
@@ -87,6 +87,16 @@ document.execCommand('DefaultParagraphSeparator', false, 'div');
 
 const styleElem = h('style', [
   `
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+}
+
+.editor, .preview {
+  flex: 1;
+}
+
 .editor {
   overflow-y: scroll;
   white-space: pre-wrap;
@@ -106,9 +116,6 @@ const editorElem = h(
   {
     className: 'editor',
     contentEditable: true,
-    style: {
-      flex: 1,
-    },
     onPaste(event) {
       /**
        * 貼り付けられた文字列をプレーンテキストとして挿入する
@@ -163,7 +170,17 @@ const editorElem = h(
   [h('div', [h('br')])],
 );
 
-const previewElem = h('iframe', { className: 'preview', style: { flex: 1 } });
+const previewElem = h('iframe', { className: 'preview' });
+const previewStyleElem = h('style', [
+  `
+.novel-title:empty {
+  opacity: 0.2;
+}
+.novel-title:empty:before {
+  content: "No Title";
+}
+`,
+]);
 
 const novelTitleElem = h('h1', { className: 'novel-title' });
 const novelBodyElem = h('main', { className: 'novel-body' });
@@ -173,21 +190,7 @@ function updatePreview(inputText) {
 
   // @see https://asciidoctor-docs.netlify.com/asciidoctor.js/processor/extract-api/#get-the-document-title
   const title = doc.getDocumentTitle();
-  if (title) {
-    novelTitleElem.innerHTML = title;
-    setAttr(novelTitleElem, {
-      style: {
-        cssText: '',
-      },
-    });
-  } else {
-    novelTitleElem.innerHTML = 'No Title';
-    setAttr(novelTitleElem, {
-      style: {
-        opacity: 0.2,
-      },
-    });
-  }
+  novelTitleElem.innerHTML = title || '';
 
   const html = doc.convert();
   novelBodyElem.innerHTML = html;
@@ -229,16 +232,9 @@ document.body.appendChild(previewElem);
   for (const href of ['/default.css', '/novels.css']) {
     previewDoc.head.appendChild(h('link', { rel: 'stylesheet', href }));
   }
+  previewDoc.head.appendChild(previewStyleElem);
   previewDoc.body.appendChild(novelTitleElem);
   previewDoc.body.appendChild(novelBodyElem);
 })(previewElem.contentDocument);
-
-setAttr(document.body, {
-  style: {
-    display: 'flex',
-    height: '100vh',
-    margin: 0,
-  },
-});
 
 updatePreview('');
