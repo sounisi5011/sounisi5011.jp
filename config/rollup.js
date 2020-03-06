@@ -20,6 +20,7 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
   plugins: [
     rollupNodeResolve({
       browser: true,
+      preferBuiltins: false,
     }),
     rollupCommonjs(),
     rollupCssInclude({
