@@ -130,7 +130,7 @@ function updatePreview(inputText) {
     dataList: dataList
       .map(data => [
         data,
-        getInvalidTweetData(data.text, `\u{0020}${location.href}`),
+        getInvalidTweetData(data.text, `\u{0020}https://example.com/`),
       ])
       .filter(([, invalidTweet]) => invalidTweet)
       .map(([{ id, idNode, text }, invalidTweet]) => ({
