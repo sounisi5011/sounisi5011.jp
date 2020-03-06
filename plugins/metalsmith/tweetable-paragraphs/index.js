@@ -3,6 +3,7 @@ const path = require('path');
 const { URL } = require('url');
 const util = require('util');
 
+const readTextContents = require('@sounisi5011/html-id-split-text');
 const spawn = require('cross-spawn');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
@@ -42,17 +43,6 @@ const ASSETS_DIR = '_fragment-anchors';
  * @see https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions/Character_Classes
  */
 const HTML_WS_REGEXP = /[\t\n\f\r ]+/g;
-
-function first(list, defaultValue) {
-  if (list.length < 1 && arguments.length >= 2) {
-    list.push(defaultValue);
-  }
-  return list[0];
-}
-
-function last(list) {
-  return list[list.length - 1];
-}
 
 function unicodeLength(str) {
   return [...str].length;
@@ -132,125 +122,6 @@ function getValidTweetLength(tweetText, suffixText = '') {
   return validTweetLength;
 }
 
-function createData(idNode, text = '') {
-  const id = idNode && parse5Utils.getAttribute(idNode, 'id');
-  return {
-    id: id || null,
-    idNode,
-    margin: {
-      bottom: -1,
-      top: -1,
-    },
-    rawText: text,
-    text: text.replace(HTML_WS_REGEXP, ' '),
-  };
-}
-
-function readTextContents(elemNode, opts = {}, prevIdNode = null) {
-  const options = {
-    ignoreElems: ['style', 'script', 'template'],
-    replacer: ({ node, parse5Utils }, dataList) => dataList,
-    ...opts,
-  };
-  const ignoreElemSelector = options.ignoreElems.join(', ');
-
-  let dataList = [];
-
-  if (parse5Utils.isTextNode(elemNode)) {
-    dataList = [
-      createData(prevIdNode, parse5Utils.getTextNodeContent(elemNode)),
-    ];
-  } else if (
-    parse5Utils.isElementNode(elemNode) &&
-    !parse5Utils.matches(elemNode, ignoreElemSelector)
-  ) {
-    let currentIdNode = parse5Utils.hasAttribute(elemNode, 'id')
-      ? elemNode
-      : prevIdNode;
-    /**
-     * @see https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css
-     * @see https://dxr.mozilla.org/mozilla-central/source/layout/style/res/html.css
-     * @see http://trac.webkit.org/browser/trunk/Source/WebCore/css/html.css
-     */
-    const isPreElem = parse5Utils.matches(
-      elemNode,
-      'pre, xmp, plaintext, listing, textarea',
-    );
-    const isPElem = parse5Utils.matches(
-      elemNode,
-      'p, blockquote, figure, h1, h2, h3, h4, h5, h6, hr, ul, menu, dir, ol, dl, multicol, pre, xmp, plaintext, listing',
-    );
-
-    const newDataList = parse5Utils.getChildNodes(elemNode).reduce(
-      (list, childNode) => {
-        const data = readTextContents(childNode, options, currentIdNode);
-
-        /*
-         * pre要素の内容のスペース文字は保持する
-         */
-        if (isPreElem) {
-          data.forEach(data => {
-            data.text = data.rawText;
-          });
-        }
-
-        if (last(data)) {
-          currentIdNode = last(data).idNode;
-        }
-
-        const firstDataItem = data[0];
-        const lastListItem = last(list);
-        if (firstDataItem && lastListItem) {
-          if (lastListItem.idNode === firstDataItem.idNode) {
-            /*
-             * 前後のマージンの数だけ空行を生成する
-             */
-            const marginLinesNumber = Math.max(
-              lastListItem.margin.bottom,
-              firstDataItem.margin.top,
-            );
-            const marginLines = '\n'.repeat(Math.max(0, 1 + marginLinesNumber));
-
-            lastListItem.rawText += marginLines + firstDataItem.rawText;
-            lastListItem.text += marginLines + firstDataItem.text;
-            data.shift();
-          }
-        }
-
-        return [...list, ...data];
-      },
-      currentIdNode ? [createData(currentIdNode)] : [],
-    );
-
-    /*
-     * br要素の内容は改行にする
-     */
-    if (parse5Utils.getTagName(elemNode) === 'br') {
-      const firstData = newDataList[0];
-      if (firstData) {
-        firstData.text = firstData.rawText = '\n';
-      } else {
-        newDataList.push(createData(currentIdNode, '\n'));
-      }
-    }
-
-    /*
-     * p要素の前後には、一行のマージンを追加する
-     */
-    if (isPElem) {
-      const margin = 1;
-      const firstData = first(newDataList, createData(currentIdNode));
-      const lastData = last(newDataList);
-      firstData.margin.top = Math.max(margin, firstData.margin.top);
-      lastData.margin.bottom = Math.max(margin, lastData.margin.bottom);
-    }
-
-    dataList = newDataList;
-  }
-
-  return options.replacer({ node: elemNode, parse5Utils }, dataList);
-}
-
 module.exports = opts => {
   const options = Object.defineProperties(
     {
@@ -260,11 +131,10 @@ module.exports = opts => {
         url,
       generateQRCodeURL: (url, { filename, filedata, files, metalsmith }) =>
         url,
-      ignoreElems: ['style', 'script', 'template'],
+      ignoreElemSelector: 'style, script, template',
       pattern: '**/*.html',
       rootSelector: 'body',
-      textContentsReplacer: ({ node, parse5Utils }, childTextDataList) =>
-        childTextDataList,
+      textContentsReplacers: {},
       allowWarning: true,
     },
     Object.getOwnPropertyDescriptors(opts),
@@ -307,8 +177,8 @@ module.exports = opts => {
           .querySelectorAll(htmlAST, options.rootSelector)
           .forEach(rootElem => {
             const dataList = readTextContents(rootElem, {
-              ignoreElems: options.ignoreElems,
-              replacer: options.textContentsReplacer,
+              ignoreElemSelector: options.ignoreElemSelector,
+              convertHook: options.textContentsReplacers,
             });
 
             const usedIdMap = new Map();
@@ -396,7 +266,7 @@ module.exports = opts => {
             });
 
             parse5Utils
-              .querySelectorAll(rootElem, options.ignoreElems.join(', '))
+              .querySelectorAll(rootElem, options.ignoreElemSelector)
               .forEach(elem => {
                 parse5Utils.setAttribute(elem, 'data-share-ignore', '');
               });

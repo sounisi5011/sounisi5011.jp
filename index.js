@@ -438,59 +438,67 @@ Metalsmith(__dirname)
             }
             return shortURL.href;
           },
-          ignoreElems: ['style', 'script', 'template', 'aside.message'],
+          ignoreElemSelector: 'style, script, template, aside.message',
           rootSelector: '.novel-body',
-          textContentsReplacer({ node, parse5Utils }, childTextDataList) {
-            if (!parse5Utils.isElementNode(node)) {
-              return childTextDataList;
-            }
+          textContentsReplacers: {
+            '[class*="spacing-"]': ({
+              domNode,
+              domUtils,
+              textData,
+              childTextContent,
+            }) => {
+              const classValue = domUtils.getAttribute(domNode, 'class');
+              if (!classValue) return;
 
-            const textData = childTextDataList[0];
-            if (textData) {
-              const isEmpty =
-                parse5Utils.matches(node, '[aria-hidden=true]') ||
-                childTextDataList.every(({ rawText }) =>
-                  /^[\t\n\f\r ]+$/.test(rawText),
-                );
+              const lines = classValue
+                .split(/\s+/)
+                .map(className => /^spacing-(\d+)$/.exec(className))
+                .map(match => (match ? Number(match[1]) : 0))
+                .reduce((a, b) => Math.max(a, b), 0);
+              if (lines >= 1) {
+                textData.marginTopLines = lines;
 
-              const classValue = parse5Utils.getAttribute(node, 'class');
-              if (classValue) {
-                const lines = classValue
-                  .split(/\s+/)
-                  .map(className => /^spacing-(\d+)$/.exec(className))
-                  .map(match => (match ? Number(match[1]) : 0))
-                  .reduce((a, b) => Math.max(a, b), 0);
-                if (lines >= 1) {
-                  textData.margin.top = lines;
-                  if (!isEmpty) {
-                    textData.margin.bottom = lines;
-                  }
+                const isEmpty =
+                  domUtils.matches(domNode, '[aria-hidden=true]') ||
+                  /^[\t\n\f\r ]+$/.test(childTextContent);
+                if (!isEmpty) {
+                  textData.marginBottomLines = lines;
                 }
               }
+            },
+            'em[class]': ({
+              domNode,
+              domUtils,
+              textData,
+              childTextDataList,
+            }) => {
+              const quoteList = [
+                {
+                  selector: '.voice',
+                  open: '「',
+                  close: '」',
+                },
+                {
+                  selector: '.quot',
+                  open: '\u{201C}',
+                  close: '\u{201D}',
+                },
+              ];
+              for (const { selector, open, close } of quoteList) {
+                if (!domUtils.matches(domNode, selector)) continue;
 
-              if (parse5Utils.matches(node, 'em')) {
-                let openQuote, closeQuote;
-                if (parse5Utils.matches(node, '.voice')) {
-                  openQuote = '「';
-                  closeQuote = '」';
-                } else if (parse5Utils.matches(node, '.quot')) {
-                  openQuote = '\u{201C}';
-                  closeQuote = '\u{201D}';
-                }
-                if (openQuote && closeQuote) {
-                  const firstChildTextData = textData;
-                  const lastChildTextData =
-                    childTextDataList[childTextDataList.length - 1];
+                const firstChildTextData = textData;
+                const lastChildTextData =
+                  childTextDataList[childTextDataList.length - 1];
 
-                  firstChildTextData.rawText =
-                    openQuote + firstChildTextData.rawText;
-                  firstChildTextData.text = openQuote + firstChildTextData.text;
-                  lastChildTextData.rawText += closeQuote;
-                  lastChildTextData.text += closeQuote;
-                }
+                firstChildTextData.rawText = open + firstChildTextData.rawText;
+                firstChildTextData.text = open + firstChildTextData.text;
+                lastChildTextData.rawText += close;
+                lastChildTextData.text += close;
+
+                return;
               }
-            }
-            return childTextDataList;
+            },
           },
           get allowWarning() {
             return allowWarning;
