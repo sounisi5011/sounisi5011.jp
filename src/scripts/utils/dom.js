@@ -52,6 +52,20 @@ export function h(tagName, attrs = {}, children = []) {
   return elem;
 }
 
+/**
+ * @param {Node} targetNode
+ * @param {Element} wrapperElem
+ * @see https://stackoverflow.com/a/57377341/4907315
+ */
+export function wrap(targetNode, wrapperElem) {
+  const { parentNode } = targetNode;
+  if (parentNode) {
+    parentNode.insertBefore(wrapperElem, targetNode);
+  }
+  wrapperElem.appendChild(targetNode);
+  return wrapperElem;
+}
+
 export function maxScroll(docOrElem) {
   if (docOrElem instanceof Document) {
     const scrollingElement = docOrElem.scrollingElement;

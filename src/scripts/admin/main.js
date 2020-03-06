@@ -1,7 +1,7 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
-import { h, maxScroll, setAttr, throttle } from '../utils/dom';
+import { h, maxScroll, setAttr, throttle, wrap } from '../utils/dom';
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 import html2textConfig from '../../../config/html2text';
 
@@ -80,21 +80,88 @@ function getInvalidTweetData(tweetText, suffixText = '') {
 
 // ----- ----- ----- ----- ----- //
 
-const editorElem = h('textarea', {
-  className: 'editor',
-  style: {
-    flex: 1,
-    resize: 'none',
+/*
+ * contenteditable属性付き要素内での改行方法をdiv要素に指定。
+ */
+document.execCommand('DefaultParagraphSeparator', false, 'div');
+
+const styleElem = h('style', [
+  `
+.editor {
+  overflow-y: scroll;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  cursor: text;
+  counter-reset: line-number;
+}
+.editor > div:before {
+  counter-increment: line-number;
+  content: counter(line-number);
+}
+`,
+]);
+
+const editorElem = h(
+  'div',
+  {
+    className: 'editor',
+    contentEditable: true,
+    style: {
+      flex: 1,
+    },
+    onPaste(event) {
+      /**
+       * 貼り付けられた文字列をプレーンテキストとして挿入する
+       * @see https://stackoverflow.com/a/12028136/4907315
+       */
+      event.preventDefault();
+      const text = event.clipboardData.getData('text/plain');
+      document.execCommand('insertText', false, text);
+    },
+    onInput: [
+      event =>
+        throttle(elem => {
+          /*
+           * 子要素が存在しない場合は空のdiv要素を追加する。
+           * 1行目の行番号を正しく表示させるため。
+           */
+          if (elem.childNodes.length === 0) {
+            elem.appendChild(h('div'));
+          }
+          elem.childNodes.forEach((node, _, childNodes) => {
+            /*
+             * 直下の空のdiv要素にはbr要素を挿入する。
+             * 行番号を正しく表示させるため。
+             */
+            if (/^div$/i.test(node.tagName) && node.childNodes.length === 0) {
+              node.appendChild(h('br'));
+            }
+            /*
+             * 直下のテキストノード、または、一つのみのbr要素はdiv要素で囲む。
+             * 行番号を正しく表示させるため。
+             */
+            if (
+              node instanceof Text ||
+              (/^br$/i.test(node.tagName) && childNodes.length === 1)
+            ) {
+              wrap(node, h('div'));
+            }
+          });
+
+          /*
+           * プレビューを更新
+           */
+          updatePreview(elem.textContent);
+        })(event.currentTarget),
+      { passive: true },
+    ],
+    onScroll: [
+      event => throttle(scrollPreview)(event.currentTarget),
+      { passive: true },
+    ],
   },
-  onInput: [
-    event => throttle(updatePreview)(event.currentTarget.value),
-    { passive: true },
-  ],
-  onScroll: [
-    event => throttle(scrollPreview)(event.currentTarget),
-    { passive: true },
-  ],
-});
+  [h('div', [h('br')])],
+);
 
 const previewElem = h('iframe', { className: 'preview', style: { flex: 1 } });
 
@@ -151,6 +218,8 @@ function scrollPreview(editorElem) {
     maxScroll(previewScrollingElement).top * editorScrollPct,
   );
 }
+
+document.head.appendChild(styleElem);
 
 document.body.appendChild(editorElem);
 
