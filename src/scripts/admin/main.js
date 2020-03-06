@@ -126,8 +126,9 @@ const editorElem = h(
       document.execCommand('insertText', false, text);
     },
     onInput: [
-      event =>
-        throttle(elem => {
+      throttle(
+        event => event.currentTarget,
+        elem => {
           let valueList = [];
 
           /*
@@ -163,11 +164,12 @@ const editorElem = h(
            * プレビューを更新
            */
           updatePreview(valueList.join('\n'));
-        })(event.currentTarget),
+        },
+      ),
       { passive: true },
     ],
     onScroll: [
-      event => throttle(scrollPreview)(event.currentTarget),
+      throttle(event => event.currentTarget, scrollPreview),
       { passive: true },
     ],
   },

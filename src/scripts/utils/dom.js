@@ -88,17 +88,22 @@ export function maxScroll(docOrElem) {
   };
 }
 
-export function throttle(fn) {
+export function throttle(conv, fn = null) {
+  if (!fn) {
+    fn = conv;
+    conv = (...args) => args;
+  }
+
   let isRunning = false;
   let argsCache = [];
 
   const reqAnimateFn = () => {
-    fn(...argsCache);
+    fn.apply(...argsCache);
     isRunning = false;
   };
 
-  return (...args) => {
-    argsCache = args;
+  return function(...args) {
+    argsCache = [this, [].concat(conv.apply(this, args))];
     if (!isRunning) {
       isRunning = true;
       requestAnimationFrame(reqAnimateFn);
