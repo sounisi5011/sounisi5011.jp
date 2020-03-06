@@ -42,6 +42,7 @@ const {
   render: pugRender,
 } = require('metalsmith-pug-extra');
 
+const html2textConfig = require('./config/html2text');
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
 const childPages = require('./plugins/metalsmith/child-pages');
 const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
@@ -440,66 +441,7 @@ Metalsmith(__dirname)
           },
           ignoreElemSelector: 'style, script, template, aside.message',
           rootSelector: '.novel-body',
-          textContentsReplacers: {
-            '[class*="spacing-"]': ({
-              domNode,
-              domUtils,
-              textData,
-              childTextContent,
-            }) => {
-              const classValue = domUtils.getAttribute(domNode, 'class');
-              if (!classValue) return;
-
-              const lines = classValue
-                .split(/\s+/)
-                .map(className => /^spacing-(\d+)$/.exec(className))
-                .map(match => (match ? Number(match[1]) : 0))
-                .reduce((a, b) => Math.max(a, b), 0);
-              if (lines >= 1) {
-                textData.marginTopLines = lines;
-
-                const isEmpty =
-                  domUtils.matches(domNode, '[aria-hidden=true]') ||
-                  /^[\t\n\f\r ]+$/.test(childTextContent);
-                if (!isEmpty) {
-                  textData.marginBottomLines = lines;
-                }
-              }
-            },
-            'em[class]': ({
-              domNode,
-              domUtils,
-              textData,
-              childTextDataList,
-            }) => {
-              const quoteList = [
-                {
-                  selector: '.voice',
-                  open: '「',
-                  close: '」',
-                },
-                {
-                  selector: '.quot',
-                  open: '\u{201C}',
-                  close: '\u{201D}',
-                },
-              ];
-              for (const { selector, open, close } of quoteList) {
-                if (!domUtils.matches(domNode, selector)) continue;
-
-                const firstChildTextData = textData;
-                const lastChildTextData =
-                  childTextDataList[childTextDataList.length - 1];
-
-                firstChildTextData.rawText = open + firstChildTextData.rawText;
-                firstChildTextData.text = open + firstChildTextData.text;
-                lastChildTextData.rawText += close;
-                lastChildTextData.text += close;
-
-                return;
-              }
-            },
-          },
+          textContentsReplacers: html2textConfig.convertHook,
           get allowWarning() {
             return allowWarning;
           },

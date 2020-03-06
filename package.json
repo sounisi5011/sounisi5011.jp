@@ -50,6 +50,7 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "@sounisi5011/asciidoctor-extension-omit-line-breaks": "file:plugins/asciidoctor/extensions/omit-line-breaks",
+    "@sounisi5011/html-id-split-text": "file:plugins/utils/html-id-split-text",
     "@sounisi5011/metalsmith-add-file-metadata": "file:plugins/metalsmith/add-file-metadata",
     "@sounisi5011/metalsmith-another-source": "file:plugins/metalsmith/another-source",
     "@sounisi5011/metalsmith-asciidoctor": "file:plugins/metalsmith/asciidoctor",

@@ -1,5 +1,8 @@
+import getTextDataList from '@sounisi5011/html-id-split-text';
+
 import { h, maxScroll, setAttr, throttle } from '../utils/dom';
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
+import html2textConfig from '../../../config/html2text';
 
 const asciidoctor = window.Asciidoctor();
 
@@ -65,6 +68,9 @@ function updatePreview(inputText) {
 
   const html = doc.convert();
   novelBodyElem.innerHTML = html;
+
+  const dataList = getTextDataList(novelBodyElem, html2textConfig);
+  console.log({ dataList });
 }
 
 function scrollPreview(editorElem) {
