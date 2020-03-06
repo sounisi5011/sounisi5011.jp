@@ -128,6 +128,8 @@ const editorElem = h(
     onInput: [
       event =>
         throttle(elem => {
+          let valueList = [];
+
           /*
            * 子要素が存在しない場合は空のdiv要素を追加する。
            * 1行目の行番号を正しく表示させるため。
@@ -153,12 +155,14 @@ const editorElem = h(
             ) {
               wrap(node, h('div'));
             }
+
+            valueList.push(node.textContent);
           });
 
           /*
            * プレビューを更新
            */
-          updatePreview(elem.textContent);
+          updatePreview(valueList.join('\n'));
         })(event.currentTarget),
       { passive: true },
     ],
