@@ -1,4 +1,5 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
+import twitter from 'twitter-text';
 
 import { h, maxScroll, setAttr, throttle } from '../utils/dom';
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
@@ -21,6 +22,35 @@ const asciidoctorOptions = {
   },
   extension_registry: registry,
 };
+
+/**
+ * @param {string} tweetText
+ * @param {string} suffixText
+ * @returns {{ validText:string, validLength:number, invalidText:string }}
+ */
+function getInvalidTweetData(tweetText, suffixText = '') {
+  const tweet = twitter.parseTweet(tweetText + suffixText);
+
+  if (tweet.valid) {
+    return null;
+  }
+
+  let validLength = Math.min(tweetText.length - 1, tweet.validRangeEnd);
+  while (validLength >= 0) {
+    if (
+      twitter.parseTweet(tweetText.substring(0, validLength) + suffixText).valid
+    ) {
+      break;
+    }
+    validLength--;
+  }
+
+  return {
+    validText: tweetText.substring(0, validLength),
+    validLength,
+    invalidText: tweetText.substring(validLength),
+  };
+}
 
 // ----- ----- ----- ----- ----- //
 
@@ -70,7 +100,20 @@ function updatePreview(inputText) {
   novelBodyElem.innerHTML = html;
 
   const dataList = getTextDataList(novelBodyElem, html2textConfig);
-  console.log({ dataList });
+  console.log({
+    dataList: dataList
+      .map(data => [
+        data,
+        getInvalidTweetData(data.text, `\u{0020}${location.href}`),
+      ])
+      .filter(([, invalidTweet]) => invalidTweet)
+      .map(([{ id, idNode, text }, invalidTweet]) => ({
+        id,
+        idNode,
+        text,
+        ...invalidTweet,
+      })),
+  });
 }
 
 function scrollPreview(editorElem) {
