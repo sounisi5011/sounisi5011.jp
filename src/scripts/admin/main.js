@@ -190,6 +190,12 @@ const novelTitleElem = h('h1', { className: 'novel-title' });
 const novelBodyElem = h('main', { className: 'novel-body' });
 
 function updatePreview(inputText) {
+  /*
+   * 入力内容が前と同じ場合は処理しない
+   */
+  if (prevInputText === inputText) return;
+  prevInputText = inputText;
+
   const doc = asciidoctor.load(inputText, asciidoctorOptions);
 
   // @see https://asciidoctor-docs.netlify.com/asciidoctor.js/processor/extract-api/#get-the-document-title
@@ -215,6 +221,7 @@ function updatePreview(inputText) {
       })),
   });
 }
+let prevInputText = null;
 
 function scrollPreview(editorElem) {
   const previewScrollingElement = previewElem.contentDocument.scrollingElement;
