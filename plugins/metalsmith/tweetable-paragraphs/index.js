@@ -48,6 +48,10 @@ function unicodeLength(str) {
   return [...str].length;
 }
 
+function unicodeSubstring(str, indexStart, indexEnd = undefined) {
+  return [...str].slice(indexStart, indexEnd).join('');
+}
+
 function sha1(data) {
   return crypto
     .createHash('sha1')
@@ -108,18 +112,22 @@ function getValidTweetLength(tweetText, suffixText = '') {
     return null;
   }
 
-  let validTweetLength = Math.min(tweetText.length - 1, tweet.validRangeEnd);
+  let validTweetLength = Math.min(
+    unicodeLength(tweetText) - 1,
+    tweet.validRangeEnd,
+  );
   while (validTweetLength >= 0) {
     if (
-      twitter.parseTweet(tweetText.substring(0, validTweetLength) + suffixText)
-        .valid
+      twitter.parseTweet(
+        unicodeSubstring(tweetText, 0, validTweetLength) + suffixText,
+      ).valid
     ) {
       break;
     }
     validTweetLength--;
   }
 
-  return validTweetLength;
+  return unicodeSubstring(tweetText, 0, validTweetLength).length;
 }
 
 module.exports = opts => {

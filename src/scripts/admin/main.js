@@ -24,6 +24,24 @@ const asciidoctorOptions = {
 };
 
 /**
+ * @param {string} str
+ * @returns {number}
+ */
+function unicodeLength(str) {
+  return [...str].length;
+}
+
+/**
+ * @param {string} str
+ * @param {number} indexStart
+ * @param {number} indexEnd
+ * @returns {string}
+ */
+function unicodeSubstring(str, indexStart, indexEnd = undefined) {
+  return [...str].slice(indexStart, indexEnd).join('');
+}
+
+/**
  * @param {string} tweetText
  * @param {string} suffixText
  * @returns {{ validText:string, validLength:number, invalidText:string }}
@@ -35,18 +53,26 @@ function getInvalidTweetData(tweetText, suffixText = '') {
     return null;
   }
 
-  let validLength = Math.min(tweetText.length - 1, tweet.validRangeEnd);
-  while (validLength >= 0) {
+  let validCodePointLength = Math.min(
+    unicodeLength(tweetText) - 1,
+    tweet.validRangeEnd,
+  );
+  while (validCodePointLength >= 0) {
     if (
-      twitter.parseTweet(tweetText.substring(0, validLength) + suffixText).valid
+      twitter.parseTweet(
+        unicodeSubstring(tweetText, 0, validCodePointLength) + suffixText,
+      ).valid
     ) {
       break;
     }
-    validLength--;
+    validCodePointLength--;
   }
 
+  const validText = unicodeSubstring(tweetText, 0, validCodePointLength);
+  const validLength = validText.length;
+
   return {
-    validText: tweetText.substring(0, validLength),
+    validText,
     validLength,
     invalidText: tweetText.substring(validLength),
   };
