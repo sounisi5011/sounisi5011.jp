@@ -119,6 +119,7 @@ body {
   position: absolute;
   top: 0;
   visibility: hidden;
+  border: none;
 }
 
 .show-preview .preview {
