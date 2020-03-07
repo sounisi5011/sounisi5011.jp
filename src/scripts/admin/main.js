@@ -99,17 +99,24 @@ html, body {
 }
 
 body {
-  display: flex;
   margin: 0;
 }
 
 .editor, .preview {
-  flex: 1;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .editor {
   overflow-y: hidden;
   position: relative;
+}
+
+.preview {
+  position: absolute;
+  top: 0;
+  visibility: hidden;
 }
 
 .editor .text-highlight,
@@ -142,6 +149,21 @@ body {
   color: transparent;
   background-color: transparent;
   caret-color: black;
+}
+
+@media (min-width: 610px) and (min-aspect-ratio: 4/3) {
+  body {
+    display: flex;
+  }
+
+  .editor, .preview {
+    flex: 1;
+  }
+
+  .preview {
+    position: static;
+    visibility: visible;
+  }
 }
 `,
 ]);
