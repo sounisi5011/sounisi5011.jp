@@ -120,6 +120,14 @@ body {
   opacity: 0.2;
 }
 
+.editor .text-highlight .anchor-def {
+  color: blue;
+}
+
+.editor .text-highlight .inline-macro {
+  color: orange;
+}
+
 .editor textarea {
   width: 100%;
   height: 100%;
@@ -214,9 +222,78 @@ function updateTextHighlight(inputText) {
   }
 
   /*
-   * TODO
+   * 本文をパース
    */
-  highlightTextDocFrag.appendChild(document.createTextNode(inputText));
+  {
+    /**
+     * @type {{ pattern: RegExp, processor(match:RegExpExecArray):Node|Node[] }[]}
+     */
+    const patternList = [
+      /**
+       * id属性指定
+       * @see https://asciidoctor.org/docs/user-manual/#anchordef
+       */
+      {
+        pattern: /^\[(?:\[([^\],\r\n]+)[^\]]*\]|#([^\].,\r\n]+)[^\]]*)\](?:(?![\r\n])\s)*$|anchor:([^[\r\n]+)\[[^\]]*\]/my,
+        processor(match) {
+          const matchText = match[0];
+          return h('span', { className: 'anchor-def' }, [matchText]);
+        },
+      },
+      /**
+       * インラインマクロ
+       * @see https://asciidoctor.org/docs/user-manual/#inline-macro-processor-example
+       */
+      {
+        pattern: /[a-z]+:(?:[^[\r\n]+)\[[^\]]*\]/y,
+        processor(match) {
+          const matchText = match[0];
+          return h('span', { className: 'inline-macro' }, [matchText]);
+        },
+      },
+    ];
+
+    let prevIndex = 0;
+    for (
+      let currentIndex = 0;
+      currentIndex < inputText.length;
+      currentIndex++
+    ) {
+      /** @type {{ processor(match:RegExpExecArray):Node|Node[], match:RegExpExecArray }|false} */
+      let matchData = false;
+      for (const { pattern, processor } of patternList) {
+        pattern.lastIndex = currentIndex;
+        const match = pattern.exec(inputText);
+        if (match) {
+          matchData = { processor, match };
+          break;
+        }
+      }
+
+      if (matchData) {
+        const { processor, match } = matchData;
+        const matchText = match[0];
+        const prevText = inputText.substring(prevIndex, match.index);
+
+        if (prevText) {
+          highlightTextDocFrag.appendChild(document.createTextNode(prevText));
+        }
+
+        /** @type {Node[]} */
+        const newNodeList = [].concat(processor(match));
+        newNodeList.forEach(newNode => {
+          highlightTextDocFrag.appendChild(newNode);
+        });
+
+        currentIndex = prevIndex = match.index + matchText.length;
+      }
+    }
+
+    const lastText = inputText.substring(prevIndex);
+    if (lastText) {
+      highlightTextDocFrag.appendChild(document.createTextNode(lastText));
+    }
+  }
 
   /*
    * 入力欄のテキストを反映
