@@ -139,6 +139,7 @@ body {
 }
 `,
 ]);
+const invalidLengthStyleElem = h('style');
 
 const editorTextHighlightElem = h('div', {
   className: 'text-highlight',
@@ -225,6 +226,9 @@ function updateTextHighlight(inputText) {
    * 本文をパース
    */
   {
+    /** @type {string} */
+    let currentId = '';
+
     /**
      * @type {{ pattern: RegExp, processor(match:RegExpExecArray):Node|Node[] }[]}
      */
@@ -237,7 +241,11 @@ function updateTextHighlight(inputText) {
         pattern: /^\[(?:\[([^\],\r\n]+)[^\]]*\]|#([^\].,\r\n]+)[^\]]*)\](?:(?![\r\n])\s)*$|anchor:([^[\r\n]+)\[[^\]]*\]/my,
         processor(match) {
           const matchText = match[0];
-          return h('span', { className: 'anchor-def' }, [matchText]);
+          const id = match[3] || match[2] || match[1];
+          currentId = id;
+          return h('span', { className: 'anchor-def', dataset: { id } }, [
+            matchText,
+          ]);
         },
       },
       /**
@@ -276,12 +284,17 @@ function updateTextHighlight(inputText) {
         const prevText = inputText.substring(prevIndex, match.index);
 
         if (prevText) {
-          highlightTextDocFrag.appendChild(document.createTextNode(prevText));
+          highlightTextDocFrag.appendChild(
+            h('span', { dataset: { prevId: currentId } }, prevText),
+          );
         }
 
         /** @type {Node[]} */
         const newNodeList = [].concat(processor(match));
         newNodeList.forEach(newNode => {
+          if (!newNode.dataset.id) {
+            newNode.dataset.prevId = currentId;
+          }
           highlightTextDocFrag.appendChild(newNode);
         });
 
@@ -291,7 +304,9 @@ function updateTextHighlight(inputText) {
 
     const lastText = inputText.substring(prevIndex);
     if (lastText) {
-      highlightTextDocFrag.appendChild(document.createTextNode(lastText));
+      highlightTextDocFrag.appendChild(
+        h('span', { dataset: { prevId: currentId } }, lastText),
+      );
     }
   }
 
@@ -340,21 +355,21 @@ function updatePreview(inputText) {
   const html = doc.convert();
   novelBodyElem.innerHTML = html;
 
+  /*
+   * 長さが不正な文章をハイライトするCSSを挿入
+   */
   const dataList = getTextDataList(novelBodyElem, html2textConfig);
-  console.log({
-    dataList: dataList
-      .map(data => [
-        data,
-        getInvalidTweetData(data.text, `\u{0020}https://example.com/`),
-      ])
-      .filter(([, invalidTweet]) => invalidTweet)
-      .map(([{ id, idNode, text }, invalidTweet]) => ({
-        id,
-        idNode,
-        text,
-        ...invalidTweet,
-      })),
-  });
+  const invalidLengthSelector = dataList
+    .map(data => [
+      data,
+      getInvalidTweetData(data.text, `\u{0020}https://example.com/`),
+    ])
+    .filter(([, invalidTweet]) => invalidTweet)
+    .map(([{ id }]) => `[data-prev-id="${CSS.escape(id || '')}"]`)
+    .join(',');
+  invalidLengthStyleElem.textContent = invalidLengthSelector
+    ? `${invalidLengthSelector} { background-color: #f88; }`
+    : '';
 }
 let prevInputText = null;
 
@@ -369,6 +384,7 @@ function scrollPreview(editorElem) {
 }
 
 document.head.appendChild(styleElem);
+document.head.appendChild(invalidLengthStyleElem);
 
 document.body.appendChild(editorElem);
 
