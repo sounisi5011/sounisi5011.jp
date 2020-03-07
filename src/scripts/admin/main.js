@@ -1,7 +1,7 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
-import { h, maxScroll, selectionRangeList, throttle } from '../utils/dom';
+import { h, maxScroll, throttle } from '../utils/dom';
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 import html2textConfig from '../../../config/html2text';
 
@@ -85,6 +85,9 @@ function getInvalidTweetData(tweetText, suffixText = '') {
  */
 document.execCommand('DefaultParagraphSeparator', false, 'div');
 
+/** @type {function():void} */
+const initFnList = [];
+
 const styleElem = h('style', [
   `
 body {
@@ -98,99 +101,110 @@ body {
 }
 
 .editor {
-  overflow-y: scroll;
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  cursor: text;
+  overflow-y: hidden;
+  position: relative;
 }
-.editor > * + * {
-  border-top: dotted 1px;
+
+.editor .text-highlight,
+.editor textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  overflow-y: scroll;
+}
+
+.editor textarea {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  color: transparent;
+  background-color: transparent;
+  caret-color: black;
 }
 `,
 ]);
 
-const editorElem = h('div', {
-  className: 'editor',
+const editorTextHighlightElem = h('div', {
+  className: 'text-highlight',
+  // Note: 一部のテキスト（ex. イイイイイイイイイイイイ）の表示幅がずれる。
+  //       CSSのuser-modifyプロパティによる影響だが、これは非標準のため、
+  //       contenteditable属性を設定することで対処する。
   contentEditable: true,
-  onPaste(event) {
-    /**
-     * 貼り付けられた文字列をプレーンテキストとして挿入する
-     * @see https://stackoverflow.com/a/12028136/4907315
-     */
-    event.preventDefault();
-    const text = event.clipboardData.getData('text/plain');
-    document.execCommand('insertText', false, text);
-  },
+});
+const editorInputElem = h('textarea', {
   onInput: [
     throttle(
       event => event.currentTarget,
       elem => {
-        const valueList = [];
-
         /*
-         * 先頭の非div要素はdiv要素で囲む
+         * 入力欄のシンタックスハイライトを更新
          */
-        const firstLineNodes = [];
-        for (const node of elem.childNodes) {
-          if (/^div$/i.test(node.tagName)) break;
-          firstLineNodes.push(node);
-        }
-        if (firstLineNodes.length >= 1) {
-          /*
-           * 現在の選択範囲のうち、囲む対象のノードを選択している位置を取得し、
-           * ノードを再設定する関数の配列を生成。
-           */
-          /** @type {function():void} */
-          const reAssignRangeFnList = selectionRangeList().reduce(
-            (list, range) => {
-              const startNode = range.startContainer;
-              const endNode = range.endContainer;
-              if (firstLineNodes.some(node => node.contains(startNode))) {
-                list.push(
-                  range.setStart.bind(range, startNode, range.startOffset),
-                );
-              }
-              if (firstLineNodes.some(node => node.contains(endNode))) {
-                list.push(range.setEnd.bind(range, endNode, range.endOffset));
-              }
-              return list;
-            },
-            [],
-          );
-
-          /*
-           * 非div要素群をdiv要素で囲む
-           */
-          const wrapperElem = h('div');
-          elem.insertBefore(wrapperElem, firstLineNodes[0]);
-          firstLineNodes.forEach(node => wrapperElem.appendChild(node));
-
-          /*
-           * 選択範囲を復元
-           */
-          reAssignRangeFnList.forEach(fn => fn());
-        }
-
-        /*
-         * 子要素のテキストノードを取得
-         */
-        elem.childNodes.forEach(node => {
-          valueList.push(node.textContent);
-        });
-
+        updateTextHighlight(elem.value);
         /*
          * プレビューを更新
          */
-        updatePreview(valueList.join('\n'));
+        updatePreview(elem.value);
       },
     ),
     { passive: true },
   ],
   onScroll: [
-    throttle(event => event.currentTarget, scrollPreview),
+    throttle(
+      event => event.currentTarget,
+      elem => {
+        scrollTextHighlight(elem);
+        scrollPreview(elem);
+      },
+    ),
     { passive: true },
   ],
 });
+const editorElem = h(
+  'div',
+  {
+    className: 'editor',
+  },
+  [editorTextHighlightElem, editorInputElem],
+);
+
+initFnList.push(() => {
+  /*
+   * 入力欄のスタイルをコピー
+   * textarea要素のデフォルトCSSをコピーし、文字幅や表示間隔を合わせる。
+   */
+  const inputElemStyle = window.getComputedStyle(editorInputElem);
+  [
+    'margin',
+    'border',
+    'padding',
+    'whiteSpace',
+    'overflowWrap',
+    'font',
+    'textAlign',
+  ].forEach(styleName => {
+    editorTextHighlightElem.style[styleName] = inputElemStyle[styleName];
+  });
+});
+
+/*
+ * 入力欄のシンタックスハイライトを更新
+ */
+function updateTextHighlight(inputText) {
+  /*
+   * 入力欄のテキストを反映
+   */
+  editorTextHighlightElem.textContent = inputText;
+}
+
+/*
+ * 入力欄のシンタックスハイライトをスクロール
+ */
+function scrollTextHighlight(editorElem) {
+  editorTextHighlightElem.style.transform = `translateY(${-editorElem.scrollTop}px)`;
+}
 
 const previewElem = h('iframe', { className: 'preview' });
 const previewStyleElem = h('style', [
@@ -266,4 +280,7 @@ document.body.appendChild(previewElem);
   previewDoc.body.appendChild(novelBodyElem);
 })(previewElem.contentDocument);
 
-updatePreview('');
+/*
+ * 初期化処理を実行
+ */
+initFnList.forEach(init => init());
