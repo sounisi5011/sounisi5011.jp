@@ -37,6 +37,13 @@ export function h(tagName, attrs = {}, children = []) {
     attrs = {};
   }
 
+  tagName = tagName.replace(/\.([^.]+)/g, (_, className) => {
+    attrs.className = attrs.className
+      ? `${String(attrs.className).trim()} ${className}`
+      : className;
+    return '';
+  });
+
   const elem = document.createElement(tagName);
   setAttr(elem, attrs);
   children.forEach(childNode => {

@@ -81,6 +81,8 @@ function getInvalidTweetData(tweetText, suffixText = '') {
 
 // ----- ----- ----- ----- ----- //
 
+const rootElem = document.documentElement;
+
 /*
  * contenteditable属性付き要素内での改行方法をdiv要素に指定。
  */
@@ -119,6 +121,10 @@ body {
   visibility: hidden;
 }
 
+.show-preview .preview {
+  visibility: visible;
+}
+
 .editor .text-highlight,
 .editor textarea {
   position: absolute;
@@ -151,6 +157,21 @@ body {
   caret-color: black;
 }
 
+.editor button.toggle-preview,
+button.toggle-editor {
+  position: absolute;
+  bottom: 0.5em;
+  right: 1.5em;
+}
+
+button.toggle-editor {
+  display: none;
+}
+
+.show-preview button.toggle-editor {
+  display: inline-block;
+}
+
 @media (min-width: 610px) and (min-aspect-ratio: 4/3) {
   body {
     display: flex;
@@ -163,6 +184,11 @@ body {
   .preview {
     position: static;
     visibility: visible;
+  }
+
+  .editor button.toggle-preview,
+  .show-preview button.toggle-editor {
+    display: none;
   }
 }
 `,
@@ -205,12 +231,21 @@ const editorInputElem = h('textarea', {
     { passive: true },
   ],
 });
+const togglePreviewButtonElem = h(
+  'button.toggle-preview',
+  {
+    onClick() {
+      rootElem.classList.add('show-preview');
+    },
+  },
+  'プレビュー',
+);
 const editorElem = h(
   'div',
   {
     className: 'editor',
   },
-  [editorTextHighlightElem, editorInputElem],
+  [editorTextHighlightElem, editorInputElem, togglePreviewButtonElem],
 );
 
 initFnList.push(() => {
@@ -427,6 +462,17 @@ document.body.appendChild(previewElem);
   previewDoc.body.appendChild(novelTitleElem);
   previewDoc.body.appendChild(novelBodyElem);
 })(previewElem.contentDocument);
+
+const toggleEditorButtonElem = h(
+  'button.toggle-editor',
+  {
+    onClick() {
+      rootElem.classList.remove('show-preview');
+    },
+  },
+  '編集',
+);
+document.body.appendChild(toggleEditorButtonElem);
 
 /*
  * 初期化処理を実行
