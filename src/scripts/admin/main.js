@@ -109,89 +109,88 @@ body {
 `,
 ]);
 
-const editorElem = h(
-  'div',
-  {
-    className: 'editor',
-    contentEditable: true,
-    onPaste(event) {
-      /**
-       * 貼り付けられた文字列をプレーンテキストとして挿入する
-       * @see https://stackoverflow.com/a/12028136/4907315
-       */
-      event.preventDefault();
-      const text = event.clipboardData.getData('text/plain');
-      document.execCommand('insertText', false, text);
-    },
-    onInput: [
-      throttle(
-        event => event.currentTarget,
-        elem => {
-          let valueList = [];
-
-          /*
-           * 先頭の非div要素はdiv要素で囲む
-           */
-          const firstLineNodes = [];
-          for (const node of elem.childNodes) {
-            if (/^div$/i.test(node.tagName)) break;
-            firstLineNodes.push(node);
-          }
-          if (firstLineNodes.length >= 1) {
-            /*
-             * 現在の選択範囲のうち、囲む対象のノードを選択している位置を取得し、
-             * ノードを再設定する関数の配列を生成。
-             */
-            /** @type {function():void} */
-            const reAssignRangeFnList = selectionRangeList().reduce(
-              (list, range) => {
-                const startNode = range.startContainer;
-                const endNode = range.endContainer;
-                if (firstLineNodes.some(node => node.contains(startNode))) {
-                  list.push(
-                    range.setStart.bind(range, startNode, range.startOffset),
-                  );
-                }
-                if (firstLineNodes.some(node => node.contains(endNode))) {
-                  list.push(range.setEnd.bind(range, endNode, range.endOffset));
-                }
-                return list;
-              },
-              [],
-            );
-
-            /*
-             * 非div要素群をdiv要素で囲む
-             */
-            const wrapperElem = h('div');
-            elem.insertBefore(wrapperElem, firstLineNodes[0]);
-            firstLineNodes.forEach(node => wrapperElem.appendChild(node));
-
-            /*
-             * 選択範囲を復元
-             */
-            reAssignRangeFnList.forEach(fn => fn());
-          }
-
-          elem.childNodes.forEach((node, _, childNodes) => {
-            valueList.push(node.textContent);
-          });
-
-          /*
-           * プレビューを更新
-           */
-          updatePreview(valueList.join('\n'));
-        },
-      ),
-      { passive: true },
-    ],
-    onScroll: [
-      throttle(event => event.currentTarget, scrollPreview),
-      { passive: true },
-    ],
+const editorElem = h('div', {
+  className: 'editor',
+  contentEditable: true,
+  onPaste(event) {
+    /**
+     * 貼り付けられた文字列をプレーンテキストとして挿入する
+     * @see https://stackoverflow.com/a/12028136/4907315
+     */
+    event.preventDefault();
+    const text = event.clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
   },
-  [h('div', [h('br')])],
-);
+  onInput: [
+    throttle(
+      event => event.currentTarget,
+      elem => {
+        const valueList = [];
+
+        /*
+         * 先頭の非div要素はdiv要素で囲む
+         */
+        const firstLineNodes = [];
+        for (const node of elem.childNodes) {
+          if (/^div$/i.test(node.tagName)) break;
+          firstLineNodes.push(node);
+        }
+        if (firstLineNodes.length >= 1) {
+          /*
+           * 現在の選択範囲のうち、囲む対象のノードを選択している位置を取得し、
+           * ノードを再設定する関数の配列を生成。
+           */
+          /** @type {function():void} */
+          const reAssignRangeFnList = selectionRangeList().reduce(
+            (list, range) => {
+              const startNode = range.startContainer;
+              const endNode = range.endContainer;
+              if (firstLineNodes.some(node => node.contains(startNode))) {
+                list.push(
+                  range.setStart.bind(range, startNode, range.startOffset),
+                );
+              }
+              if (firstLineNodes.some(node => node.contains(endNode))) {
+                list.push(range.setEnd.bind(range, endNode, range.endOffset));
+              }
+              return list;
+            },
+            [],
+          );
+
+          /*
+           * 非div要素群をdiv要素で囲む
+           */
+          const wrapperElem = h('div');
+          elem.insertBefore(wrapperElem, firstLineNodes[0]);
+          firstLineNodes.forEach(node => wrapperElem.appendChild(node));
+
+          /*
+           * 選択範囲を復元
+           */
+          reAssignRangeFnList.forEach(fn => fn());
+        }
+
+        /*
+         * 子要素のテキストノードを取得
+         */
+        elem.childNodes.forEach(node => {
+          valueList.push(node.textContent);
+        });
+
+        /*
+         * プレビューを更新
+         */
+        updatePreview(valueList.join('\n'));
+      },
+    ),
+    { passive: true },
+  ],
+  onScroll: [
+    throttle(event => event.currentTarget, scrollPreview),
+    { passive: true },
+  ],
+});
 
 const previewElem = h('iframe', { className: 'preview' });
 const previewStyleElem = h('style', [
