@@ -53,6 +53,16 @@ export function h(tagName, attrs = {}, children = []) {
 }
 
 /**
+ * @param {Node} parentNode
+ */
+export function removeChildren(parentNode) {
+  let firstChild;
+  while ((firstChild = parentNode.firstChild)) {
+    parentNode.removeChild(firstChild);
+  }
+}
+
+/**
  * @param {Node} targetNode
  * @param {Element} wrapperElem
  * @see https://stackoverflow.com/a/57377341/4907315

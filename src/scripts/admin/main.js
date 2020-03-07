@@ -1,7 +1,8 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
-import { h, maxScroll, throttle } from '../utils/dom';
+import { h, maxScroll, removeChildren, throttle } from '../utils/dom';
+import { parse as parseFrontMatter } from '../utils/front-matter';
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 import html2textConfig from '../../../config/html2text';
 
@@ -115,6 +116,10 @@ body {
   overflow-y: scroll;
 }
 
+.editor .text-highlight .front-matter {
+  opacity: 0.2;
+}
+
 .editor textarea {
   width: 100%;
   height: 100%;
@@ -193,10 +198,31 @@ initFnList.push(() => {
  * 入力欄のシンタックスハイライトを更新
  */
 function updateTextHighlight(inputText) {
+  const highlightTextDocFrag = document.createDocumentFragment();
+
+  /*
+   * frontMatterを挿入
+   */
+  {
+    const { frontMatter, content } = parseFrontMatter(inputText);
+    if (frontMatter) {
+      highlightTextDocFrag.appendChild(
+        h('span', { className: 'front-matter' }, [frontMatter]),
+      );
+    }
+    inputText = content;
+  }
+
+  /*
+   * TODO
+   */
+  highlightTextDocFrag.appendChild(document.createTextNode(inputText));
+
   /*
    * 入力欄のテキストを反映
    */
-  editorTextHighlightElem.textContent = inputText;
+  removeChildren(editorTextHighlightElem);
+  editorTextHighlightElem.appendChild(highlightTextDocFrag);
 }
 
 /*
