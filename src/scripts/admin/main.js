@@ -103,7 +103,7 @@ body {
   overflow-wrap: break-word;
   cursor: text;
 }
-.editor > * {
+.editor > * + * {
   border-top: dotted 1px;
 }
 `,
