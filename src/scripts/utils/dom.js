@@ -32,8 +32,13 @@ export function h(tagName, attrs = {}, children = []) {
   if (!Array.isArray(children)) {
     children = [children];
   }
-  if (Array.isArray(attrs)) {
-    children = attrs.concat(children);
+  if (
+    typeof attrs !== 'object' ||
+    !attrs ||
+    Array.isArray(attrs) ||
+    attrs instanceof Node
+  ) {
+    children = [].concat(attrs, children);
     attrs = {};
   }
 

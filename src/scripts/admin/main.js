@@ -195,8 +195,7 @@ button.toggle-editor {
 ]);
 const invalidLengthStyleElem = h('style');
 
-const editorTextHighlightElem = h('div', {
-  className: 'text-highlight',
+const editorTextHighlightElem = h('div.text-highlight', {
   // Note: 一部のテキスト（ex. イイイイイイイイイイイイ）の表示幅がずれる。
   //       CSSのuser-modifyプロパティによる影響だが、これは非標準のため、
   //       contenteditable属性を設定することで対処する。
@@ -240,13 +239,11 @@ const togglePreviewButtonElem = h(
   },
   'プレビュー',
 );
-const editorElem = h(
-  'div',
-  {
-    className: 'editor',
-  },
-  [editorTextHighlightElem, editorInputElem, togglePreviewButtonElem],
-);
+const editorElem = h('div.editor', [
+  editorTextHighlightElem,
+  editorInputElem,
+  togglePreviewButtonElem,
+]);
 
 initFnList.push(() => {
   /*
@@ -279,9 +276,7 @@ function updateTextHighlight(inputText) {
   {
     const { frontMatter, content } = parseFrontMatter(inputText);
     if (frontMatter) {
-      highlightTextDocFrag.appendChild(
-        h('span', { className: 'front-matter' }, [frontMatter]),
-      );
+      highlightTextDocFrag.appendChild(h('span.front-matter', frontMatter));
     }
     inputText = content;
   }
@@ -307,9 +302,7 @@ function updateTextHighlight(inputText) {
           const matchText = match[0];
           const id = match[3] || match[2] || match[1];
           currentId = id;
-          return h('span', { className: 'anchor-def', dataset: { id } }, [
-            matchText,
-          ]);
+          return h('span.anchor-def', { dataset: { id } }, matchText);
         },
       },
       /**
@@ -320,7 +313,7 @@ function updateTextHighlight(inputText) {
         pattern: /[a-z]+:(?:[^[\r\n]+)\[[^\]]*\]/y,
         processor(match) {
           const matchText = match[0];
-          return h('span', { className: 'inline-macro' }, [matchText]);
+          return h('span.inline-macro', matchText);
         },
       },
     ];
@@ -388,7 +381,7 @@ function scrollTextHighlight(editorElem) {
   editorTextHighlightElem.style.transform = `translateY(${-editorElem.scrollTop}px)`;
 }
 
-const previewElem = h('iframe', { className: 'preview' });
+const previewElem = h('iframe.preview');
 const previewStyleElem = h('style', [
   `
 .novel-title:empty {
@@ -400,8 +393,8 @@ const previewStyleElem = h('style', [
 `,
 ]);
 
-const novelTitleElem = h('h1', { className: 'novel-title' });
-const novelBodyElem = h('main', { className: 'novel-body' });
+const novelTitleElem = h('h1.novel-title');
+const novelBodyElem = h('main.novel-body');
 
 function updatePreview(inputText) {
   /*
@@ -441,27 +434,9 @@ function scrollPreview(editorElem) {
   const previewScrollingElement = previewElem.contentDocument.scrollingElement;
   const editorScrollPct = editorElem.scrollTop / maxScroll(editorElem).top;
 
-  previewScrollingElement.scrollTo(
-    previewScrollingElement.scrollLeft,
-    maxScroll(previewScrollingElement).top * editorScrollPct,
-  );
+  previewScrollingElement.scrollTop =
+    maxScroll(previewScrollingElement).top * editorScrollPct;
 }
-
-document.head.appendChild(styleElem);
-document.head.appendChild(invalidLengthStyleElem);
-
-document.body.appendChild(editorElem);
-
-document.body.appendChild(previewElem);
-(previewDoc => {
-  previewDoc.documentElement.lang = 'ja';
-  for (const href of ['/default.css', '/novels.css']) {
-    previewDoc.head.appendChild(h('link', { rel: 'stylesheet', href }));
-  }
-  previewDoc.head.appendChild(previewStyleElem);
-  previewDoc.body.appendChild(novelTitleElem);
-  previewDoc.body.appendChild(novelBodyElem);
-})(previewElem.contentDocument);
 
 const toggleEditorButtonElem = h(
   'button.toggle-editor',
@@ -472,7 +447,20 @@ const toggleEditorButtonElem = h(
   },
   '編集',
 );
-document.body.appendChild(toggleEditorButtonElem);
+
+document.head.append(styleElem, invalidLengthStyleElem);
+document.body.append(editorElem, previewElem, toggleEditorButtonElem);
+
+(previewDoc => {
+  previewDoc.documentElement.lang = 'ja';
+  previewDoc.head.append(
+    ...['/default.css', '/novels.css'].map(href =>
+      h('link', { rel: 'stylesheet', href }),
+    ),
+    previewStyleElem,
+  );
+  previewDoc.body.append(novelTitleElem, novelBodyElem);
+})(previewElem.contentDocument);
 
 /*
  * 初期化処理を実行
