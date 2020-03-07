@@ -110,3 +110,15 @@ export function throttle(conv, fn = null) {
     }
   };
 }
+
+/**
+ * @returns {Range[]}
+ */
+export function selectionRangeList() {
+  const rangeList = [];
+  const selection = window.getSelection();
+  for (let i = 0; i < selection.rangeCount; i++) {
+    rangeList.push(selection.getRangeAt(i));
+  }
+  return rangeList;
+}

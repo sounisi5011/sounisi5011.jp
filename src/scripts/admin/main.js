@@ -1,7 +1,7 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
-import { h, maxScroll, throttle } from '../utils/dom';
+import { h, maxScroll, selectionRangeList, throttle } from '../utils/dom';
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 import html2textConfig from '../../../config/html2text';
 
@@ -128,6 +128,50 @@ const editorElem = h(
         event => event.currentTarget,
         elem => {
           let valueList = [];
+
+          /*
+           * 先頭の非div要素はdiv要素で囲む
+           */
+          const firstLineNodes = [];
+          for (const node of elem.childNodes) {
+            if (/^div$/i.test(node.tagName)) break;
+            firstLineNodes.push(node);
+          }
+          if (firstLineNodes.length >= 1) {
+            /*
+             * 現在の選択範囲のうち、囲む対象のノードを選択している位置を取得し、
+             * ノードを再設定する関数の配列を生成。
+             */
+            /** @type {function():void} */
+            const reAssignRangeFnList = selectionRangeList().reduce(
+              (list, range) => {
+                const startNode = range.startContainer;
+                const endNode = range.endContainer;
+                if (firstLineNodes.some(node => node.contains(startNode))) {
+                  list.push(
+                    range.setStart.bind(range, startNode, range.startOffset),
+                  );
+                }
+                if (firstLineNodes.some(node => node.contains(endNode))) {
+                  list.push(range.setEnd.bind(range, endNode, range.endOffset));
+                }
+                return list;
+              },
+              [],
+            );
+
+            /*
+             * 非div要素群をdiv要素で囲む
+             */
+            const wrapperElem = h('div');
+            elem.insertBefore(wrapperElem, firstLineNodes[0]);
+            firstLineNodes.forEach(node => wrapperElem.appendChild(node));
+
+            /*
+             * 選択範囲を復元
+             */
+            reAssignRangeFnList.forEach(fn => fn());
+          }
 
           elem.childNodes.forEach((node, _, childNodes) => {
             valueList.push(node.textContent);
