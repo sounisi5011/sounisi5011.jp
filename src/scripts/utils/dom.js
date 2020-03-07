@@ -55,10 +55,8 @@ export function h(tagName, attrs = {}, children = []) {
     if (typeof childNode === 'function') {
       childNode = childNode(elem);
     }
-    if (childNode instanceof Node) {
-      elem.appendChild(childNode);
-    } else if (elem !== undefined && elem !== null) {
-      elem.appendChild(document.createTextNode(childNode));
+    if (childNode !== undefined && childNode !== null) {
+      elem.append(childNode);
     }
   });
   return elem;
