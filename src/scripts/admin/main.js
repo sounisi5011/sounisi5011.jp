@@ -177,6 +177,7 @@ const editorTextHighlightElem = h('div', {
   contentEditable: true,
 });
 const editorInputElem = h('textarea', {
+  placeholder: 'AsciiDocを入力',
   onInput: [
     throttle(
       event => event.currentTarget,
