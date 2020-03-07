@@ -89,11 +89,17 @@ document.execCommand('DefaultParagraphSeparator', false, 'div');
 /** @type {function():void} */
 const initFnList = [];
 
+/**
+ * @see http://takuyakobayashi.id/blog/2019/02/09/4301
+ */
 const styleElem = h('style', [
   `
+html, body {
+  height: 100%;
+}
+
 body {
   display: flex;
-  height: 100vh;
   margin: 0;
 }
 
