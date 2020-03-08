@@ -64,7 +64,9 @@ function getInvalidTweetData(tweetText, suffixText = '') {
 // ----- ----- ----- ----- ----- //
 
 const rootElem = document.documentElement;
-const asciidoctorWorker = AsciidoctorWorker();
+/** @type {Worker} */
+let asciidoctorWorker;
+let isAsciidoctorProcessing = false;
 
 /*
  * contenteditable属性付き要素内での改行方法をdiv要素に指定。
@@ -388,13 +390,30 @@ function updatePreview(inputText) {
   prevInputText = inputText;
 
   editorTextHighlightElem.classList.remove('processed');
+  if (isAsciidoctorProcessing) {
+    /*
+     * 処理中の場合は、現在のWorkerを中断する
+     */
+    asciidoctorWorker.terminate();
+    asciidoctorWorker = null;
+  }
+  if (!asciidoctorWorker) {
+    /*
+     * Workerが未定義の場合は定義する
+     */
+    asciidoctorWorker = AsciidoctorWorker();
+    asciidoctorWorker.addEventListener('message', asciidoctorProcessed);
+  }
   asciidoctorWorker.postMessage({
     input: inputText,
   });
+  isAsciidoctorProcessing = true;
 }
 let prevInputText = null;
 
-asciidoctorWorker.addEventListener('message', event => {
+function asciidoctorProcessed(/** @type {MessageEvent} */ event) {
+  isAsciidoctorProcessing = false;
+
   const { title, html } = event.data;
   novelTitleElem.innerHTML = title || '';
   novelBodyElem.innerHTML = html;
@@ -416,7 +435,7 @@ asciidoctorWorker.addEventListener('message', event => {
     ? `${invalidLengthSelector} { background-color: #f88; }`
     : '';
   editorTextHighlightElem.classList.add('processed');
-});
+}
 
 function scrollPreview(editorElem) {
   const previewScrollingElement = previewElem.contentDocument.scrollingElement;
