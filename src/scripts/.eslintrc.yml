@@ -3,3 +3,9 @@ env:
   node: false
 parserOptions:
   ecmaVersion: 2020
+overrides:
+  - files:
+      - "**/*.worker.js"
+    env:
+      browser: false
+      worker: true

@@ -1,28 +1,10 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
+import asciidoctorWorker from 'web-worker:./asciidoctor.worker.js';
 
 import { h, maxScroll, removeChildren, throttle } from '../utils/dom';
 import { parse as parseFrontMatter } from '../utils/front-matter';
-import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 import html2textConfig from '../../../config/html2text';
-
-const asciidoctor = window.Asciidoctor();
-
-const registry = asciidoctor.Extensions.create();
-for (const extension of asciidocExtensions) {
-  if (typeof extension === 'function') {
-    extension(registry);
-  }
-}
-
-const asciidoctorOptions = {
-  backend: 'html5s',
-  attributes: {
-    // @see https://asciidoctor.org/docs/user-manual/#front-matter-added-for-static-site-generators
-    'skip-front-matter': '',
-  },
-  extension_registry: registry,
-};
 
 /**
  * @param {string} str
@@ -404,13 +386,15 @@ function updatePreview(inputText) {
   if (prevInputText === inputText) return;
   prevInputText = inputText;
 
-  const doc = asciidoctor.load(inputText, asciidoctorOptions);
+  asciidoctorWorker.postMessage({
+    input: inputText,
+  });
+}
+let prevInputText = null;
 
-  // @see https://asciidoctor-docs.netlify.com/asciidoctor.js/processor/extract-api/#get-the-document-title
-  const title = doc.getDocumentTitle();
+asciidoctorWorker.addEventListener('message', event => {
+  const { title, html } = event.data;
   novelTitleElem.innerHTML = title || '';
-
-  const html = doc.convert();
   novelBodyElem.innerHTML = html;
 
   /*
@@ -428,8 +412,7 @@ function updatePreview(inputText) {
   invalidLengthStyleElem.textContent = invalidLengthSelector
     ? `${invalidLengthSelector} { background-color: #f88; }`
     : '';
-}
-let prevInputText = null;
+});
 
 function scrollPreview(editorElem) {
   const previewScrollingElement = previewElem.contentDocument.scrollingElement;

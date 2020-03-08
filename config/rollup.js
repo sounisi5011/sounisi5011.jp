@@ -5,6 +5,7 @@ const cssnano = require('cssnano');
 const postcss = require('postcss');
 const rollupBabel = require('rollup-plugin-babel');
 const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
+const rollupWebWorkerLoader = require('rollup-plugin-web-worker-loader');
 
 const postcssOptions = {
   /** @see https://github.com/postcss/postcss/blob/master/docs/source-maps.md */
@@ -40,6 +41,9 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
           },
         };
       },
+    }),
+    rollupWebWorkerLoader({
+      sourcemap: true,
     }),
     rollupBabel({
       exclude: 'node_modules/**',
