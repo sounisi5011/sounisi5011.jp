@@ -1,3 +1,5 @@
+const path = require('path');
+
 const rollupCommonjs = require('@rollup/plugin-commonjs');
 const rollupNodeResolve = require('@rollup/plugin-node-resolve');
 const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
@@ -6,6 +8,15 @@ const postcss = require('postcss');
 const rollupBabel = require('rollup-plugin-babel');
 const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
 const rollupWebWorkerLoader = require('rollup-plugin-web-worker-loader');
+
+function path2url(filepath, basepath = '') {
+  if (basepath) {
+    filepath = path.relative(basepath, path.resolve(basepath, filepath));
+  }
+  const url = new URL('http://x.y');
+  url.pathname = filepath;
+  return url.pathname;
+}
 
 const postcssOptions = {
   /** @see https://github.com/postcss/postcss/blob/master/docs/source-maps.md */
@@ -44,6 +55,8 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
     }),
     rollupWebWorkerLoader({
       sourcemap: true,
+      inline: false,
+      loadPath: path2url(outputDir, metalsmith.destination()),
       skipPlugins: [
         '@sounisi5011/rollup-plugin-css-include',
         'babel',
