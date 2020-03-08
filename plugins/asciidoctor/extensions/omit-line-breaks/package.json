@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "main": "node/index.js",
-  "browser": "browser/index.js",
   "dependencies": {
     "parse5": "^5.1.1"
   }
