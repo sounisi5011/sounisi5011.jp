@@ -119,15 +119,15 @@ body {
   overflow-y: scroll;
 }
 
-.editor .text-highlight.processed .front-matter {
+.editor .text-highlight .front-matter {
   opacity: 0.2;
 }
 
-.editor .text-highlight.processed .anchor-def {
+.editor .text-highlight .anchor-def {
   color: blue;
 }
 
-.editor .text-highlight.processed .inline-macro {
+.editor .text-highlight .inline-macro {
   color: orange;
 }
 
@@ -139,6 +139,11 @@ body {
   color: transparent;
   background-color: transparent;
   caret-color: black;
+}
+
+.editor .text-highlight[hidden] + textarea {
+  color: black;
+  background-color: white;
 }
 
 .editor button.toggle-preview,
@@ -179,7 +184,7 @@ button.toggle-editor {
 ]);
 const invalidLengthStyleElem = h('style');
 
-const editorTextHighlightElem = h('div.text-highlight.processed', {
+const editorTextHighlightElem = h('div.text-highlight', {
   // Note: 一部のテキスト（ex. イイイイイイイイイイイイ）の表示幅がずれる。
   //       CSSのuser-modifyプロパティによる影響だが、これは非標準のため、
   //       contenteditable属性を設定することで対処する。
@@ -387,7 +392,7 @@ function updatePreview(inputText) {
   if (prevInputText === inputText) return;
   prevInputText = inputText;
 
-  editorTextHighlightElem.classList.remove('processed');
+  editorTextHighlightElem.hidden = true;
   asciidoctor.convert(inputText);
 }
 let prevInputText = null;
@@ -407,12 +412,12 @@ asciidoctor.onProcessed(({ title, html }) => {
     ])
     .filter(([, invalidTweet]) => invalidTweet)
     .map(([{ id }]) => `[data-prev-id="${CSS.escape(id || '')}"]`)
-    .map(selector => `.editor .text-highlight.processed ${selector}`)
+    .map(selector => `.editor .text-highlight ${selector}`)
     .join(',');
   invalidLengthStyleElem.textContent = invalidLengthSelector
     ? `${invalidLengthSelector} { background-color: #f88; }`
     : '';
-  editorTextHighlightElem.classList.add('processed');
+  editorTextHighlightElem.hidden = false;
 });
 
 function scrollPreview(editorElem) {
