@@ -44,7 +44,6 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
     }),
     rollupWebWorkerLoader({
       sourcemap: true,
-      preserveSource: true,
       skipPlugins: [
         '@sounisi5011/rollup-plugin-css-include',
         'babel',
