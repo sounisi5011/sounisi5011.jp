@@ -1,4 +1,4 @@
-import Asciidoctor from '@asciidoctor/core';
+import Asciidoctor from '@asciidoctor/core/dist/browser/asciidoctor.min.js';
 
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 
