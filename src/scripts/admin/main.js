@@ -1,6 +1,6 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
-import asciidoctorWorker from 'web-worker:./asciidoctor.worker.js';
+import AsciidoctorWorker from 'web-worker:./asciidoctor.worker.js';
 
 import { h, maxScroll, removeChildren, throttle } from '../utils/dom';
 import { parse as parseFrontMatter } from '../utils/front-matter';
@@ -64,6 +64,7 @@ function getInvalidTweetData(tweetText, suffixText = '') {
 // ----- ----- ----- ----- ----- //
 
 const rootElem = document.documentElement;
+const asciidoctorWorker = AsciidoctorWorker();
 
 /*
  * contenteditable属性付き要素内での改行方法をdiv要素に指定。
