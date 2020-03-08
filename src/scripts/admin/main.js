@@ -119,15 +119,15 @@ body {
   overflow-y: scroll;
 }
 
-.editor .text-highlight .front-matter {
+.editor .text-highlight.processed .front-matter {
   opacity: 0.2;
 }
 
-.editor .text-highlight .anchor-def {
+.editor .text-highlight.processed .anchor-def {
   color: blue;
 }
 
-.editor .text-highlight .inline-macro {
+.editor .text-highlight.processed .inline-macro {
   color: orange;
 }
 
@@ -179,7 +179,7 @@ button.toggle-editor {
 ]);
 const invalidLengthStyleElem = h('style');
 
-const editorTextHighlightElem = h('div.text-highlight', {
+const editorTextHighlightElem = h('div.text-highlight.processed', {
   // Note: 一部のテキスト（ex. イイイイイイイイイイイイ）の表示幅がずれる。
   //       CSSのuser-modifyプロパティによる影響だが、これは非標準のため、
   //       contenteditable属性を設定することで対処する。
@@ -387,6 +387,7 @@ function updatePreview(inputText) {
   if (prevInputText === inputText) return;
   prevInputText = inputText;
 
+  editorTextHighlightElem.classList.remove('processed');
   asciidoctorWorker.postMessage({
     input: inputText,
   });
@@ -409,10 +410,12 @@ asciidoctorWorker.addEventListener('message', event => {
     ])
     .filter(([, invalidTweet]) => invalidTweet)
     .map(([{ id }]) => `[data-prev-id="${CSS.escape(id || '')}"]`)
+    .map(selector => `.editor .text-highlight.processed ${selector}`)
     .join(',');
   invalidLengthStyleElem.textContent = invalidLengthSelector
     ? `${invalidLengthSelector} { background-color: #f88; }`
     : '';
+  editorTextHighlightElem.classList.add('processed');
 });
 
 function scrollPreview(editorElem) {
