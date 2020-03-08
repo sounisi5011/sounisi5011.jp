@@ -26,6 +26,7 @@ self.addEventListener('message', event => {
   const doc = asciidoctor.load(input, asciidoctorOptions);
 
   self.postMessage({
+    input,
     // @see https://asciidoctor-docs.netlify.com/asciidoctor.js/processor/extract-api/#get-the-document-title
     title: doc.getDocumentTitle(),
     html: doc.convert(),

@@ -1,10 +1,11 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
-import AsciidoctorWorker from 'web-worker:./asciidoctor.worker.js';
 
 import { h, maxScroll, removeChildren, throttle } from '../utils/dom';
 import { parse as parseFrontMatter } from '../utils/front-matter';
 import html2textConfig from '../../../config/html2text';
+
+import asciidoctor from './asciidoctor';
 
 /**
  * @param {string} str
@@ -64,9 +65,6 @@ function getInvalidTweetData(tweetText, suffixText = '') {
 // ----- ----- ----- ----- ----- //
 
 const rootElem = document.documentElement;
-/** @type {Worker} */
-let asciidoctorWorker;
-let isAsciidoctorProcessing = false;
 
 /*
  * contenteditable属性付き要素内での改行方法をdiv要素に指定。
@@ -390,31 +388,11 @@ function updatePreview(inputText) {
   prevInputText = inputText;
 
   editorTextHighlightElem.classList.remove('processed');
-  if (isAsciidoctorProcessing) {
-    /*
-     * 処理中の場合は、現在のWorkerを中断する
-     */
-    asciidoctorWorker.terminate();
-    asciidoctorWorker = null;
-  }
-  if (!asciidoctorWorker) {
-    /*
-     * Workerが未定義の場合は定義する
-     */
-    asciidoctorWorker = AsciidoctorWorker();
-    asciidoctorWorker.addEventListener('message', asciidoctorProcessed);
-  }
-  asciidoctorWorker.postMessage({
-    input: inputText,
-  });
-  isAsciidoctorProcessing = true;
+  asciidoctor.convert(inputText);
 }
 let prevInputText = null;
 
-function asciidoctorProcessed(/** @type {MessageEvent} */ event) {
-  isAsciidoctorProcessing = false;
-
-  const { title, html } = event.data;
+asciidoctor.onProcessed(({ title, html }) => {
   novelTitleElem.innerHTML = title || '';
   novelBodyElem.innerHTML = html;
 
@@ -435,7 +413,7 @@ function asciidoctorProcessed(/** @type {MessageEvent} */ event) {
     ? `${invalidLengthSelector} { background-color: #f88; }`
     : '';
   editorTextHighlightElem.classList.add('processed');
-}
+});
 
 function scrollPreview(editorElem) {
   const previewScrollingElement = previewElem.contentDocument.scrollingElement;
