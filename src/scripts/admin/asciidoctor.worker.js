@@ -1,8 +1,8 @@
+import Asciidoctor from '@asciidoctor/core';
+
 import asciidocExtensions from '../../../plugins/asciidoctor/extensions';
 
-self.importScripts('/asciidoctor/asciidoctor.min.js');
-
-const asciidoctor = self.Asciidoctor();
+const asciidoctor = Asciidoctor();
 
 const registry = asciidoctor.Extensions.create();
 for (const extension of asciidocExtensions) {
