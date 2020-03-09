@@ -200,10 +200,17 @@ const editorInputElem = h('textarea', {
          * 入力欄の大きさを更新
          */
         updateEditorInputSize();
+
+        /*
+         * 入力欄のスクロール位置を更新
+         */
+        updateEditorScrollPosition();
+
         /*
          * 入力欄のシンタックスハイライトを更新
          */
         updateTextHighlight(elem.value);
+
         /*
          * プレビューを更新
          */
@@ -262,6 +269,29 @@ initFnList.push(() => {
 function updateEditorInputSize() {
   editorInputElem.style.height = `0px`;
   editorInputElem.style.height = `${editorInputElem.scrollHeight}px`;
+}
+
+/*
+ * 入力欄のスクロール位置を更新
+ */
+function updateEditorScrollPosition() {
+  /**
+   * カーソルの位置が最終行の場合は、一番下へスクロールする
+   * Note: 最終行が非常に長い文字列の場合は、上の位置の編集により強制的に下へスクロールしてしまう問題が生じる。
+   *       が、このような長い行を使用する機会は稀だと考えられるため、対処は後回し。
+   * TODO: カーソルの画面上における座標を判定基準にする。
+   */
+  const lineBreakRegExp = /[\r\n]/g;
+  lineBreakRegExp.lastIndex = Math.min(
+    editorInputElem.selectionStart,
+    editorInputElem.selectionEnd,
+  );
+  const isLastLine = !lineBreakRegExp.test(editorInputElem.value);
+  if (isLastLine) {
+    // Note: scrollHeightはscrollTopとclientHeightを足した値であるため、
+    //       常に最大のスクロール量を超える。よって一番下までスクロールできる
+    editorElem.scrollTop = editorElem.scrollHeight;
+  }
 }
 
 initFnList.push(updateEditorInputSize);
