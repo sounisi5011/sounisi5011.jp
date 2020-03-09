@@ -204,6 +204,11 @@ const editorInputElem = h('textarea', {
          * プレビューを更新
          */
         updatePreview(elem.value);
+        /*
+         * プレビューのスクロール量を更新
+         * Note: frontMatterの有無でスクロール位置が変化するため、入力時にも更新する
+         */
+        scrollPreview(elem, true);
       },
     ),
     { passive: true },
@@ -265,7 +270,10 @@ function updateTextHighlight(inputText) {
   {
     const { frontMatter, content } = parseFrontMatter(inputText);
     if (frontMatter) {
-      highlightTextDocFrag.appendChild(h('span.front-matter', frontMatter));
+      frontMatterElem = h('span.front-matter', frontMatter);
+      highlightTextDocFrag.appendChild(frontMatterElem);
+    } else {
+      frontMatterElem = null;
     }
     inputText = content;
   }
@@ -362,6 +370,8 @@ function updateTextHighlight(inputText) {
   removeChildren(editorTextHighlightElem);
   editorTextHighlightElem.appendChild(highlightTextDocFrag);
 }
+/** @type {Element|null} */
+let frontMatterElem = null;
 
 /*
  * 入力欄のシンタックスハイライトをスクロール
@@ -420,13 +430,38 @@ asciidoctor.onProcessed(({ title, html }) => {
   editorTextHighlightElem.hidden = false;
 });
 
-function scrollPreview(editorElem) {
+function scrollPreview(editorElem, inputUpdateOnly = false) {
   const previewScrollingElement = previewElem.contentDocument.scrollingElement;
-  const editorScrollPct = editorElem.scrollTop / maxScroll(editorElem).top;
+
+  const existsFrontmatter = Boolean(frontMatterElem);
+  if (inputUpdateOnly) {
+    /*
+     * 前回のスクロール処理の後に、Frontmatterの有無が変化しなかった場合は、処理を中断
+     * Note: 未定義の非Boolean値とも比較するため、Booleanに変換した上で厳密等価の条件分岐を行う
+     */
+    if (existsFrontmatter === prevExistsFrontmatter) {
+      prevExistsFrontmatter = existsFrontmatter;
+      return;
+    }
+  }
+  prevExistsFrontmatter = existsFrontmatter;
+
+  const frontMatterHeight = frontMatterElem ? frontMatterElem.offsetHeight : 0;
+  /*
+   * エディタのスクロール量の比率を算出する。Frontmatterの高さは除外する。
+   */
+  const editorScrollPct =
+    Math.max(0, editorElem.scrollTop - frontMatterHeight) /
+    (maxScroll(editorElem).top - frontMatterHeight);
 
   previewScrollingElement.scrollTop =
     maxScroll(previewScrollingElement).top * editorScrollPct;
 }
+/**
+ * 直前のスクロール処理時にFrontmatterが存在したか否かのフラグ
+ * @type {boolean|null}
+ */
+let prevExistsFrontmatter = null;
 
 const toggleEditorButtonElem = h(
   'button.toggle-editor',
