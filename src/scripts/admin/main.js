@@ -98,6 +98,10 @@ body {
   position: relative;
 }
 
+.show-preview .editor {
+  display: none;
+}
+
 .preview {
   position: absolute;
   top: 0;
@@ -168,6 +172,10 @@ button.toggle-editor {
 
   .editor, .preview {
     flex: 1;
+  }
+
+  .show-preview .editor {
+    display: unset;
   }
 
   .preview {
