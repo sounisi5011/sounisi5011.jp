@@ -4,11 +4,11 @@ const { URL } = require('url');
 const util = require('util');
 
 const readTextContents = require('@sounisi5011/html-id-split-text');
-const spawn = require('cross-spawn');
 const logger = require('debug');
 const pluginKit = require('metalsmith-plugin-kit');
 const parse5 = require('parse5');
 const strictUriEncode = require('strict-uri-encode');
+const twitter = require('twitter-text');
 
 const pkg = require('./package.json');
 const parse5UtilsGenerator = require('./utils/parse5');
@@ -16,25 +16,6 @@ const QRCode = require('./utils/qr-code');
 const debug = logger(pkg.name);
 
 const parse5Utils = parse5UtilsGenerator();
-
-let twitter;
-try {
-  twitter = require('twitter-text');
-} catch (error) {
-  if (!/^Cannot find module /.test(error.message)) throw error;
-
-  const command = 'npm';
-  const args = ['install', '--no-save', 'twitter-text@3.x'];
-  console.error(
-    [
-      `>> ${pkg.name}@${pkg.version} ${__dirname}`,
-      `>> ${command} ${args.join(' ')}`,
-      '',
-    ].join('\n'),
-  );
-  spawn.sync(command, args, { cwd: __dirname, stdio: 'inherit' });
-  twitter = require('twitter-text');
-}
 
 const ASSETS_DIR = '_fragment-anchors';
 
