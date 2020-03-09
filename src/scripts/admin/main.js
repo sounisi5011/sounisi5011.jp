@@ -96,6 +96,8 @@ body {
 .editor {
   overflow-y: hidden;
   position: relative;
+  display: grid;
+  grid-template-rows: auto max-content;
 }
 
 .show-preview .editor {
@@ -115,12 +117,16 @@ body {
 
 .editor .text-highlight,
 .editor textarea {
+  box-sizing: border-box;
+  overflow-y: scroll;
+}
+
+.editor .text-highlight {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  box-sizing: border-box;
-  overflow-y: scroll;
+  z-index: -1;
 }
 
 .editor .text-highlight .front-matter {
@@ -136,8 +142,6 @@ body {
 }
 
 .editor textarea {
-  width: 100%;
-  height: 100%;
   resize: none;
   border: none;
   color: transparent;
@@ -150,14 +154,20 @@ body {
   background-color: white;
 }
 
-.editor button.toggle-preview,
+.editor .edit-menu {
+  border-top: solid 1px #ccc;
+  padding: .75em;
+  background-color: white;
+}
+
+.editor .edit-menu button.toggle-preview {
+  float: right;
+}
+
 button.toggle-editor {
   position: absolute;
   bottom: 0.5em;
   right: 1.5em;
-}
-
-button.toggle-editor {
   display: none;
 }
 
@@ -183,7 +193,7 @@ button.toggle-editor {
     visibility: visible;
   }
 
-  .editor button.toggle-preview,
+  .editor .edit-menu button.toggle-preview,
   .show-preview button.toggle-editor {
     display: none;
   }
@@ -241,10 +251,11 @@ const togglePreviewButtonElem = h(
   },
   'プレビュー',
 );
+const editorMenuElem = h('div.edit-menu', ['Menu', togglePreviewButtonElem]);
 const editorElem = h('div.editor', [
   editorTextHighlightElem,
   editorInputElem,
-  togglePreviewButtonElem,
+  editorMenuElem,
 ]);
 
 initFnList.push(() => {
