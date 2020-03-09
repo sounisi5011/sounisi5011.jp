@@ -94,7 +94,7 @@ body {
 }
 
 .editor {
-  overflow-y: scroll;
+  overflow-y: hidden;
   position: relative;
 }
 
@@ -116,6 +116,7 @@ body {
   left: 0;
   right: 0;
   box-sizing: border-box;
+  overflow-y: scroll;
 }
 
 .editor .text-highlight .front-matter {
@@ -132,9 +133,8 @@ body {
 
 .editor textarea {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
   resize: none;
-  overflow-y: hidden;
   border: none;
   color: transparent;
   background-color: transparent;
@@ -197,20 +197,9 @@ const editorInputElem = h('textarea', {
       event => event.currentTarget,
       elem => {
         /*
-         * 入力欄の大きさを更新
-         */
-        updateEditorInputSize();
-
-        /*
-         * 入力欄のスクロール位置を更新
-         */
-        updateEditorScrollPosition();
-
-        /*
          * 入力欄のシンタックスハイライトを更新
          */
         updateTextHighlight(elem.value);
-
         /*
          * プレビューを更新
          */
@@ -223,6 +212,7 @@ const editorInputElem = h('textarea', {
     throttle(
       event => event.currentTarget,
       elem => {
+        scrollTextHighlight(elem);
         scrollPreview(elem);
       },
     ),
@@ -262,39 +252,6 @@ initFnList.push(() => {
     editorTextHighlightElem.style[styleName] = inputElemStyle[styleName];
   });
 });
-
-/*
- * 入力欄のサイズを更新
- */
-function updateEditorInputSize() {
-  editorInputElem.style.height = `0px`;
-  editorInputElem.style.height = `${editorInputElem.scrollHeight}px`;
-}
-
-/*
- * 入力欄のスクロール位置を更新
- */
-function updateEditorScrollPosition() {
-  /**
-   * カーソルの位置が最終行の場合は、一番下へスクロールする
-   * Note: 最終行が非常に長い文字列の場合は、上の位置の編集により強制的に下へスクロールしてしまう問題が生じる。
-   *       が、このような長い行を使用する機会は稀だと考えられるため、対処は後回し。
-   * TODO: カーソルの画面上における座標を判定基準にする。
-   */
-  const lineBreakRegExp = /[\r\n]/g;
-  lineBreakRegExp.lastIndex = Math.min(
-    editorInputElem.selectionStart,
-    editorInputElem.selectionEnd,
-  );
-  const isLastLine = !lineBreakRegExp.test(editorInputElem.value);
-  if (isLastLine) {
-    // Note: scrollHeightはscrollTopとclientHeightを足した値であるため、
-    //       常に最大のスクロール量を超える。よって一番下までスクロールできる
-    editorElem.scrollTop = editorElem.scrollHeight;
-  }
-}
-
-initFnList.push(updateEditorInputSize);
 
 /*
  * 入力欄のシンタックスハイライトを更新
@@ -406,6 +363,13 @@ function updateTextHighlight(inputText) {
   editorTextHighlightElem.appendChild(highlightTextDocFrag);
 }
 
+/*
+ * 入力欄のシンタックスハイライトをスクロール
+ */
+function scrollTextHighlight(editorElem) {
+  editorTextHighlightElem.style.transform = `translateY(${-editorElem.scrollTop}px)`;
+}
+
 const previewElem = h('iframe.preview');
 const previewStyleElem = h('style', [
   `
@@ -487,14 +451,6 @@ document.body.append(editorElem, previewElem, toggleEditorButtonElem);
   );
   previewDoc.body.append(novelTitleElem, novelBodyElem);
 })(previewElem.contentDocument);
-
-window.addEventListener(
-  'resize',
-  throttle(() => {
-    updateEditorInputSize();
-  }),
-  { passive: true },
-);
 
 /*
  * 初期化処理を実行
