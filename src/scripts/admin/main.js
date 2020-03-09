@@ -7,6 +7,8 @@ import html2textConfig from '../../../config/html2text';
 
 import asciidoctor from './asciidoctor';
 
+const draftSaveKey = `draft-text::${location.pathname.replace(/\/+$/, '')}`;
+
 /**
  * @param {string} str
  * @returns {number}
@@ -215,6 +217,10 @@ const editorInputElem = h('textarea', {
       event => event.currentTarget,
       elem => {
         /*
+         * 下書きデータを保存
+         */
+        localStorage.setItem(draftSaveKey, elem.value);
+        /*
          * 入力欄のシンタックスハイライトを更新
          */
         updateTextHighlight(elem.value);
@@ -258,24 +264,46 @@ const editorElem = h('div.editor', [
   editorMenuElem,
 ]);
 
-initFnList.push(() => {
-  /*
-   * 入力欄のスタイルをコピー
-   * textarea要素のデフォルトCSSをコピーし、文字幅や表示間隔を合わせる。
-   */
-  const inputElemStyle = window.getComputedStyle(editorInputElem);
-  [
-    'margin',
-    'border',
-    'padding',
-    'whiteSpace',
-    'overflowWrap',
-    'font',
-    'textAlign',
-  ].forEach(styleName => {
-    editorTextHighlightElem.style[styleName] = inputElemStyle[styleName];
-  });
-});
+initFnList.push(
+  () => {
+    /*
+     * 入力欄のスタイルをコピー
+     * textarea要素のデフォルトCSSをコピーし、文字幅や表示間隔を合わせる。
+     */
+    const inputElemStyle = window.getComputedStyle(editorInputElem);
+    [
+      'margin',
+      'border',
+      'padding',
+      'whiteSpace',
+      'overflowWrap',
+      'font',
+      'textAlign',
+    ].forEach(styleName => {
+      editorTextHighlightElem.style[styleName] = inputElemStyle[styleName];
+    });
+  },
+  () => {
+    /*
+     * 保存していた下書きデータを展開する
+     */
+    const draftSavedText = localStorage.getItem(draftSaveKey);
+    if (draftSavedText) {
+      /*
+       * 入力欄の内容を更新
+       */
+      editorInputElem.value = draftSavedText;
+      /*
+       * 入力欄のシンタックスハイライトを更新
+       */
+      updateTextHighlight(draftSavedText);
+      /*
+       * プレビューを更新
+       */
+      updatePreview(draftSavedText);
+    }
+  },
+);
 
 /*
  * 入力欄のシンタックスハイライトを更新
