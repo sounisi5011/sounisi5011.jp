@@ -143,6 +143,10 @@ body {
   color: orange;
 }
 
+.editor .text-highlight .text-formatting {
+  color: magenta;
+}
+
 .editor textarea {
   resize: none;
   border: none;
@@ -358,6 +362,17 @@ function updateTextHighlight(inputText) {
         processor(match) {
           const matchText = match[0];
           return h('span.inline-macro', matchText);
+        },
+      },
+      /**
+       * 斜体、太字、など
+       * @see https://asciidoctor.org/docs/user-manual/#text-formatting
+       */
+      {
+        pattern: /(?:\[(?:(?!\n\n)[^\]])+\])?(__|\*\*|##)(?:(?!\1|\n\n).)+\1/sy,
+        processor(match) {
+          const matchText = match[0];
+          return h('span.text-formatting', matchText);
         },
       },
     ];
