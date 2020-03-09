@@ -94,7 +94,7 @@ body {
 }
 
 .editor {
-  overflow-y: hidden;
+  overflow-y: scroll;
   position: relative;
 }
 
@@ -116,7 +116,6 @@ body {
   left: 0;
   right: 0;
   box-sizing: border-box;
-  overflow-y: scroll;
 }
 
 .editor .text-highlight .front-matter {
@@ -133,8 +132,9 @@ body {
 
 .editor textarea {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   resize: none;
+  overflow-y: hidden;
   border: none;
   color: transparent;
   background-color: transparent;
@@ -197,6 +197,10 @@ const editorInputElem = h('textarea', {
       event => event.currentTarget,
       elem => {
         /*
+         * 入力欄の大きさを更新
+         */
+        updateEditorInputSize();
+        /*
          * 入力欄のシンタックスハイライトを更新
          */
         updateTextHighlight(elem.value);
@@ -212,7 +216,6 @@ const editorInputElem = h('textarea', {
     throttle(
       event => event.currentTarget,
       elem => {
-        scrollTextHighlight(elem);
         scrollPreview(elem);
       },
     ),
@@ -252,6 +255,16 @@ initFnList.push(() => {
     editorTextHighlightElem.style[styleName] = inputElemStyle[styleName];
   });
 });
+
+/*
+ * 入力欄のサイズを更新
+ */
+function updateEditorInputSize() {
+  editorInputElem.style.height = `0px`;
+  editorInputElem.style.height = `${editorInputElem.scrollHeight}px`;
+}
+
+initFnList.push(updateEditorInputSize);
 
 /*
  * 入力欄のシンタックスハイライトを更新
@@ -363,13 +376,6 @@ function updateTextHighlight(inputText) {
   editorTextHighlightElem.appendChild(highlightTextDocFrag);
 }
 
-/*
- * 入力欄のシンタックスハイライトをスクロール
- */
-function scrollTextHighlight(editorElem) {
-  editorTextHighlightElem.style.transform = `translateY(${-editorElem.scrollTop}px)`;
-}
-
 const previewElem = h('iframe.preview');
 const previewStyleElem = h('style', [
   `
@@ -451,6 +457,14 @@ document.body.append(editorElem, previewElem, toggleEditorButtonElem);
   );
   previewDoc.body.append(novelTitleElem, novelBodyElem);
 })(previewElem.contentDocument);
+
+window.addEventListener(
+  'resize',
+  throttle(() => {
+    updateEditorInputSize();
+  }),
+  { passive: true },
+);
 
 /*
  * 初期化処理を実行
