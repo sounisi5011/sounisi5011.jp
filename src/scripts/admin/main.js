@@ -337,7 +337,8 @@ function updateTextHighlight(inputText) {
     let currentId = '';
 
     /**
-     * @type {{ pattern: RegExp, processor(match:RegExpExecArray):Node|Node[] }[]}
+     * @typedef {function(RegExpExecArray, function(string):(Node|string)[]): (string | Node | (string|Node)[])} ProcessorFn
+     * @type {{ pattern: RegExp, processor: ProcessorFn }[]}
      */
     const patternList = [
       /**
@@ -369,61 +370,93 @@ function updateTextHighlight(inputText) {
        * @see https://asciidoctor.org/docs/user-manual/#text-formatting
        */
       {
-        pattern: /(?:\[(?:(?!\n\n)[^\]])+\])?(__|\*\*|##)(?:(?!\1|\n\n).)+\1/sy,
-        processor(match) {
-          const matchText = match[0];
-          return h('span.text-formatting', matchText);
+        pattern: /((?:\[(?:(?!\n\n)[^\]])+\])?(__|\*\*|##))((?:(?!\2|\n\n).)+)\2/sy,
+        processor(match, process) {
+          return h('span.text-formatting', [
+            match[1],
+            ...process(match[3]),
+            match[2],
+          ]);
         },
       },
     ];
 
-    let prevIndex = 0;
-    for (
-      let currentIndex = 0;
-      currentIndex < inputText.length;
-      currentIndex++
-    ) {
-      /** @type {{ processor(match:RegExpExecArray):Node|Node[], match:RegExpExecArray }|false} */
-      let matchData = false;
-      for (const { pattern, processor } of patternList) {
-        pattern.lastIndex = currentIndex;
-        const match = pattern.exec(inputText);
-        if (match) {
-          matchData = { processor, match };
-          break;
-        }
-      }
+    /**
+     * @param {string} inputText
+     * @returns {(Node|string)[]}
+     */
+    const process = (inputText, isRoot = true) => {
+      /** @type {(Node|string)[]} */
+      const nodeList = [];
+      let prevIndex = 0;
 
-      if (matchData) {
-        const { processor, match } = matchData;
-        const matchText = match[0];
-        const prevText = inputText.substring(prevIndex, match.index);
-
-        if (prevText) {
-          highlightTextDocFrag.appendChild(
-            h('span', { dataset: { prevId: currentId } }, prevText),
-          );
-        }
-
-        /** @type {Node[]} */
-        const newNodeList = [].concat(processor(match));
-        newNodeList.forEach(newNode => {
-          if (!newNode.dataset.id) {
-            newNode.dataset.prevId = currentId;
+      for (
+        let currentIndex = 0;
+        currentIndex < inputText.length;
+        currentIndex++
+      ) {
+        /** @type {{ processor:ProcessorFn, match:RegExpExecArray }|false} */
+        let matchData = false;
+        for (const { pattern, processor } of patternList) {
+          pattern.lastIndex = currentIndex;
+          const match = pattern.exec(inputText);
+          if (match) {
+            matchData = { processor, match };
+            break;
           }
-          highlightTextDocFrag.appendChild(newNode);
-        });
+        }
 
-        currentIndex = prevIndex = match.index + matchText.length;
+        if (matchData) {
+          const { processor, match } = matchData;
+          const matchText = match[0];
+          const prevText = inputText.substring(prevIndex, match.index);
+
+          if (prevText) {
+            nodeList.push(
+              isRoot
+                ? h('span', { dataset: { prevId: currentId } }, prevText)
+                : prevText,
+            );
+          }
+
+          /** @type {(string|Node)[]} */
+          const newNodeList = [].concat(
+            processor(match, text => process(text, false)),
+          );
+          newNodeList.forEach(newNode => {
+            if (isRoot) {
+              if (newNode instanceof HTMLElement) {
+                if (!newNode.dataset.id) {
+                  newNode.dataset.prevId = currentId;
+                }
+              } else {
+                newNode = h(
+                  'span',
+                  { dataset: { prevId: currentId } },
+                  newNode,
+                );
+              }
+            }
+            nodeList.push(newNode);
+          });
+
+          currentIndex = prevIndex = match.index + matchText.length;
+        }
       }
-    }
 
-    const lastText = inputText.substring(prevIndex);
-    if (lastText) {
-      highlightTextDocFrag.appendChild(
-        h('span', { dataset: { prevId: currentId } }, lastText),
-      );
-    }
+      const lastText = inputText.substring(prevIndex);
+      if (lastText) {
+        nodeList.push(
+          isRoot
+            ? h('span', { dataset: { prevId: currentId } }, lastText)
+            : lastText,
+        );
+      }
+
+      return nodeList;
+    };
+
+    highlightTextDocFrag.append(...process(inputText));
   }
 
   /*
