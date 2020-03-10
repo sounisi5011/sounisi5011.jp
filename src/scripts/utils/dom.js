@@ -1,3 +1,9 @@
+/**
+ * @see https://infra.spec.whatwg.org/#ascii-whitespace
+ * @see https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions/Character_Classes
+ */
+export const HTML_WS_REGEXP = /[\t\n\f\r ]+/g;
+
 export function setAttr(elem, attrs) {
   for (const [attrName, attrValue] of Object.entries(attrs)) {
     if (

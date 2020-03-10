@@ -2,6 +2,7 @@ import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
 import {
+  HTML_WS_REGEXP,
   h,
   insertText,
   maxScroll,
@@ -286,24 +287,133 @@ const editorInputElem = h('textarea', {
 });
 const editorMenuElem = h('div.edit-menu', [
   h('div.left-buttons', [
-    h('button', '#ID'),
-    h(
-      'button.em-ruby',
-      {
-        onClick() {
-          editorInputElem.focus();
-          insertText(editorInputElem, (selectedText, select) => {
-            if (selectedText === '') {
-              const targetText = prompt('挿入する文字列を入力：');
-              if (!targetText) return;
-              return `__${targetText}__`;
-            } else {
-              return ['__', select(selectedText), '__'];
+    ...[
+      [
+        'button',
+        '#ID',
+        (selectedText, _, currentText, [selectionStart, selectionEnd]) => {
+          const invalidBlockIdCharRegExp = /["#%,.]/;
+          const invalidInlineIdCharRegExp = /["[]/;
+          const invalidIdCharRegExp = new RegExp(
+            invalidBlockIdCharRegExp.source +
+              '|' +
+              invalidInlineIdCharRegExp.source,
+            'g',
+          );
+          if (!selectedText) {
+            selectedText = prompt('挿入するIDを入力：');
+            if (!selectedText) return;
+            if (HTML_WS_REGEXP.test(selectedText)) {
+              alert('IDにASCIIホワイトスペース文字を含めることはできません');
+              return;
             }
-          });
+            const invalidCharMatch = selectedText.match(invalidIdCharRegExp);
+            if (invalidCharMatch) {
+              alert(
+                'IDに次の文字を含めることはできません：' +
+                  [...new Set(invalidCharMatch)].join(' '),
+              );
+              return;
+            }
+          } else {
+            if (HTML_WS_REGEXP.test(selectedText)) {
+              alert(
+                '選択範囲が無効です。IDにASCIIホワイトスペース文字を含めることはできません',
+              );
+              return;
+            }
+            const invalidCharMatch = selectedText.match(invalidIdCharRegExp);
+            if (invalidCharMatch) {
+              alert(
+                '選択範囲が無効です。IDに次の文字を含めることはできません：' +
+                  [...new Set(invalidCharMatch)].join(' '),
+              );
+              return;
+            }
+          }
+
+          const prev2char = currentText.substring(
+            Math.max(0, selectionStart - 2),
+            selectionStart,
+          );
+          if (/(?:^|\n)$/.test(prev2char)) {
+            /*
+             * 直前が改行、または、文字列の始まりの場合
+             */
+            const nextChar = currentText.substring(
+              selectionEnd,
+              selectionEnd + 1,
+            );
+            if (nextChar === '\n' || nextChar === '') {
+              /*
+               * 直後が改行、または、空文字列（入力の終わり）の場合は、段落用アンカーを挿入する。
+               */
+              const insertFirstLF = /^[^\n]/.test(prev2char);
+              const insertLastLF = nextChar === '';
+              return (
+                (insertFirstLF ? '\n' : '') +
+                `[#${selectedText}]` +
+                (insertLastLF ? '\n' : '')
+              );
+            } else {
+              /*
+               * 直後が改行ではない場合は、自身の位置は行の先頭。
+               */
+              const isInsert = selectionStart === selectionEnd;
+              if (isInsert && /^\n*$/.test(prev2char)) {
+                return `[#${selectedText}]\n`;
+              } else {
+                return `anchor:${selectedText}[]`;
+              }
+            }
+          } else {
+            /*
+             * 直前が改行文字ではない場合
+             */
+            const next2char = currentText.substring(
+              selectionEnd,
+              selectionEnd + 2,
+            );
+            if (/^\n?[^\n]/.test(next2char)) {
+              /*
+               * 直後が改行ではないか、次の行が存在する場合は、インラインアンカーを挿入する。
+               */
+              return `anchor:${selectedText}[]`;
+            } else {
+              /*
+               * 直後が改行、または、空文字列（入力の終わり）の場合は、新しい段落の開始に相当。
+               * 段落用アンカーを挿入する。
+               */
+              const insertLastLF = next2char === '';
+              return `\n\n[#${selectedText}]` + (insertLastLF ? '\n' : '');
+            }
+          }
         },
-      },
-      '強調',
+      ],
+      [
+        'button.em-ruby',
+        '強調',
+        (selectedText, select) => {
+          if (selectedText === '') {
+            const targetText = prompt('挿入する文字列を入力：');
+            if (!targetText) return;
+            return `__${targetText}__`;
+          } else {
+            return ['__', select(selectedText), '__'];
+          }
+        },
+      ],
+    ].map(([tagName, childNodes, insertFn]) =>
+      h(
+        tagName,
+        {
+          onClick() {
+            editorInputElem.focus();
+            insertText(editorInputElem, insertFn);
+          },
+        },
+        childNodes,
+      ),
     ),
     h('button', h('ruby', ['振り仮名', h('rt', 'ふりがな')])),
   ]),
