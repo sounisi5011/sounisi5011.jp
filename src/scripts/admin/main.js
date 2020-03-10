@@ -207,17 +207,6 @@ body {
   text-emphasis: dot;
 }
 
-button.toggle-editor {
-  position: absolute;
-  bottom: 0.5em;
-  right: 1.5em;
-  display: none;
-}
-
-.show-preview button.toggle-editor {
-  display: inline-block;
-}
-
 @media (min-width: 610px) and (min-aspect-ratio: 4/3) {
   body {
     display: flex;
@@ -228,7 +217,7 @@ button.toggle-editor {
   }
 
   .show-preview .editor {
-    display: unset;
+    display: grid;
   }
 
   .preview {
@@ -236,8 +225,7 @@ button.toggle-editor {
     visibility: visible;
   }
 
-  .editor .edit-menu button.toggle-preview,
-  .show-preview button.toggle-editor {
+  .editor .edit-menu button.toggle-preview {
     display: none;
   }
 }
@@ -319,7 +307,7 @@ const editorMenuElem = h('div.edit-menu', [
       'button.toggle-preview',
       {
         onClick() {
-          rootElem.classList.add('show-preview');
+          location.hash = 'preview';
         },
       },
       'プレビュー',
@@ -622,18 +610,19 @@ function scrollPreview(editorElem, inputUpdateOnly = false) {
  */
 let prevExistsFrontmatter = null;
 
-const toggleEditorButtonElem = h(
-  'button.toggle-editor',
-  {
-    onClick() {
-      rootElem.classList.remove('show-preview');
-    },
-  },
-  '編集',
-);
+/**
+ * URLフラグメントの変更を検知しプレビューの表示を切り替える
+ */
+function togglePreview() {
+  rootElem.classList.toggle('show-preview', location.hash === '#preview');
+}
+
+initFnList.push(togglePreview);
+
+window.addEventListener('hashchange', togglePreview);
 
 document.head.append(styleElem, invalidLengthStyleElem);
-document.body.append(editorElem, previewElem, toggleEditorButtonElem);
+document.body.append(editorElem, previewElem);
 
 (previewDoc => {
   previewDoc.documentElement.lang = 'ja';
