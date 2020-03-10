@@ -1,7 +1,14 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
-import { h, maxScroll, removeChildren, saveText, throttle } from '../utils/dom';
+import {
+  h,
+  insertText,
+  maxScroll,
+  removeChildren,
+  saveText,
+  throttle,
+} from '../utils/dom';
 import { parse as parseFrontMatter } from '../utils/front-matter';
 import html2textConfig from '../../../config/html2text';
 
@@ -280,7 +287,24 @@ const editorInputElem = h('textarea', {
 const editorMenuElem = h('div.edit-menu', [
   h('div.left-buttons', [
     h('button', '#ID'),
-    h('button.em-ruby', '強調'),
+    h(
+      'button.em-ruby',
+      {
+        onClick() {
+          editorInputElem.focus();
+          insertText(editorInputElem, (selectedText, select) => {
+            if (selectedText === '') {
+              const targetText = prompt('挿入する文字列を入力：');
+              if (!targetText) return;
+              return `__${targetText}__`;
+            } else {
+              return ['__', select(selectedText), '__'];
+            }
+          });
+        },
+      },
+      '強調',
+    ),
     h('button', h('ruby', ['振り仮名', h('rt', 'ふりがな')])),
   ]),
   h('div.right-buttons', [
