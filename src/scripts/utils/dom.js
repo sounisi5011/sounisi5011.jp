@@ -130,3 +130,25 @@ export function throttle(conv, fn = null) {
     }
   };
 }
+
+/**
+ * @param {string} filename
+ * @param {string} filedata
+ */
+export function saveText(filename, filedata) {
+  const filedataBlob = new Blob([filedata], { type: 'text/plain' });
+  const filedataBlobURL = URL.createObjectURL(filedataBlob);
+  const aElem = h('a', {
+    href: filedataBlobURL,
+    download: filename,
+  });
+  aElem.click();
+
+  /**
+   * Note: setTimeout()を使用しなくてもChromeでは動作し、
+   *       仕様書にも「Requests that were started before the url was revoked should still succeed」と記載があるが、
+   *       念の為blob URLを開放する処理は10秒後に行う。
+   * @see https://w3c.github.io/FileAPI/#dfn-revokeObjectURL
+   */
+  setTimeout(() => URL.revokeObjectURL(filedataBlobURL), 10 * 1000);
+}

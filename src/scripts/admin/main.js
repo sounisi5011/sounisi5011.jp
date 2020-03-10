@@ -1,7 +1,7 @@
 import getTextDataList from '@sounisi5011/html-id-split-text';
 import twitter from 'twitter-text';
 
-import { h, maxScroll, removeChildren, throttle } from '../utils/dom';
+import { h, maxScroll, removeChildren, saveText, throttle } from '../utils/dom';
 import { parse as parseFrontMatter } from '../utils/front-matter';
 import html2textConfig from '../../../config/html2text';
 
@@ -296,7 +296,25 @@ const editorMenuElem = h('div.edit-menu', [
     h('button', h('ruby', ['振り仮名', h('rt', 'ふりがな')])),
   ]),
   h('div.right-buttons', [
-    h('button', '保存'),
+    h(
+      'button',
+      {
+        onClick() {
+          const titleDataList = getTextDataList(
+            novelTitleElem,
+            html2textConfig,
+          );
+          const titleText =
+            titleDataList
+              .map(data => data.text)
+              .join('')
+              .trim() || '無題';
+          const inputText = editorInputElem.value;
+          saveText(`${titleText}.adoc`, inputText);
+        },
+      },
+      '保存',
+    ),
     h(
       'button.toggle-preview',
       {
