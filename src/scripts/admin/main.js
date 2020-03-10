@@ -161,13 +161,50 @@ body {
 }
 
 .editor .edit-menu {
+  display: flex;
+  justify-content: space-between;
   border-top: solid 1px #ccc;
   padding: .75em;
   background-color: white;
 }
 
-.editor .edit-menu button.toggle-preview {
-  float: right;
+.editor .edit-menu .left-buttons,
+.editor .edit-menu .right-buttons {
+  display: flex;
+}
+
+.editor .edit-menu .left-buttons {
+  flex-wrap: wrap;
+  margin-top: -0.5em;
+  margin-left: -0.5em;
+}
+
+.editor .edit-menu .right-buttons {
+  height: max-content;
+  margin-left: 1em;
+}
+
+.editor .edit-menu .left-buttons > *,
+.editor .edit-menu .right-buttons > * + * {
+  margin-left: 0.5em;
+}
+
+.editor .edit-menu .left-buttons > * {
+  margin-top: 0.5em;
+}
+
+.editor .edit-menu button {
+  cursor: pointer;
+  min-width: 44px;
+  min-height: 44px;
+  border: solid 1px #ccc;
+  white-space: nowrap;
+  background-color: white;
+}
+
+.editor .edit-menu button.em-ruby {
+  -webkit-text-emphasis: dot;
+  text-emphasis: dot;
 }
 
 button.toggle-editor {
@@ -252,16 +289,25 @@ const editorInputElem = h('textarea', {
     { passive: true },
   ],
 });
-const togglePreviewButtonElem = h(
-  'button.toggle-preview',
-  {
-    onClick() {
-      rootElem.classList.add('show-preview');
-    },
-  },
-  'プレビュー',
-);
-const editorMenuElem = h('div.edit-menu', ['Menu', togglePreviewButtonElem]);
+const editorMenuElem = h('div.edit-menu', [
+  h('div.left-buttons', [
+    h('button', '#ID'),
+    h('button.em-ruby', '強調'),
+    h('button', h('ruby', ['振り仮名', h('rt', 'ふりがな')])),
+  ]),
+  h('div.right-buttons', [
+    h('button', '保存'),
+    h(
+      'button.toggle-preview',
+      {
+        onClick() {
+          rootElem.classList.add('show-preview');
+        },
+      },
+      'プレビュー',
+    ),
+  ]),
+]);
 const editorElem = h('div.editor', [
   editorTextHighlightElem,
   editorInputElem,
