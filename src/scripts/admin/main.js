@@ -147,6 +147,10 @@ body {
   color: blue;
 }
 
+.editor .text-highlight .anchor-def .option {
+  color: gray;
+}
+
 .editor .text-highlight .inline-macro {
   color: orange;
 }
@@ -524,7 +528,7 @@ function updateTextHighlight(inputText) {
 
     /**
      * @typedef {function(RegExpExecArray, function(string):(Node|string)[]): (string | Node | (string|Node)[])} ProcessorFn
-     * @type {{ pattern: RegExp, processor: ProcessorFn }[]}
+     * @type {{ pattern: RegExp|RegExp[], processor: ProcessorFn }[]}
      */
     const patternList = [
       /**
@@ -532,12 +536,21 @@ function updateTextHighlight(inputText) {
        * @see https://asciidoctor.org/docs/user-manual/#anchordef
        */
       {
-        pattern: /^\[(?:\[([^\],\r\n]+)[^\]]*\]|#([^\].,\r\n]+)[^\]]*)\](?:(?![\r\n])\s)*$|anchor:([^[\r\n]+)\[[^\]]*\]/my,
+        pattern: [
+          /^(\[\[)((?![!-9])[^\t\n\f\r -,/;-@[-^`{-~]+)((?:,(?:(?!]](?:(?![\r\n])\s)*$).)+)?)(\]\](?:(?![\r\n])\s)*)$/my,
+          /^(\[#)((?:(?!](?:(?![\r\n])\s)*$)[^\t\n\f\r "#%,.])+)((?:(?:\s*,\s*|\.)(?:(?!](?:(?![\r\n])\s)*$)[^#])*)?)(\](?:(?![\r\n])\s)*)$/my,
+          /(anchor:)([^\t\n\f\r "[]+)(\[[^\]]*\])()/y,
+        ],
         processor(match) {
-          const matchText = match[0];
-          const id = match[3] || match[2] || match[1];
+          const [, prefix, id, option, suffix] = match;
           currentId = id;
-          return h('span.anchor-def', { dataset: { id } }, matchText);
+          return h(
+            'span.anchor-def',
+            { dataset: { id } },
+            option
+              ? [prefix + id, h('span.option', option), suffix]
+              : prefix + id + suffix,
+          );
         },
       },
       /**
@@ -584,8 +597,12 @@ function updateTextHighlight(inputText) {
         /** @type {{ processor:ProcessorFn, match:RegExpExecArray }|false} */
         let matchData = false;
         for (const { pattern, processor } of patternList) {
-          pattern.lastIndex = currentIndex;
-          const match = pattern.exec(inputText);
+          let match;
+          for (const regexp of Array.isArray(pattern) ? pattern : [pattern]) {
+            regexp.lastIndex = currentIndex;
+            match = regexp.exec(inputText);
+            if (match) break;
+          }
           if (match) {
             matchData = { processor, match };
             break;
