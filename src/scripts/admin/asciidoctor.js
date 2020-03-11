@@ -44,6 +44,22 @@ asciidoctorWorker.addEventListener('message', event => {
   onProcessedFn({ title, html });
 });
 
+/**
+ * 属性値をエスケープする
+ * @param {string} value
+ * @returns {string}
+ * @see https://asciidoctor.org/docs/user-manual/#setting-attributes-on-an-element
+ */
+export function escapeAttrValue(value) {
+  if (!/[\s,"'"]/.test(value)) {
+    return value;
+  }
+  if (value.includes(`"`) && !value.includes(`'`)) {
+    return `'${value}'`;
+  }
+  return `"${value.replace(/"/g, `\\"`)}"`;
+}
+
 export default {
   /**
    * Asciidoctorの処理を開始する

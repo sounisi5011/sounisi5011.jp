@@ -13,7 +13,9 @@ import {
 import { parse as parseFrontMatter } from '../utils/front-matter';
 import html2textConfig from '../../../config/html2text';
 
-import asciidoctor from './asciidoctor';
+import asciidoctor, {
+  escapeAttrValue as asciidocEscapeAttrValue,
+} from './asciidoctor';
 
 const draftSaveKey = `draft-text::${location.pathname.replace(/\/+$/, '')}`;
 
@@ -219,6 +221,38 @@ body {
   text-emphasis: dot;
 }
 
+.editor dialog.edit-ruby-prompt {
+  top: 50%;
+  transform: translate(0, -50%);
+  border-radius: 0.5em;
+  border: solid 1px #ccc;
+  padding: 0;
+}
+
+.editor dialog.edit-ruby-prompt > form {
+  padding: 1em;
+}
+
+.editor dialog.edit-ruby-prompt input[type=text] {
+  border: solid 1px gray;
+  padding: 0.5em;
+}
+
+.editor dialog.edit-ruby-prompt input[required]:valid {
+  border-color: lime;
+  outline-color: lime;
+}
+
+.editor dialog.edit-ruby-prompt input:invalid {
+  border-color: red;
+  outline-color: red;
+}
+
+.editor dialog.edit-ruby-prompt input[name^=rp] {
+  min-width: 1em;
+  width: 1em;
+}
+
 @media (min-width: 610px) and (min-aspect-ratio: 4/3) {
   body {
     display: flex;
@@ -289,6 +323,174 @@ const editorInputElem = h('textarea', {
     { passive: true },
   ],
 });
+const { editorRubyPromptElem, showRubyPrompt } = (() => {
+  function fitInputWidth(elem) {
+    const { style } = elem;
+
+    style.padding = 0;
+    style.width = '1px';
+
+    style.width = `${elem.scrollWidth}px`;
+
+    style.removeProperty('padding');
+  }
+
+  /**
+   * 開き括弧に対応する閉じ括弧文字を取得する
+   * @param {string} openBracket 開き括弧の1文字。複数の文字を指定した場合は常に失敗する
+   * @returns {string} 開き括弧に対応する閉じ括弧の1文字。対応する括弧が存在しないか、複数の文字を指定された場合は、空文字列を返す
+   */
+  function autocompleteCloseBracket(openBracket) {
+    /**
+     * @see https://unicode.org/Public/13.0.0/ucd/BidiBrackets.txt
+     * @see https://ja.wikipedia.org/wiki/%E6%8B%AC%E5%BC%A7
+     * @see https://en.wikipedia.org/wiki/Bracket#Encoding_in_digital_media
+     */
+    const openBracketsPattern = [
+      { shift: -16, regexp: /^[\u00BB]$/ },
+      { shift: -1, regexp: /^[\u298F]$/ },
+      {
+        shift: 1,
+        regexp: /^[\u0028\u0F3A\u0F3C\u169B\u2018\u201C\u2039\u2045\u207D\u208D\u2308\u230A\u231C\u231E\u2329\u2768\u276A\u276C\u276E\u2770\u2772\u2774\u27C5\u27D3\u27E6\u27E8\u27EA\u27EC\u27EE\u2983\u2985\u2987\u2989\u298B\u298E\u2991\u2993\u2995\u2997\u29D8\u29DA\u29FC\u2E02\u2E04\u2E09\u2E0C\u2E1C\u2E22\u2E24\u2E26\u2E28\u3008\u300A\u300C\u300E\u3010\u3014\u3016\u3018\u301A\u301D\uFD3E\uFE59\uFE5B\uFE5D\uFF08\uFF5F\uFF62]$/,
+      },
+      { shift: 2, regexp: /^[\u003C\u005B\u007B\uFF1C\uFF3B\uFF5B]$/ },
+      { shift: 3, regexp: /^[\u298D]$/ },
+      { shift: 4, regexp: /^[\u201A]$/ },
+      { shift: 16, regexp: /^[\u00AB]$/ },
+    ];
+
+    for (const { shift, regexp } of openBracketsPattern) {
+      if (regexp.test(openBracket)) {
+        return String.fromCodePoint(openBracket.codePointAt(0) + shift);
+      }
+    }
+
+    return '';
+  }
+
+  let insertRubyText = '';
+
+  /** @type {HTMLInputElement} */
+  const rubyBodyInputElem = h('input', {
+    type: 'text',
+    name: 'rb',
+    placeholder: '振り仮名',
+    required: true,
+    pattern: '^[^[]+$',
+  });
+  /** @type {HTMLInputElement} */
+  const rubyTextInputElem = h('input', {
+    type: 'text',
+    name: 'rt',
+    placeholder: 'ふりがな',
+    required: true,
+  });
+  /** @type {HTMLInputElement} */
+  const rubyStartParenthesisInputElem = h('input', {
+    type: 'text',
+    name: 'rp-start',
+    placeholder: '（',
+    onInput() {
+      fitInputWidth(this);
+
+      if (rubyEndParenthesisInputElem.dataset.protectValue === undefined) {
+        const { value } = this;
+        if (value === '') {
+          rubyEndParenthesisInputElem.value = '';
+        } else {
+          const closeBracketChar = autocompleteCloseBracket(value);
+          if (!closeBracketChar) return;
+          rubyEndParenthesisInputElem.value = closeBracketChar;
+        }
+        fitInputWidth(rubyEndParenthesisInputElem);
+      }
+    },
+  });
+  /** @type {HTMLInputElement} */
+  const rubyEndParenthesisInputElem = h('input', {
+    type: 'text',
+    name: 'rp-end',
+    placeholder: '）',
+    onInput() {
+      fitInputWidth(this);
+
+      if (this.value !== '') {
+        this.dataset.protectValue = '';
+      } else {
+        delete this.dataset.protectValue;
+      }
+    },
+  });
+  /** @type {HTMLDialogElement} */
+  const editorRubyPromptElem = h(
+    'dialog.edit-ruby-prompt',
+    {
+      onClick(event) {
+        if (event.target === this) {
+          this.close();
+        }
+      },
+      onClose() {
+        if (insertRubyText) {
+          insertText(editorInputElem, insertRubyText);
+          insertRubyText = '';
+        }
+      },
+    },
+    h(
+      'form',
+      {
+        method: 'dialog',
+        onSubmit() {
+          insertRubyText = `ruby:${rubyBodyInputElem.value}[${[
+            asciidocEscapeAttrValue(rubyTextInputElem.value),
+          ]
+            .concat(
+              rubyStartParenthesisInputElem.value
+                ? `rpStart=${asciidocEscapeAttrValue(
+                    rubyStartParenthesisInputElem.value,
+                  )}`
+                : [],
+            )
+            .concat(
+              rubyEndParenthesisInputElem.value
+                ? `rpEnd=${asciidocEscapeAttrValue(
+                    rubyEndParenthesisInputElem.value,
+                  )}`
+                : [],
+            )
+            .join(', ')}]`;
+        },
+      },
+      [
+        h('fieldset', [h('legend', '対象文字列'), rubyBodyInputElem]),
+        h('fieldset', [
+          h('legend', 'ルビ'),
+          rubyStartParenthesisInputElem,
+          rubyTextInputElem,
+          rubyEndParenthesisInputElem,
+        ]),
+        h('input', { type: 'submit', value: 'OK' }),
+      ],
+    ),
+  );
+  const showRubyPrompt = () => {
+    const { selectionStart, selectionEnd } = editorInputElem;
+    const selectedText = editorInputElem.value.substring(
+      selectionStart,
+      selectionEnd,
+    );
+
+    insertRubyText = '';
+    rubyBodyInputElem.value = selectedText;
+    rubyTextInputElem.value = '';
+    rubyStartParenthesisInputElem.value = '';
+    rubyEndParenthesisInputElem.value = '';
+
+    editorRubyPromptElem.showModal();
+  };
+  return { editorRubyPromptElem, showRubyPrompt };
+})();
 const editorMenuElem = h('div.edit-menu', [
   h('div.left-buttons', [
     ...[
@@ -419,7 +621,11 @@ const editorMenuElem = h('div.edit-menu', [
         childNodes,
       ),
     ),
-    h('button', h('ruby', ['振り仮名', h('rt', 'ふりがな')])),
+    h(
+      'button',
+      { onClick: showRubyPrompt },
+      h('ruby', ['振り仮名', h('rt', 'ふりがな')]),
+    ),
   ]),
   h('div.right-buttons', [
     h(
@@ -456,6 +662,7 @@ const editorElem = h('div.editor', [
   editorTextHighlightElem,
   editorInputElem,
   editorMenuElem,
+  editorRubyPromptElem,
 ]);
 
 initFnList.push(

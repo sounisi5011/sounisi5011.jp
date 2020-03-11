@@ -216,6 +216,9 @@ export function insertText(textareaElem, insertTextOrCallback) {
    */
   const insertText = prevText + selectText + nextText;
   textareaElem.focus();
+  if (textareaElem !== document.activeElement) {
+    throw new Error('対象要素の選択が失敗しました');
+  }
   document.execCommand('insertText', false, insertText);
 
   /*
