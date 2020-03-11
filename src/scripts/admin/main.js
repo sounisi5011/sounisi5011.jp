@@ -187,26 +187,31 @@ body {
 .editor .edit-menu .left-buttons,
 .editor .edit-menu .right-buttons {
   display: flex;
+  flex-wrap: wrap;
+  margin-top: -0.5em;
 }
 
 .editor .edit-menu .left-buttons {
-  flex-wrap: wrap;
-  margin-top: -0.5em;
   margin-left: -0.5em;
 }
 
 .editor .edit-menu .right-buttons {
-  height: max-content;
   margin-left: 1em;
+  margin-right: -0.5em;
 }
 
 .editor .edit-menu .left-buttons > *,
-.editor .edit-menu .right-buttons > * + * {
-  margin-left: 0.5em;
+.editor .edit-menu .right-buttons > * {
+  margin-top: 0.5em;
 }
 
 .editor .edit-menu .left-buttons > * {
-  margin-top: 0.5em;
+  margin-left: 0.5em;
+}
+
+.editor .edit-menu .right-buttons > * {
+  flex: 1 auto;
+  margin-right: 0.5em;
 }
 
 .editor .edit-menu button {
@@ -665,6 +670,7 @@ const editorMenuElem = h('div.edit-menu', [
       ),
   ]),
   h('div.right-buttons', [
+    h('button', 'ロード'),
     h(
       'button',
       {
