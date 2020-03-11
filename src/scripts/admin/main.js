@@ -438,6 +438,7 @@ const { editorRubyPromptElem, showRubyPrompt } = (() => {
         }
       },
       onClose() {
+        editorInputElem.focus();
         if (insertRubyText) {
           insertText(editorInputElem, insertRubyText);
           insertRubyText = '';
@@ -636,7 +637,12 @@ const editorMenuElem = h('div.edit-menu', [
     ),
     h(
       'button',
-      { onClick: showRubyPrompt },
+      {
+        onClick() {
+          editorInputElem.focus();
+          showRubyPrompt();
+        },
+      },
       h('ruby', ['振り仮名', h('rt', 'ふりがな')]),
     ),
   ]),
