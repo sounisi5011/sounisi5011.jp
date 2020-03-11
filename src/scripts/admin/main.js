@@ -645,6 +645,24 @@ const editorMenuElem = h('div.edit-menu', [
       },
       h('ruby', ['振り仮名', h('rt', 'ふりがな')]),
     ),
+    ...['Undo', 'Redo']
+      .map(label =>
+        Array.isArray(label)
+          ? label.concat(String(label[label.length - 1]).toLowerCase())
+          : [label, label.toLowerCase()],
+      )
+      .map(([label, command]) =>
+        h(
+          'button',
+          {
+            onClick() {
+              editorInputElem.focus();
+              document.execCommand(command, false, null);
+            },
+          },
+          label,
+        ),
+      ),
   ]),
   h('div.right-buttons', [
     h(
