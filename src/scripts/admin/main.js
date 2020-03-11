@@ -12,6 +12,7 @@ import {
 } from '../utils/dom';
 import { parse as parseFrontMatter } from '../utils/front-matter';
 import html2textConfig from '../../../config/html2text';
+import { setterHook } from '../utils';
 
 import asciidoctor, {
   createInlineMacroText,
@@ -403,9 +404,11 @@ const { editorRubyPromptElem, showRubyPrompt } = (() => {
           if (!closeBracketChar) return;
           rubyEndParenthesisInputElem.value = closeBracketChar;
         }
-        fitInputWidth(rubyEndParenthesisInputElem);
       }
     },
+  });
+  setterHook(rubyStartParenthesisInputElem, 'value', function() {
+    fitInputWidth(this);
   });
   /** @type {HTMLInputElement} */
   const rubyEndParenthesisInputElem = h('input', {
@@ -421,6 +424,9 @@ const { editorRubyPromptElem, showRubyPrompt } = (() => {
         delete this.dataset.protectValue;
       }
     },
+  });
+  setterHook(rubyEndParenthesisInputElem, 'value', function() {
+    fitInputWidth(this);
   });
   /** @type {HTMLDialogElement} */
   const editorRubyPromptElem = h(
