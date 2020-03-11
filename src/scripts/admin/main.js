@@ -14,7 +14,8 @@ import { parse as parseFrontMatter } from '../utils/front-matter';
 import html2textConfig from '../../../config/html2text';
 
 import asciidoctor, {
-  escapeAttrValue as asciidocEscapeAttrValue,
+  createInlineMacroText,
+  parseInlineMacroText,
 } from './asciidoctor';
 
 const draftSaveKey = `draft-text::${location.pathname.replace(/\/+$/, '')}`;
@@ -442,24 +443,15 @@ const { editorRubyPromptElem, showRubyPrompt } = (() => {
       {
         method: 'dialog',
         onSubmit() {
-          insertRubyText = `ruby:${rubyBodyInputElem.value}[${[
-            asciidocEscapeAttrValue(rubyTextInputElem.value),
-          ]
-            .concat(
-              rubyStartParenthesisInputElem.value
-                ? `rpStart=${asciidocEscapeAttrValue(
-                    rubyStartParenthesisInputElem.value,
-                  )}`
-                : [],
-            )
-            .concat(
-              rubyEndParenthesisInputElem.value
-                ? `rpEnd=${asciidocEscapeAttrValue(
-                    rubyEndParenthesisInputElem.value,
-                  )}`
-                : [],
-            )
-            .join(', ')}]`;
+          insertRubyText = createInlineMacroText(
+            'ruby',
+            rubyBodyInputElem.value,
+            [rubyTextInputElem.value],
+            {
+              rpStart: (rubyStartParenthesisInputElem.value || null),
+              rpEnd: (rubyEndParenthesisInputElem.value || null),
+            },
+          );
         },
       },
       [
@@ -480,12 +472,27 @@ const { editorRubyPromptElem, showRubyPrompt } = (() => {
       selectionStart,
       selectionEnd,
     );
-
     insertRubyText = '';
-    rubyBodyInputElem.value = selectedText;
-    rubyTextInputElem.value = '';
-    rubyStartParenthesisInputElem.value = '';
-    rubyEndParenthesisInputElem.value = '';
+
+    /*
+     * 選択範囲がrubyマクロの場合は解析結果を代入する
+     */
+    const rubyMacroData = parseInlineMacroText(selectedText, [
+      'rubyText',
+      'rpStart',
+      'rpEnd',
+    ]);
+    if (rubyMacroData && rubyMacroData.macroName === 'ruby') {
+      rubyBodyInputElem.value = rubyMacroData.target;
+      rubyTextInputElem.value = rubyMacroData.attrs.rubyText || '';
+      rubyStartParenthesisInputElem.value = rubyMacroData.attrs.rpStart || '';
+      rubyEndParenthesisInputElem.value = rubyMacroData.attrs.rpEnd || '';
+    } else {
+      rubyBodyInputElem.value = selectedText;
+      rubyTextInputElem.value = '';
+      rubyStartParenthesisInputElem.value = '';
+      rubyEndParenthesisInputElem.value = '';
+    }
 
     editorRubyPromptElem.showModal();
   };

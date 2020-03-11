@@ -60,6 +60,76 @@ export function escapeAttrValue(value) {
   return `"${value.replace(/"/g, `\\"`)}"`;
 }
 
+/**
+ * @param {string} macroName
+ * @param {string} target
+ * @param {string[]} positionalAttrs
+ * @param {Object.<string, string|false|null|undefined>} attrs
+ * @returns {string}
+ * @see https://asciidoctor.org/docs/user-manual/#setting-attributes-on-an-element
+ */
+export function createInlineMacroText(
+  macroName,
+  target = '',
+  positionalAttrs = [],
+  attrs = {},
+) {
+  const attrStrList = positionalAttrs.map(escapeAttrValue).concat(
+    Object.entries(attrs)
+      .filter(
+        ([, value]) => value !== false && value !== null && value !== undefined,
+      )
+      .map(([name, value]) => `${name}=${escapeAttrValue(value)}`),
+  );
+  return `${macroName}:${target}[${attrStrList
+    .join(', ')
+    .replace(/\[/g, `\\[`)}]`;
+}
+
+/**
+ * @typedef {{ macroName:string, target:string, positionalAttrs:(string|null)[], attrs:Object.<string, string> }} InlineMacroData
+ * @param {string} text
+ * @param {string[]} positionalAttrNames
+ * @returns {InlineMacroData|null}
+ */
+export function parseInlineMacroText(text, positionalAttrNames = []) {
+  const match = /^([a-z]+):([^[\r\n]+)\[((?:\\]|[^\]\r\n])*)\]$/i.exec(text);
+  if (!match) return null;
+
+  const [, macroName, target, attrsText] = match;
+
+  const attrsRegExp = /\s*(?:([^=,\s]+)\s*=)?\s*(?:"((?:\\"|[^"])*)"|'((?:\\'|[^'])*)'|\s*([^,]*))\s*(?:,\s*|$)/y;
+  const positionalAttrs = [];
+  const attrs = {};
+  for (let match; (match = attrsRegExp.exec(attrsText)); ) {
+    if (match.index === attrsText.length) break;
+    const [, attrName, quotValue, aposValue, rawValue] = match;
+    const value = (
+      rawValue ||
+      (aposValue && aposValue.replace(/\\'/, `'`)) ||
+      (quotValue && quotValue.replace(/\\"/, `"`)) ||
+      ''
+    ).replace(/\\]/, ']');
+    if (attrName) {
+      attrs[attrName] = value;
+      positionalAttrs.push(null);
+    } else {
+      const attrName = positionalAttrNames[positionalAttrs.length];
+      if (attrName !== undefined) {
+        attrs[attrName] = value;
+      }
+      positionalAttrs.push(value);
+    }
+  }
+
+  return {
+    macroName,
+    target,
+    positionalAttrs,
+    attrs,
+  };
+}
+
 export default {
   /**
    * Asciidoctorの処理を開始する
