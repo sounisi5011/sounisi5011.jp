@@ -20,6 +20,8 @@ import asciidoctor, {
   createInlineMacroText,
   parseInlineMacroText,
 } from './asciidoctor';
+import mainCSSText from './main.js.scss';
+import previewCSSText from './main.js.preview.scss';
 
 const draftSaveKey = `draft-text::${location.pathname.replace(/\/+$/, '')}`;
 
@@ -90,206 +92,7 @@ document.execCommand('DefaultParagraphSeparator', false, 'div');
 /** @type {function():void} */
 const initFnList = [];
 
-/**
- * @see http://takuyakobayashi.id/blog/2019/02/09/4301
- */
-const styleElem = h('style', [
-  `
-html, body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-}
-
-.editor, .preview {
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.editor {
-  overflow-y: hidden;
-  position: relative;
-  display: grid;
-  grid-template-rows: auto max-content;
-}
-
-.show-preview .editor {
-  display: none;
-}
-
-.preview {
-  position: absolute;
-  top: 0;
-  visibility: hidden;
-  border: none;
-}
-
-.show-preview .preview {
-  visibility: visible;
-}
-
-.editor .text-highlight,
-.editor textarea {
-  box-sizing: border-box;
-  overflow-y: scroll;
-}
-
-.editor .text-highlight {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: -1;
-}
-
-.editor .text-highlight .front-matter {
-  opacity: 0.2;
-}
-
-.editor .text-highlight .anchor-def {
-  color: blue;
-}
-
-.editor .text-highlight .anchor-def .option {
-  color: gray;
-}
-
-.editor .text-highlight .inline-macro {
-  color: orange;
-}
-
-.editor .text-highlight .text-formatting {
-  color: magenta;
-}
-
-.editor textarea {
-  resize: none;
-  border: none;
-  color: transparent;
-  background-color: transparent;
-  caret-color: black;
-}
-
-.editor .text-highlight[hidden] + textarea {
-  color: black;
-  background-color: white;
-}
-
-.editor .edit-menu {
-  display: flex;
-  justify-content: space-between;
-  border-top: solid 1px #ccc;
-  padding: .75em;
-  background-color: white;
-}
-
-.editor .edit-menu .left-buttons,
-.editor .edit-menu .right-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: -0.5em;
-}
-
-.editor .edit-menu .left-buttons {
-  margin-left: -0.5em;
-}
-
-.editor .edit-menu .right-buttons {
-  margin-left: 1em;
-  margin-right: -0.5em;
-}
-
-.editor .edit-menu .left-buttons > *,
-.editor .edit-menu .right-buttons > * {
-  margin-top: 0.5em;
-}
-
-.editor .edit-menu .left-buttons > * {
-  margin-left: 0.5em;
-}
-
-.editor .edit-menu .right-buttons > * {
-  flex: 1 auto;
-  margin-right: 0.5em;
-}
-
-.editor .edit-menu button {
-  cursor: pointer;
-  min-width: 44px;
-  min-height: 44px;
-  border: solid 1px #ccc;
-  white-space: nowrap;
-  background-color: white;
-}
-
-.editor .edit-menu button.em-ruby {
-  -webkit-text-emphasis: dot;
-  text-emphasis: dot;
-}
-
-.editor .edit-menu button.load-file.loading:after {
-  content: "中…";
-}
-
-.editor dialog.edit-ruby-prompt {
-  top: 50%;
-  transform: translate(0, -50%);
-  border-radius: 0.5em;
-  border: solid 1px #ccc;
-  padding: 0;
-}
-
-.editor dialog.edit-ruby-prompt > form {
-  padding: 1em;
-}
-
-.editor dialog.edit-ruby-prompt input[type=text] {
-  border: solid 1px gray;
-  padding: 0.5em;
-}
-
-.editor dialog.edit-ruby-prompt input[required]:valid {
-  border-color: lime;
-  outline-color: lime;
-}
-
-.editor dialog.edit-ruby-prompt input:invalid {
-  border-color: red;
-  outline-color: red;
-}
-
-.editor dialog.edit-ruby-prompt input[name^=rp] {
-  min-width: 1em;
-  width: 1em;
-}
-
-@media (min-width: 610px) and (min-aspect-ratio: 4/3) {
-  body {
-    display: flex;
-  }
-
-  .editor, .preview {
-    flex: 1;
-  }
-
-  .show-preview .editor {
-    display: grid;
-  }
-
-  .preview {
-    position: static;
-    visibility: visible;
-  }
-
-  .editor .edit-menu button.toggle-preview {
-    display: none;
-  }
-}
-`,
-]);
+const styleElem = h('style', mainCSSText);
 const invalidLengthStyleElem = h('style');
 
 const editorTextHighlightElem = h('div.text-highlight', {
@@ -972,16 +775,7 @@ function scrollTextHighlight(editorElem) {
 }
 
 const previewElem = h('iframe.preview');
-const previewStyleElem = h('style', [
-  `
-.novel-title:empty {
-  opacity: 0.2;
-}
-.novel-title:empty:before {
-  content: "No Title";
-}
-`,
-]);
+const previewStyleElem = h('style', previewCSSText);
 
 const novelTitleElem = h('h1.novel-title');
 const novelBodyElem = h('main.novel-body');

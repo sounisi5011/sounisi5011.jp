@@ -1,0 +1,9 @@
+.novel-title {
+  &:empty {
+    opacity: 0.2;
+
+    &:before {
+      content: "No Title";
+    }
+  }
+}

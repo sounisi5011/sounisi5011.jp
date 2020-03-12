@@ -6,6 +6,7 @@ const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
 const cssnano = require('cssnano');
 const postcss = require('postcss');
 const rollupBabel = require('rollup-plugin-babel');
+const rollupSass = require('rollup-plugin-sass');
 const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
 const rollupWebWorkerLoader = require('rollup-plugin-web-worker-loader');
 
@@ -53,6 +54,7 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
         };
       },
     }),
+    rollupSass(),
     rollupWebWorkerLoader({
       sourcemap: true,
       inline: false,
