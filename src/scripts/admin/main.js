@@ -487,6 +487,7 @@ const editorMenuElem = h('div.edit-menu', [
           const buttonElem = this;
           loadFile({ accept: '.adoc, .asc, .asciidoc, text/*' })
             .then(file => {
+              editorInputElem.disabled = true;
               buttonElem.classList.add('loading');
 
               if (!file) {
@@ -504,6 +505,7 @@ const editorMenuElem = h('div.edit-menu', [
               return file2Text(file);
             })
             .then(filetext => {
+              editorInputElem.disabled = false;
               editorInputElem.select();
               document.execCommand('insertText', false, filetext);
             })
@@ -512,6 +514,7 @@ const editorMenuElem = h('div.edit-menu', [
             })
             .then(() => {
               buttonElem.classList.remove('loading');
+              editorInputElem.disabled = false;
             });
         },
       },

@@ -69,9 +69,12 @@ body {
   textarea {
     resize: none;
     border: none;
-    color: transparent;
-    background-color: transparent;
     caret-color: black;
+
+    &:not(:disabled) {
+      color: transparent;
+      background-color: transparent;
+    }
   }
 
   .edit-menu {
