@@ -54,7 +54,11 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
         };
       },
     }),
-    rollupSass(),
+    rollupSass({
+      async processor(css, inputFilepath) {
+        return (await postcssMinify.process(css, { from: inputFilepath })).css;
+      },
+    }),
     rollupWebWorkerLoader({
       sourcemap: true,
       inline: false,
