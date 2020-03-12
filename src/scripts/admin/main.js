@@ -489,6 +489,7 @@ const editorMenuElem = h('div.edit-menu', [
             .then(file => {
               editorInputElem.disabled = true;
               buttonElem.classList.add('loading');
+              buttonElem.disabled = true;
 
               if (!file) {
                 throw new Error('ファイルを選択する必要があります');
@@ -524,6 +525,7 @@ const editorMenuElem = h('div.edit-menu', [
             .then(() => {
               buttonElem.classList.remove('loading');
               editorInputElem.disabled = false;
+              buttonElem.disabled = false;
             });
         },
       },
