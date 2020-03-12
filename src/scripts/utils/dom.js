@@ -234,6 +234,23 @@ export function insertText(textareaElem, insertTextOrCallback) {
 }
 
 /**
+ * @param {{ accept?:string }} param0
+ * @returns {Promise.<File>}
+ */
+export function loadFile({ accept } = {}) {
+  return new Promise(resolve => {
+    const fileInputElem = h('input', {
+      type: 'file',
+      accept,
+      onChange() {
+        resolve(this.files[0]);
+      },
+    });
+    fileInputElem.click();
+  });
+}
+
+/**
  * @param {string} filename
  * @param {string} filedata
  */

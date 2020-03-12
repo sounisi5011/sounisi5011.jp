@@ -5,6 +5,7 @@ import {
   HTML_WS_REGEXP,
   h,
   insertText,
+  loadFile,
   maxScroll,
   removeChildren,
   saveText,
@@ -13,6 +14,7 @@ import {
 import { parse as parseFrontMatter } from '../utils/front-matter';
 import html2textConfig from '../../../config/html2text';
 import { setterHook } from '../utils';
+import { file2Text } from '../utils/file';
 
 import asciidoctor, {
   createInlineMacroText,
@@ -226,6 +228,10 @@ body {
 .editor .edit-menu button.em-ruby {
   -webkit-text-emphasis: dot;
   text-emphasis: dot;
+}
+
+.editor .edit-menu button.load-file.loading:after {
+  content: "中…";
 }
 
 .editor dialog.edit-ruby-prompt {
@@ -670,7 +676,44 @@ const editorMenuElem = h('div.edit-menu', [
       ),
   ]),
   h('div.right-buttons', [
-    h('button', 'ロード'),
+    h(
+      'button.load-file',
+      {
+        onClick() {
+          /** @type {HTMLButtonElement} */
+          const buttonElem = this;
+          loadFile({ accept: '.adoc, .asc, .asciidoc, text/*' })
+            .then(file => {
+              buttonElem.classList.add('loading');
+
+              if (!file) {
+                throw new Error('ファイルを選択する必要があります');
+              }
+              if (
+                !file.type.startsWith('text/') &&
+                !/\.(?:adoc|asc|asciidoc)$/.test(file.name)
+              ) {
+                throw new Error(
+                  '選択するファイルはAsciiDocファイルかテキストファイルの必要があります',
+                );
+              }
+
+              return file2Text(file);
+            })
+            .then(filetext => {
+              editorInputElem.select();
+              document.execCommand('insertText', false, filetext);
+            })
+            .catch(error => {
+              alert(`ファイルの読み込みが失敗しました。${error}`);
+            })
+            .then(() => {
+              buttonElem.classList.remove('loading');
+            });
+        },
+      },
+      'ロード',
+    ),
     h(
       'button',
       {
