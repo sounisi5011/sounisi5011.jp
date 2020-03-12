@@ -32,6 +32,12 @@ module.exports = (options = {}) => {
       : url.pathname;
   }
 
+  /**
+   * 生成時にCSSインクルードを使用可能か否かのフラグ。
+   * 出力オプションにdirパラメータが渡された場合にのみtrueにされる。
+   */
+  let allowCssInclude = false;
+
   return {
     name: pkg.name,
 
@@ -81,6 +87,11 @@ module.exports = (options = {}) => {
      * @see https://rollupjs.org/guide/en/#outputoptions
      */
     outputOptions(outputOptions) {
+      allowCssInclude = Boolean(outputOptions.dir);
+      if (!allowCssInclude) {
+        return null;
+      }
+
       if (!useImportMeta) {
         let rootURL = rootURLStr;
         if (!rootURL && options.publicPath) {
@@ -111,6 +122,11 @@ module.exports = (options = {}) => {
     resolveFileUrl({ fileName, format, moduleId, referenceId, relativePath }) {
       const cssData = cssOriginalFilepathMap.get(moduleId);
       if (cssData && cssData.referenceId === referenceId) {
+        if (!allowCssInclude) {
+          throw new Error(
+            `CSSインクルードは使用できません。出力オプションにdirパラメータを指定する必要があります`,
+          );
+        }
         if (!useImportMeta) {
           const rootURLData = rootURLMap.get(this.meta);
           if (!rootURLData || rootURLData.outputOptions.format !== format) {
@@ -152,9 +168,9 @@ module.exports = (options = {}) => {
       /** @type {Map.<string, { inputFilepath: string }>} */
       const inputFileDataMap = new Map();
       for (const [, { inputFilepath, referenceId }] of cssOriginalFilepathMap) {
+        let outputFilename = '';
         try {
-          const outputFilename = this.getFileName(referenceId);
-          inputFileDataMap.set(outputFilename, { inputFilepath });
+          outputFilename = this.getFileName(referenceId);
         } catch (error) {
           if (
             !(error instanceof Error) ||
@@ -162,6 +178,14 @@ module.exports = (options = {}) => {
           ) {
             throw error;
           }
+        }
+        if (outputFilename) {
+          if (!allowCssInclude) {
+            throw new Error(
+              `CSSインクルードは使用できません。出力オプションにdirパラメータを指定する必要があります`,
+            );
+          }
+          inputFileDataMap.set(outputFilename, { inputFilepath });
         }
       }
 

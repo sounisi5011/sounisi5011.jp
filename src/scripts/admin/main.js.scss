@@ -1,0 +1,213 @@
+/**
+ * @see http://takuyakobayashi.id/blog/2019/02/09/4301
+ */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.editor,
+.preview {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.editor {
+  overflow-y: hidden;
+  position: relative;
+  display: grid;
+  grid-template-rows: auto max-content;
+
+  .show-preview & {
+    display: none;
+  }
+
+  .text-highlight,
+  textarea {
+    box-sizing: border-box;
+    overflow-y: scroll;
+  }
+
+  .text-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+
+    .front-matter {
+      opacity: 0.2;
+    }
+
+    .anchor-def {
+      color: blue;
+
+      .option {
+        color: gray;
+      }
+    }
+
+    .inline-macro {
+      color: orange;
+    }
+
+    .text-formatting {
+      color: magenta;
+    }
+
+    &[hidden] + textarea {
+      color: black;
+      background-color: white;
+    }
+  }
+
+  textarea {
+    resize: none;
+    border: none;
+    caret-color: black;
+
+    &:not(:disabled) {
+      color: transparent;
+      background-color: transparent;
+    }
+  }
+
+  .edit-menu {
+    display: flex;
+    justify-content: space-between;
+    border-top: solid 1px #ccc;
+    padding: 0.75em;
+    background-color: white;
+
+    .left-buttons,
+    .right-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: -0.5em;
+
+      & > * {
+        margin-top: 0.5em;
+      }
+    }
+
+    .left-buttons {
+      margin-left: -0.5em;
+
+      & > * {
+        margin-left: 0.5em;
+      }
+    }
+
+    .right-buttons {
+      margin-left: 1em;
+      margin-right: -0.5em;
+
+      & > * {
+        flex: 1 auto;
+        margin-right: 0.5em;
+      }
+    }
+
+    button {
+      cursor: pointer;
+      min-width: 44px;
+      min-height: 44px;
+      border: solid 1px #ccc;
+      white-space: nowrap;
+      background-color: white;
+
+      &.em-ruby {
+        -webkit-text-emphasis: dot;
+        text-emphasis: dot;
+      }
+
+      &.load-file {
+        &.loading {
+          &:after {
+            content: "中…";
+          }
+        }
+      }
+    }
+  }
+
+  dialog.edit-ruby-prompt {
+    top: 50%;
+    transform: translate(0, -50%);
+    border-radius: 0.5em;
+    border: solid 1px #ccc;
+    padding: 0;
+
+    & > form {
+      padding: 1em;
+    }
+
+    input {
+      &[type="text"] {
+        border: solid 1px gray;
+        padding: 0.5em;
+      }
+
+      &[required] {
+        &:valid {
+          border-color: lime;
+          outline-color: lime;
+        }
+
+        &:invalid {
+          border-color: red;
+          outline-color: red;
+        }
+      }
+
+      &[name^="rp"] {
+        min-width: 1em;
+        width: 1em;
+      }
+    }
+  }
+}
+
+.preview {
+  position: absolute;
+  top: 0;
+  visibility: hidden;
+  border: none;
+
+  .show-preview & {
+    visibility: visible;
+  }
+}
+
+@media (min-width: 610px) and (min-aspect-ratio: 4/3) {
+  body {
+    display: flex;
+  }
+
+  .editor,
+  .preview {
+    flex: 1;
+  }
+
+  .editor {
+    .show-preview & {
+      display: grid;
+    }
+
+    .edit-menu {
+      button.toggle-preview {
+        display: none;
+      }
+    }
+  }
+
+  .preview {
+    position: static;
+    visibility: visible;
+  }
+}

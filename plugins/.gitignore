@@ -1,0 +1,4 @@
+/asciidoctor/extensions/*/package-lock.json
+/metalsmith/*/package-lock.json
+/rollup/*/package-lock.json
+/utils/*/package-lock.json

@@ -7,59 +7,71 @@
  */
 
 const parse5 = require('parse5');
+const defaultTreeAdapter = require('parse5/lib/tree-adapters/default');
 
-function isTextNode(node) {
-  return node && node.nodeName === '#text';
-}
-
-function isElemNode(node) {
-  return node && typeof node.tagName === 'string';
+/**
+ * @see https://github.com/inikulin/parse5/blob/9c7556ed05e4ff4d884ab2447e27ce3817c42e79/packages/parse5/lib/tree-adapters/default.js#L173-L175
+ */
+function setTextNodeContent(textNode, value) {
+  textNode.value = value;
 }
 
 function astConverter(node, { prevNode, nextNode } = {}) {
-  if (isTextNode(node)) {
+  if (defaultTreeAdapter.isTextNode(node)) {
     /*
      * テキストノードの前にノードが存在しない（すなわち、開きタグの直後のテキストノードである）場合は、
      * 先頭の改行文字を削除する。
      */
     if (!prevNode) {
-      node.value = node.value.replace(/^\n/, '');
+      setTextNodeContent(
+        node,
+        defaultTreeAdapter.getTextNodeContent(node).replace(/^\n/, ''),
+      );
     }
     /*
      * テキストノードの次にノードが存在しない（すなわち、閉じタグの直前のテキストノードである）場合は、
      * 末尾の改行文字を削除する。
      */
     if (!nextNode) {
-      node.value = node.value.replace(/\n$/, '');
+      setTextNodeContent(
+        node,
+        defaultTreeAdapter.getTextNodeContent(node).replace(/\n$/, ''),
+      );
     }
-  } else if (isElemNode(node)) {
+  } else if (defaultTreeAdapter.isElementNode(node)) {
     /*
      * 要素の前のテキストノード（すなわち、開きタグの直前のテキストノードである場合）は、
      * 末尾の改行文字を削除する。
      */
-    if (isTextNode(prevNode)) {
-      prevNode.value = prevNode.value.replace(/\n$/, '');
+    if (prevNode && defaultTreeAdapter.isTextNode(prevNode)) {
+      setTextNodeContent(
+        prevNode,
+        defaultTreeAdapter.getTextNodeContent(prevNode).replace(/\n$/, ''),
+      );
     }
     /*
      * 要素の後のテキストノード（すなわち、閉じタグの直後のテキストノードである場合）は、
      * 先頭の改行文字を削除する。
      */
-    if (isTextNode(nextNode)) {
-      nextNode.value = nextNode.value.replace(/^\n/, '');
+    if (nextNode && defaultTreeAdapter.isTextNode(nextNode)) {
+      setTextNodeContent(
+        nextNode,
+        defaultTreeAdapter.getTextNodeContent(nextNode).replace(/^\n/, ''),
+      );
     }
   }
 
   /*
    * pre要素の場合は、子孫要素を処理しない。
    */
-  if (node.tagName === 'pre') {
+  if (defaultTreeAdapter.getTagName(node) === 'pre') {
     return;
   }
 
   /*
    * 子孫要素が存在する場合は、再帰的に処理を行う。
    */
-  const { childNodes } = node;
+  const childNodes = defaultTreeAdapter.getChildNodes(node);
   if (childNodes) {
     for (const [index, childNode] of childNodes.entries()) {
       astConverter(childNode, {

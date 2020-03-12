@@ -11,7 +11,9 @@ parserOptions:
   ecmaVersion: 2018
 rules:
   no-console: off
-  sort-imports: error
+  sort-imports:
+    - error
+    - ignoreDeclarationSort: true
   import/order:
     - error
     - newlines-between: always

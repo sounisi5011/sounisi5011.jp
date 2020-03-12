@@ -60,13 +60,22 @@ module.exports = opts => {
    *           scriptNodeMap: Map.<Parse5Node, {
    *             node: Parse5Node,
    *             attrs: Map.<string, string>,
-   *             srcFullpath: string
+   *             srcFullpath: string,
+   *             moduleOnly: boolean
    *           }[]>
    *        }>}
    */
   const targetFileMap = new Map();
-  /** @type {Set.<string>} */
-  const scriptFileFullpathSet = new Set();
+  /**
+   * ES Modules向けにビルドするソースファイルの絶対パスのSet
+   * @type {Set.<string>}
+   */
+  const moduleScriptFileFullpathSet = new Set();
+  /**
+   * ES Modules非対応環境向けにビルドするソースファイルの絶対パスのSet
+   * @type {Set.<string>}
+   */
+  const classicScriptFileFullpathSet = new Set();
   /**
    * @typedef {Map.<string, string | Buffer>} FilesMap
    * @typedef {Map.<string, {outputFileFullpath: string, chunk: ChunkInfo, useDynamicImports: boolean}>} ChunkMap
@@ -82,7 +91,8 @@ module.exports = opts => {
     before(files, metalsmith) {
       jsRootDirPath = metalsmith.path(options.jsDirectory);
       targetFileMap.clear();
-      scriptFileFullpathSet.clear();
+      moduleScriptFileFullpathSet.clear();
+      classicScriptFileFullpathSet.clear();
     },
     async each(filename, filedata, files, metalsmith) {
       /*
@@ -108,9 +118,10 @@ module.exports = opts => {
          * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-type
          */
         const type = scriptElemAttrs.get('type');
+        const moduleOnly = type === 'module';
         if (type) {
           if (
-            type !== 'module' &&
+            !moduleOnly &&
             !new MIMEType(type).isJavaScript({ allowParameters: true })
           ) {
             return;
@@ -138,7 +149,7 @@ module.exports = opts => {
          * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-async
          */
         if (
-          type !== 'module' &&
+          !moduleOnly &&
           !scriptElemAttrs.has('defer') &&
           !scriptElemAttrs.has('async')
         ) {
@@ -152,7 +163,10 @@ module.exports = opts => {
          * src属性値から、JSファイルの絶対パスを導出する
          */
         const scriptFileFullpath = path.join(jsRootDirPath, src);
-        scriptFileFullpathSet.add(scriptFileFullpath);
+        moduleScriptFileFullpathSet.add(scriptFileFullpath);
+        if (!moduleOnly) {
+          classicScriptFileFullpathSet.add(scriptFileFullpath);
+        }
 
         /*
          * script要素の更新に必要な情報を追加
@@ -170,6 +184,7 @@ module.exports = opts => {
                     node: scriptElemNode,
                     attrs: scriptElemAttrs,
                     srcFullpath: scriptFileFullpath,
+                    moduleOnly,
                   },
                 ],
               ],
@@ -184,6 +199,7 @@ module.exports = opts => {
               node: scriptElemNode,
               attrs: scriptElemAttrs,
               srcFullpath: scriptFileFullpath,
+              moduleOnly,
             });
           } else {
             scriptNodeMap.set(scriptParentNode, [
@@ -191,6 +207,7 @@ module.exports = opts => {
                 node: scriptElemNode,
                 attrs: scriptElemAttrs,
                 srcFullpath: scriptFileFullpath,
+                moduleOnly,
               },
             ]);
           }
@@ -217,8 +234,11 @@ module.exports = opts => {
                   (obj, [parentNodePath, scriptNodeList]) => ({
                     ...obj,
                     [parentNodePath]: scriptNodeList
-                      .map(({ srcFullpath }) => srcFullpath)
-                      .sort(),
+                      .map(({ srcFullpath, moduleOnly }) => ({
+                        src: srcFullpath,
+                        moduleOnly,
+                      }))
+                      .sort(({ src: a }, { src: b }) => utils.cmp(a, b)),
                   }),
                   {},
                 ),
@@ -244,28 +264,12 @@ module.exports = opts => {
             ? await options.rollupOptions(files, metalsmith)
             : options.rollupOptions;
 
-        /**
-         * RollupのinputOptionsに必要なentryRecordを生成する
-         * @see https://rollupjs.org/guide/en/#inputoptions-object
-         */
-        /** @type {Object.<string, string>} */
-        const entryRecord = {};
-        for (const scriptFileFullpath of scriptFileFullpathSet) {
-          // Note: 本来は、このように事前にファイルの存在を検証するべきではない。処理開始までの間にファイルが削除される可能性が存在するため。
-          // TODO: rollup内での処理時にファイルの存在判定を行い、除外する
-          if (!(await fileExists(scriptFileFullpath))) continue;
-          const entryName = path
-            .relative(jsRootDirPath, scriptFileFullpath)
-            .replace(/\.m?js$/, '');
-          entryRecord[entryName] = scriptFileFullpath;
-        }
-
         bundleOutputCache = {};
-        let generatedRollupData;
-        for (const { isESModules, ...rollupOutputOpts } of [
+        for (const { isESModules, entryFullpathSet, ...rollupOutputOpts } of [
           // ES module用
           {
             isESModules: true,
+            entryFullpathSet: moduleScriptFileFullpathSet,
             entryFileNames: '[name].mjs',
             chunkFileNames: '[name]-[hash].mjs',
             format: 'esm',
@@ -273,68 +277,63 @@ module.exports = opts => {
           // SystemJS用
           {
             isESModules: false,
+            entryFullpathSet: classicScriptFileFullpathSet,
             entryFileNames: '[name].system.js',
             chunkFileNames: '[name]-[hash].system.js',
             format: 'system',
           },
         ]) {
-          if (
-            !generatedRollupData ||
+          const { output: rollupOutputOptions, ...rollupInputOptions } =
             typeof rollupOptionsGenerator === 'function'
-          ) {
-            const { output: rollupOutputOptions, ...rollupInputOptions } =
-              typeof rollupOptionsGenerator === 'function'
-                ? await rollupOptionsGenerator(isESModules)
-                : rollupOptionsGenerator;
+              ? await rollupOptionsGenerator(isESModules)
+              : rollupOptionsGenerator;
 
-            /**
-             * RollupのinputOptionsを生成する
-             * @see https://rollupjs.org/guide/en/#inputoptions-object
-             */
-            const inputOptions = {
-              ...rollupInputOptions,
-              input: entryRecord,
-            };
-
-            /*
-             * Rollupのバンドルを生成する
-             */
-            const bundle = await rollup.rollup(inputOptions);
-
-            /**
-             * RollupのoutputOptionsを生成する
-             * @see https://rollupjs.org/guide/en/#outputoptions-object
-             */
-            const rollupOutputOptsBase = {
-              ...rollupOutputOptions,
-              dir: path.resolve(
-                metalsmithDestDir,
-                rollupOutputOptions.dir || '.',
-              ),
-            };
-            if (
-              !utils.isSameOrSubPath(
-                metalsmithDestDir,
-                rollupOutputOptsBase.dir,
-              )
-            ) {
-              throw new Error(
-                `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${rollupOutputOptsBase.dir}`,
-              );
-            }
-
-            generatedRollupData = { bundle, rollupOutputOptsBase };
+          /**
+           * RollupのinputOptionsを生成する
+           * @see https://rollupjs.org/guide/en/#inputoptions-object
+           */
+          /** @type {Object.<string, string>} */
+          const entryRecord = {};
+          for (const entryFullpath of entryFullpathSet) {
+            // Note: 本来は、このように事前にファイルの存在を検証するべきではない。処理開始までの間にファイルが削除される可能性が存在するため。
+            // TODO: rollup内での処理時にファイルの存在判定を行い、除外する
+            if (!(await fileExists(entryFullpath))) continue;
+            const entryName = path
+              .relative(jsRootDirPath, entryFullpath)
+              .replace(/\.m?js$/, '');
+            entryRecord[entryName] = entryFullpath;
           }
+          const inputOptions = {
+            ...rollupInputOptions,
+            input: entryRecord,
+          };
 
-          const { bundle, rollupOutputOptsBase } = generatedRollupData;
+          /*
+           * Rollupのバンドルを生成する
+           */
+          const bundle = await rollup.rollup(inputOptions);
+
+          /**
+           * RollupのoutputOptionsを生成する
+           * @see https://rollupjs.org/guide/en/#outputoptions-object
+           */
+          const outputOptions = {
+            ...rollupOutputOptions,
+            dir: path.resolve(
+              metalsmithDestDir,
+              rollupOutputOptions.dir || '.',
+            ),
+            ...rollupOutputOpts,
+          };
+          if (!utils.isSameOrSubPath(metalsmithDestDir, outputOptions.dir)) {
+            throw new Error(
+              `rollupOptions.output.dirに指定するパスは、Metalsmithの出力ディレクトリ以下のパスでなければなりません：${outputOptions.dir}`,
+            );
+          }
 
           /*
            * RollupでJSをビルドする
            */
-          const outputOptions = {
-            ...rollupOutputOptsBase,
-            ...rollupOutputOpts,
-          };
           const { output } = await bundle.generate(outputOptions);
           /** @type {FilesMap} */
           const filesMap = new Map();
@@ -505,7 +504,6 @@ module.exports = opts => {
                  * @see https://html.spec.whatwg.org/multipage/scripting.html#attr-script-async
                  */
                 async: scriptNodeData.attrs.has('async'),
-                moduleOnly: scriptNodeData.attrs.get('type') === 'module',
               }))
               .filter(
                 ({ esmChunkData, systemJsChunkData }) =>

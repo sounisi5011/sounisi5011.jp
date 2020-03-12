@@ -42,6 +42,7 @@ const {
   render: pugRender,
 } = require('metalsmith-pug-extra');
 
+const html2textConfig = require('./config/html2text');
 const asciidocExtensions = require('./plugins/asciidoctor/extensions');
 const childPages = require('./plugins/metalsmith/child-pages');
 const fixHFSPlusNormalization = require('./plugins/metalsmith/fix-hfs-plus-normalization');
@@ -324,6 +325,7 @@ Metalsmith(__dirname)
             ...options.plugins,
           ]
         : netlifyPublishedDate(options))({
+      pattern: ['**/*.html', '!admin/**'],
       accessToken: process.env.NETLIFY_API_ACCESS_TOKEN,
       contentsConverter: ignoreContentsEquals,
       contentsEquals: showContentsDifference,
@@ -437,60 +439,9 @@ Metalsmith(__dirname)
             }
             return shortURL.href;
           },
-          ignoreElems: ['style', 'script', 'template', 'aside.message'],
+          ignoreElemSelector: 'style, script, template, aside.message',
           rootSelector: '.novel-body',
-          textContentsReplacer({ node, parse5Utils }, childTextDataList) {
-            if (!parse5Utils.isElementNode(node)) {
-              return childTextDataList;
-            }
-
-            const textData = childTextDataList[0];
-            if (textData) {
-              const isEmpty =
-                parse5Utils.matches(node, '[aria-hidden=true]') ||
-                childTextDataList.every(({ rawText }) =>
-                  /^[\t\n\f\r ]+$/.test(rawText),
-                );
-
-              const classValue = parse5Utils.getAttribute(node, 'class');
-              if (classValue) {
-                const lines = classValue
-                  .split(/\s+/)
-                  .map(className => /^spacing-(\d+)$/.exec(className))
-                  .map(match => (match ? Number(match[1]) : 0))
-                  .reduce((a, b) => Math.max(a, b), 0);
-                if (lines >= 1) {
-                  textData.margin.top = lines;
-                  if (!isEmpty) {
-                    textData.margin.bottom = lines;
-                  }
-                }
-              }
-
-              if (parse5Utils.matches(node, 'em')) {
-                let openQuote, closeQuote;
-                if (parse5Utils.matches(node, '.voice')) {
-                  openQuote = '「';
-                  closeQuote = '」';
-                } else if (parse5Utils.matches(node, '.quot')) {
-                  openQuote = '\u{201C}';
-                  closeQuote = '\u{201D}';
-                }
-                if (openQuote && closeQuote) {
-                  const firstChildTextData = textData;
-                  const lastChildTextData =
-                    childTextDataList[childTextDataList.length - 1];
-
-                  firstChildTextData.rawText =
-                    openQuote + firstChildTextData.rawText;
-                  firstChildTextData.text = openQuote + firstChildTextData.text;
-                  lastChildTextData.rawText += closeQuote;
-                  lastChildTextData.text += closeQuote;
-                }
-              }
-            }
-            return childTextDataList;
-          },
+          textContentsReplacers: html2textConfig.convertHook,
           get allowWarning() {
             return allowWarning;
           },

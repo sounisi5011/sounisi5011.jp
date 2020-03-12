@@ -1,0 +1,13 @@
+diff --git a/node_modules/rollup-plugin-web-worker-loader/src/index.js b/node_modules/rollup-plugin-web-worker-loader/src/index.js
+index c2baa7e..e804d7a 100644
+--- a/node_modules/rollup-plugin-web-worker-loader/src/index.js
++++ b/node_modules/rollup-plugin-web-worker-loader/src/index.js
+@@ -240,7 +240,7 @@ module.exports = function workerLoaderPlugin(config = null) {
+         },
+ 
+         generateBundle(options, bundle, isWrite) {
+-            if (!inline && isWrite) {
++            if (!inline) {
+                 if (configuredFileName && Object.keys(bundle).length === 1) {
+                     bundle[Object.keys(bundle)[0]].fileName = configuredFileName;
+                 }

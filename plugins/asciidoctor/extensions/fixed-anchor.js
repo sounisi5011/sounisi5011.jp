@@ -6,8 +6,6 @@
  * @see https://asciidoctor.github.io/asciidoctor.js/master/#extensionsprocessor
  */
 
-const util = require('util');
-
 /**
  * @see https://infra.spec.whatwg.org/#ascii-whitespace
  * @see https://developer.mozilla.org/ja/docs/Web/JavaScript/Guide/Regular_Expressions/Character_Classes
@@ -21,7 +19,7 @@ module.exports = registry => {
       if (id === '') throw new Error('id属性は空文字列を許可していません');
       if (HTML_WS_REGEXP.test(id))
         throw new Error(
-          `id属性値にASCIIホワイトスペース文字を含めることはできません: ${util.inspect(
+          `id属性値にASCIIホワイトスペース文字を含めることはできません: ${JSON.stringify(
             id,
           )}`,
         );

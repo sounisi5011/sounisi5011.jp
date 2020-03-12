@@ -1,10 +1,23 @@
+const path = require('path');
+
 const rollupCommonjs = require('@rollup/plugin-commonjs');
 const rollupNodeResolve = require('@rollup/plugin-node-resolve');
 const rollupCssInclude = require('@sounisi5011/rollup-plugin-css-include');
 const cssnano = require('cssnano');
 const postcss = require('postcss');
 const rollupBabel = require('rollup-plugin-babel');
+const rollupSass = require('rollup-plugin-sass');
 const { terser: rollupTerserMinify } = require('rollup-plugin-terser');
+const rollupWebWorkerLoader = require('rollup-plugin-web-worker-loader');
+
+function path2url(filepath, basepath = '') {
+  if (basepath) {
+    filepath = path.relative(basepath, path.resolve(basepath, filepath));
+  }
+  const url = new URL('http://x.y');
+  url.pathname = filepath;
+  return url.pathname;
+}
 
 const postcssOptions = {
   /** @see https://github.com/postcss/postcss/blob/master/docs/source-maps.md */
@@ -18,7 +31,10 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
     sourcemap: true,
   },
   plugins: [
-    rollupNodeResolve(),
+    rollupNodeResolve({
+      browser: true,
+      preferBuiltins: false,
+    }),
     rollupCommonjs(),
     rollupCssInclude({
       publicPath: metalsmith.destination(),
@@ -37,6 +53,21 @@ module.exports = ({ outputDir }) => (files, metalsmith) => isESModules => ({
           },
         };
       },
+    }),
+    rollupSass({
+      async processor(css, inputFilepath) {
+        return (await postcssMinify.process(css, { from: inputFilepath })).css;
+      },
+    }),
+    rollupWebWorkerLoader({
+      sourcemap: true,
+      inline: false,
+      loadPath: path2url(outputDir, metalsmith.destination()),
+      skipPlugins: [
+        '@sounisi5011/rollup-plugin-css-include',
+        'babel',
+        'terser',
+      ],
     }),
     rollupBabel({
       exclude: 'node_modules/**',

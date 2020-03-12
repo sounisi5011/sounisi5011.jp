@@ -1,0 +1,8 @@
+{
+  "name": "@sounisi5011/asciidoctor-extension-omit-line-breaks",
+  "version": "0.0.0",
+  "private": true,
+  "dependencies": {
+    "parse5": "^5.1.1"
+  }
+}
