@@ -505,9 +505,18 @@ const editorMenuElem = h('div.edit-menu', [
               return file2Text(file);
             })
             .then(filetext => {
-              editorInputElem.disabled = false;
-              editorInputElem.select();
-              document.execCommand('insertText', false, filetext);
+              if (
+                confirm(
+                  '編集履歴を維持して挿入した場合、全消去の操作が重くなります。編集履歴を消去します。',
+                )
+              ) {
+                editorInputElem.value = filetext;
+                editorInputElem.dispatchEvent(new InputEvent('input'));
+              } else {
+                editorInputElem.disabled = false;
+                editorInputElem.select();
+                document.execCommand('insertText', false, filetext);
+              }
             })
             .catch(error => {
               alert(`ファイルの読み込みが失敗しました。${error}`);
