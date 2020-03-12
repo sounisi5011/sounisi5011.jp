@@ -118,13 +118,13 @@ body {
       white-space: nowrap;
       background-color: white;
 
-      .em-ruby {
+      &.em-ruby {
         -webkit-text-emphasis: dot;
         text-emphasis: dot;
       }
 
-      .load-file {
-        .loading {
+      &.load-file {
+        &.loading {
           &:after {
             content: "中…";
           }
