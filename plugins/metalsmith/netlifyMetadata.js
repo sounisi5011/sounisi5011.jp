@@ -1,4 +1,4 @@
-const DEPLOY_URL_REGEXP = /^https?:\/\/[0-9a-fA-F]+--([0-9a-zA-Z-]+\.netlify\.com)/;
+const DEPLOY_URL_REGEXP = /^https?:\/\/[0-9a-fA-F]+--([0-9a-zA-Z-]+\.netlify\.(?:app|com))(?=\/|$)/;
 const DOMAIN_REGEXP = /^https?:\/\/([0-9a-zA-Z.-]+)/;
 
 module.exports = () => {

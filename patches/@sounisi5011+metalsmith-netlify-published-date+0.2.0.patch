@@ -1,0 +1,13 @@
+diff --git a/node_modules/@sounisi5011/metalsmith-netlify-published-date/dist/netlify.js b/node_modules/@sounisi5011/metalsmith-netlify-published-date/dist/netlify.js
+index ff50d3a..191624c 100644
+--- a/node_modules/@sounisi5011/metalsmith-netlify-published-date/dist/netlify.js
++++ b/node_modules/@sounisi5011/metalsmith-netlify-published-date/dist/netlify.js
+@@ -41,7 +41,7 @@ function isNetlifyDeploy(value) {
+ }
+ exports.isNetlifyDeploy = isNetlifyDeploy;
+ function addAbsoluteURL(deploy) {
+-    return Object.assign({}, deploy, { deployAbsoluteURL: deploy.deploy_ssl_url.replace(/^(https?:\/\/)(?:(?!--)[^.])+(--)([^.]+)(\.netlify\.com)\/?$/, (match, scheme, hyphen, name, domain) => name === deploy.name
++    return Object.assign({}, deploy, { deployAbsoluteURL: deploy.deploy_ssl_url.replace(/^(https?:\/\/)(?:(?!--)[^.])+(--)([^.]+)(\.netlify\.app)\/?$/, (match, scheme, hyphen, name, domain) => name === deploy.name
+             ? scheme + deploy.id + hyphen + name + domain
+             : match) });
+ }
